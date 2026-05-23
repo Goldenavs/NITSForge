@@ -1,1 +1,141 @@
+/* src/index.css */
 @import "tailwindcss";
+
+/* =========================================
+   TAILWIND V4 THEME CONFIGURATION
+   Mapping our custom CSS variables to Tailwind utilities
+   ========================================= */
+@theme {
+  --font-display: "Sora", sans-serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-background: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-2: var(--color-surface-2);
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-accent: var(--color-accent);
+  --color-text-main: var(--color-text-primary);
+  --color-text-muted: var(--color-text-muted);
+  --color-borderline: var(--color-border);
+  
+  /* Status Colors (Constant across themes) */
+  --color-success: #16A34A;
+  --color-error: #DC2626;
+  --color-xp: #F59E0B;
+}
+
+/* =========================================
+   THEME DEFINITIONS (CSS VARIABLES)
+   Based on NITSForge Docs Section 6.11 & 11
+   ========================================= */
+@layer base {
+  :root {
+    /* 1. EMBER (Default Theme) - Warm orange + gray */
+    --color-bg: #F9F7F4;
+    --color-surface: #FFFFFF;
+    --color-surface-2: #F3EDE6;
+    --color-primary: #F97316;
+    --color-primary-dark: #EA6C0A;
+    --color-accent: #FB923C;
+    --color-text-primary: #1C1917;
+    --color-text-muted: #78716C;
+    --color-border: #E7E0D8;
+  }
+
+  [data-theme="midnight"] {
+    /* 2. MIDNIGHT - Deep navy + electric blue */
+    --color-bg: #0F172A;
+    --color-surface: #1E293B;
+    --color-surface-2: #334155;
+    --color-primary: #3B82F6;
+    --color-primary-dark: #2563EB;
+    --color-accent: #60A5FA;
+    --color-text-primary: #F8FAFC;
+    --color-text-muted: #94A3B8;
+    --color-border: #475569;
+  }
+
+  [data-theme="forest"] {
+    /* 3. FOREST - Calm greens + warm white */
+    --color-bg: #FEFCE8;
+    --color-surface: #FFFFFF;
+    --color-surface-2: #FEF08A;
+    --color-primary: #166534;
+    --color-primary-dark: #14532D;
+    --color-accent: #22C55E;
+    --color-text-primary: #064E3B;
+    --color-text-muted: #4D7C0F;
+    --color-border: #DCFCE7;
+  }
+
+  [data-theme="sakura"] {
+    /* 4. SAKURA - Light pink + off-white */
+    --color-bg: #FFF1F2;
+    --color-surface: #FFFFFF;
+    --color-surface-2: #FFE4E6;
+    --color-primary: #DB2777;
+    --color-primary-dark: #BE185D;
+    --color-accent: #F472B6;
+    --color-text-primary: #4C1D95; /* Deep purple for readable contrast */
+    --color-text-muted: #831843;
+    --color-border: #FBCFE8;
+  }
+
+  [data-theme="obsidian"] {
+    /* 5. OBSIDIAN - High contrast black + gold */
+    --color-bg: #000000;
+    --color-surface: #171717;
+    --color-surface-2: #262626;
+    --color-primary: #F59E0B;
+    --color-primary-dark: #D97706;
+    --color-accent: #FBBF24;
+    --color-text-primary: #FAFAFA;
+    --color-text-muted: #A3A3A3;
+    --color-border: #404040;
+  }
+
+  [data-theme="arctic"] {
+    /* 6. ARCTIC - Clean white + ice blue */
+    --color-bg: #F0F9FF;
+    --color-surface: #FFFFFF;
+    --color-surface-2: #E0F2FE;
+    --color-primary: #0EA5E9;
+    --color-primary-dark: #0284C7;
+    --color-accent: #38BDF8;
+    --color-text-primary: #0C4A6E;
+    --color-text-muted: #0369A1;
+    --color-border: #BAE6FD;
+  }
+
+  /* Global Base Styles applied instantly */
+  html, body {
+    @apply h-full w-full overflow-hidden antialiased;
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-family: "Plus Jakarta Sans", sans-serif; /* Body font default */
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: "Sora", sans-serif; /* Display font for headings */
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+}
+
+/* Page Entry Animation */
+@layer utilities {
+  .animate-page-entry {
+    animation: pageEntry 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes pageEntry {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
