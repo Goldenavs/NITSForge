@@ -1,0 +1,8 @@
+export default function QuizAI() {
+  return (
+    <div className="p-4 md:p-8 animate-fade-in">
+      <h1 className="text-3xl font-bold text-slate-900">QuizAI</h1>
+      <p className="mt-2 text-slate-600">Test your knowledge with AI-generated quizzes.</p>
+    </div>
+  );
+}
