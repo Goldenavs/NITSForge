@@ -29,7 +29,7 @@ export default function InteractiveBackground() {
 
     // Physics config
     const mouse = { x: -1000, y: -1000, radius: 300 }; // Increased radius for a wider lens effect
-    const spacing = 110;   
+    const spacing = 80; //adjust for spacing
     let gears: Gear[] = [];
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -68,7 +68,7 @@ export default function InteractiveBackground() {
         this.y = y;
         this.teeth = 8; 
         
-        this.baseRadius = 24; // Much smaller idle state for deeper contrast
+        this.baseRadius = 12; // radius size
         this.currentRadius = this.baseRadius;
 
         this.direction = (col + row) % 2 === 0 ? 1 : -1;
@@ -95,7 +95,7 @@ export default function InteractiveBackground() {
           targetSpeed = this.baseSpeed + (targetIntensity * 0.035);
           
           // Lens swell: Add up to 22px of size to the gear when directly under mouse
-          targetRadius = this.baseRadius + (targetIntensity * 22); 
+          targetRadius = this.baseRadius + (targetIntensity * 16); //hover size
         }
 
         // Smooth Linear Interpolation (Lerp) for all 3 physics vectors
@@ -138,11 +138,11 @@ export default function InteractiveBackground() {
         // --- THEME STYLING ---
         if (this.intensity > 0.02) {
           ctx.fillStyle = themePrimary;
-          ctx.globalAlpha = 0.1 + (this.intensity * 0.6);
+          ctx.globalAlpha = 0.1 + (this.intensity * 0.3);
           ctx.fill();
 
           ctx.strokeStyle = themePrimary;
-          ctx.globalAlpha = 0.3 + (this.intensity * 0.7);
+          ctx.globalAlpha = 0.3 + (this.intensity * 0.4);
           ctx.lineWidth = 1.5;
           ctx.stroke();
         } else {
