@@ -3,7 +3,6 @@ import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-
 import { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, User, Settings as SettingsIcon } from 'lucide-react';
-import { span } from 'framer-motion/client';
 
 const AnimatedLink = ({ 
   title, 
