@@ -1,42 +1,54 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+// src/store/ThemeContext.tsx
+import { createContext, useContext, useState, useEffect } from 'react';
 
-type Theme = 'ember' | 'midnight' | 'forest' | 'sakura' | 'obsidian' | 'arctic';
+type ThemeName = 'ember' | 'midnight' | 'forest' | 'sakura' | 'obsidian' | 'arctic';
 
 interface ThemeContextType {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
+  theme: ThemeName;
+  setTheme: (theme: ThemeName) => void;
+  isBgAnimated: boolean;
+  toggleBgAnimation: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Check local storage first, default to 'ember'
-    return (localStorage.getItem('nitsforge-theme') as Theme) || 'ember';
+  const [theme, setThemeState] = useState<ThemeName>(() => 
+    (localStorage.getItem('nitsforge-theme') as ThemeName) || 'ember'
+  );
+
+  // Load user preference for animation, defaulting to true
+  const [isBgAnimated, setIsBgAnimated] = useState<boolean>(() => {
+    const saved = localStorage.getItem('nitsforge-bg-animated');
+    return saved !== null ? saved === 'true' : true;
   });
 
   useEffect(() => {
-    // Apply the theme to the HTML root element
-    const root = document.documentElement;
-    
-    // Remove old theme data attributes if we were using classes, but with your setup:
-    root.setAttribute('data-theme', theme);
-    
-    // Save to local storage for persistence
+    document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('nitsforge-theme', theme);
   }, [theme]);
 
+  const setTheme = (newTheme: ThemeName) => {
+    setThemeState(newTheme);
+  };
+
+  const toggleBgAnimation = () => {
+    setIsBgAnimated(prev => {
+      const newVal = !prev;
+      localStorage.setItem('nitsforge-bg-animated', String(newVal));
+      return newVal;
+    });
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, isBgAnimated, toggleBgAnimation }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
-export function useTheme() {
+export const useTheme = () => {
   const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
+  if (!context) throw new Error('useTheme must be used within ThemeProvider');
   return context;
-}
+};

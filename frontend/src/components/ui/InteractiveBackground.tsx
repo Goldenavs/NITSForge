@@ -1,9 +1,11 @@
 // src/components/ui/InteractiveBackground.tsx
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useEffect, useRef } from 'react';
+import { useTheme } from '../../store/ThemeContext'; // <-- ADDED: Theme Context
 
 export default function InteractiveBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const { isBgAnimated } = useTheme(); // <-- ADDED: Toggle state
 
   // --- 1. GPU Accelerated Spotlight Tracking ---
   const mouseX = useMotionValue(-1000);
@@ -14,6 +16,9 @@ export default function InteractiveBackground() {
 
   // --- 2. The Engine Room (Depth-Enabled Involute Gears) ---
   useEffect(() => {
+    // If user disabled animations in Settings, do not initialize the canvas physics
+    if (!isBgAnimated) return;
+
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d', { alpha: false }); 
@@ -21,6 +26,7 @@ export default function InteractiveBackground() {
 
     let animationFrameId: number;
     let frameCount = 0;
+    let mouseTimeout: ReturnType<typeof setTimeout>; // <-- ADDED: Mobile Timeout
     
     // Theme colors
     let themeBg = '#0F172A';
@@ -28,25 +34,49 @@ export default function InteractiveBackground() {
     let themeBorder = '#334155';
 
     // Physics config
-    const mouse = { x: -1000, y: -1000, radius: 300 }; // Increased radius for a wider lens effect
-    const spacing = 80; //adjust for spacing
+    const mouse = { x: -1000, y: -1000, radius: 300 }; 
+    const spacing = 80; 
     let gears: Gear[] = [];
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mouseX.set(e.clientX - 400);
-      mouseY.set(e.clientY - 400);
-      mouse.x = e.clientX;
-      mouse.y = e.clientY;
+    // --- MOBILE & IDLE FIX ---
+    const handlePointerMove = (e: MouseEvent | TouchEvent) => {
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+
+      mouseX.set(clientX - 400);
+      mouseY.set(clientY - 400);
+      mouse.x = clientX;
+      mouse.y = clientY;
+
+      // Reset the gears back to idle if no movement is detected for 1.2s (Fixes stuck mobile taps)
+      clearTimeout(mouseTimeout);
+      mouseTimeout = setTimeout(() => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+        mouseX.set(-1000);
+        mouseY.set(-1000);
+      }, 3000);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    const handlePointerLeave = () => {
+      mouse.x = -1000;
+      mouse.y = -1000;
+      mouseX.set(-1000);
+      mouseY.set(-1000);
+    };
+
+    window.addEventListener('mousemove', handlePointerMove);
+    window.addEventListener('touchmove', handlePointerMove);
+    window.addEventListener('mouseleave', handlePointerLeave);
+    window.addEventListener('touchend', handlePointerLeave);
 
     // Dynamic Theme Fetcher
     const updateThemeColors = () => {
       const style = getComputedStyle(document.body);
       themeBg = style.getPropertyValue('--color-background').trim() || themeBg;
       themePrimary = style.getPropertyValue('--color-primary').trim() || themePrimary;
-      themeBorder = style.getPropertyValue('--color-borderline').trim() || themeBorder;
+      // LIGHT MODE FIX: Use text-muted instead of borderline for starker contrast
+      themeBorder = style.getPropertyValue('--color-text-muted').trim() || themeBorder;
     };
 
     class Gear {
@@ -58,8 +88,6 @@ export default function InteractiveBackground() {
       currentSpeed: number;
       direction: number;
       intensity: number;
-      
-      // Z-Axis Depth Physics
       baseRadius: number;
       currentRadius: number;
 
@@ -68,14 +96,14 @@ export default function InteractiveBackground() {
         this.y = y;
         this.teeth = 8; 
         
-        this.baseRadius = 12; // radius size
+        this.baseRadius = 12; 
         this.currentRadius = this.baseRadius;
 
         this.direction = (col + row) % 2 === 0 ? 1 : -1;
         const offset = this.direction === 1 ? 0 : (Math.PI / this.teeth);
         this.rotation = offset;
         
-        this.baseSpeed = 0.001; // Slower idle spin for contrast
+        this.baseSpeed = 0.001; 
         this.currentSpeed = this.baseSpeed;
         this.intensity = 0;
       }
@@ -89,19 +117,16 @@ export default function InteractiveBackground() {
         let targetSpeed = this.baseSpeed;
         let targetRadius = this.baseRadius;
 
-        // If in magnetic range, calculate lens distortion
         if (distance < mouse.radius) {
           targetIntensity = 1 - Math.pow(distance / mouse.radius, 1.5);
           targetSpeed = this.baseSpeed + (targetIntensity * 0.035);
-          
-          // Lens swell: Add up to 22px of size to the gear when directly under mouse
-          targetRadius = this.baseRadius + (targetIntensity * 16); //hover size
+          targetRadius = this.baseRadius + (targetIntensity * 16); 
         }
 
-        // Smooth Linear Interpolation (Lerp) for all 3 physics vectors
+        // Smooth Linear Interpolation
         this.intensity += (targetIntensity - this.intensity) * 0.1;
         this.currentSpeed += (targetSpeed - this.currentSpeed) * 0.05;
-        this.currentRadius += (targetRadius - this.currentRadius) * 0.12; // Snappy but smooth size scaling
+        this.currentRadius += (targetRadius - this.currentRadius) * 0.12; 
         
         this.rotation += this.currentSpeed * this.direction;
       }
@@ -112,27 +137,21 @@ export default function InteractiveBackground() {
         ctx.translate(this.x, this.y);
         ctx.rotate(this.rotation);
 
-        // --- MECHANICALLY ACCURATE GEAR PATH (Dynamic Radius) ---
         ctx.beginPath();
         const step = (Math.PI * 2) / this.teeth;
         const halfStep = step / 2;
         const slope = halfStep * 0.25; 
         
-        // Dynamically base proportions on the current floating radius
         const rInner = this.currentRadius * 0.75;
         const rOuter = this.currentRadius;
         const rHole = this.currentRadius * 0.35;
 
         for (let i = 0; i < this.teeth; i++) {
           const a = i * step;
-          // Valley (Inner arc)
           ctx.arc(0, 0, rInner, a, a + halfStep - slope);
-          // Tooth Tip (Outer arc)
           ctx.arc(0, 0, rOuter, a + halfStep + slope, a + step - slope);
         }
         ctx.closePath();
-        
-        // Cut out the inner axle hole
         ctx.arc(0, 0, rHole, 0, Math.PI * 2, true);
 
         // --- THEME STYLING ---
@@ -147,11 +166,12 @@ export default function InteractiveBackground() {
           ctx.stroke();
         } else {
           ctx.fillStyle = themeBorder;
-          ctx.globalAlpha = 0.03;
+          // LIGHT MODE FIX: Bumped resting alpha up slightly so they don't vanish
+          ctx.globalAlpha = 0.08; 
           ctx.fill();
 
           ctx.strokeStyle = themeBorder;
-          ctx.globalAlpha = 0.15;
+          ctx.globalAlpha = 0.25; 
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -201,11 +221,18 @@ export default function InteractiveBackground() {
     window.addEventListener('resize', handleResize);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mousemove', handlePointerMove);
+      window.removeEventListener('touchmove', handlePointerMove);
+      window.removeEventListener('mouseleave', handlePointerLeave);
+      window.removeEventListener('touchend', handlePointerLeave);
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
+      clearTimeout(mouseTimeout);
     };
-  }, []);
+  }, [isBgAnimated]); // <-- Re-run effect if toggle changes
+
+  // Fully unmount DOM nodes if the user disabled the background in Settings
+  if (!isBgAnimated) return null;
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none transition-colors duration-500">
