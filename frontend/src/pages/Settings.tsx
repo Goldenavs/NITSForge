@@ -1,30 +1,33 @@
 // src/pages/Settings.tsx
-import { motion } from 'framer-motion';
-import { Monitor, Palette, Sparkles } from 'lucide-react';
+import { motion, type Variants } from 'framer-motion';
+import { Monitor, Palette, Sparkles, Moon, Sun } from 'lucide-react';
 import { useTheme } from '../store/ThemeContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } }
 };
 
 export default function Settings() {
   const { theme, setTheme, isBgAnimated, toggleBgAnimation } = useTheme();
 
+  // Reordered and typed for Light/Dark categorization
   const themes = [
-    { id: 'ember', name: 'Ember', desc: 'Warm orange & gray', color: 'bg-orange-500' },
-    { id: 'midnight', name: 'Midnight', desc: 'Deep navy & electric blue', color: 'bg-blue-600' },
-    { id: 'forest', name: 'Forest', desc: 'Calm greens & warm white', color: 'bg-green-700' },
-    { id: 'sakura', name: 'Sakura', desc: 'Light pink & off-white', color: 'bg-pink-600' },
-    { id: 'obsidian', name: 'Obsidian', desc: 'High contrast black & gold', color: 'bg-amber-500' },
-    { id: 'arctic', name: 'Arctic', desc: 'Clean white & ice blue', color: 'bg-cyan-500' },
+    // --- DARK THEMES ---
+    { id: 'obsidian', name: 'Obsidian', desc: 'High contrast black & gold', color: 'bg-amber-500', type: 'dark' },
+    { id: 'midnight', name: 'Midnight', desc: 'Deep navy & electric blue', color: 'bg-blue-500', type: 'dark' },
+    { id: 'forest', name: 'Forest', desc: 'Deep woods brown & vivid green', color: 'bg-green-500', type: 'dark' },
+    // --- LIGHT THEMES ---
+    { id: 'ember', name: 'Ember', desc: 'Warm orange & gray', color: 'bg-orange-500', type: 'light' },
+    { id: 'sakura', name: 'Sakura', desc: 'Light pink & off-white', color: 'bg-pink-500', type: 'light' },
+    { id: 'arctic', name: 'Arctic', desc: 'Clean white & ice blue', color: 'bg-cyan-500', type: 'light' },
   ];
 
   return (
@@ -62,7 +65,6 @@ export default function Settings() {
                 </p>
               </div>
               
-              {/* Custom Toggle Switch */}
               <button 
                 onClick={toggleBgAnimation}
                 className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${isBgAnimated ? 'bg-primary' : 'bg-surface-2 border-borderline'}`}
@@ -88,17 +90,24 @@ export default function Settings() {
                 <button
                   key={t.id}
                   onClick={() => setTheme(t.id as any)}
-                  className={`flex flex-col items-start p-4 rounded-xl border-2 transition-all duration-300 text-left ${
+                  className={`relative flex flex-col items-start p-4 rounded-xl border-2 transition-all duration-300 text-left overflow-hidden group ${
                     theme === t.id 
                       ? 'border-primary bg-primary/5 shadow-md scale-[1.02]' 
                       : 'border-borderline/50 bg-surface-2/30 hover:border-text-muted/30'
                   }`}
                 >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className={`w-4 h-4 rounded-full ${t.color} shadow-sm`} />
-                    <span className="font-display font-bold text-text-main">{t.name}</span>
+                  {/* Theme Mode Indicator Badge */}
+                  <div className={`absolute top-3 right-3 flex items-center justify-center w-6 h-6 rounded-full border transition-colors ${
+                    theme === t.id ? 'bg-primary text-surface border-primary' : 'bg-surface border-borderline text-text-muted group-hover:text-text-main'
+                  }`}>
+                    {t.type === 'dark' ? <Moon size={12} strokeWidth={2.5} /> : <Sun size={12} strokeWidth={2.5} />}
                   </div>
-                  <span className="text-xs text-text-muted font-body">{t.desc}</span>
+
+                  <div className="flex items-center gap-3 mb-2 pr-8">
+                    <span className={`w-4 h-4 rounded-full ${t.color} shadow-sm shrink-0`} />
+                    <span className="font-display font-bold text-text-main truncate">{t.name}</span>
+                  </div>
+                  <span className="text-xs text-text-muted font-body pr-2">{t.desc}</span>
                 </button>
               ))}
             </div>

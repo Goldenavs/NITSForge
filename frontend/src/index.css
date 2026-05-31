@@ -61,16 +61,16 @@
   }
 
   [data-theme="forest"] {
-    /* 3. FOREST - Calm greens + warm white */
-    --color-bg: #FEFCE8;
-    --color-surface: #FFFFFF;
-    --color-surface-2: #FEF08A;
-    --color-primary: #166534;
-    --color-primary-dark: #14532D;
-    --color-accent: #22C55E;
-    --color-text-primary: #064E3B;
-    --color-text-muted: #4D7C0F;
-    --color-border: #DCFCE7;
+    /* 3. FOREST - Deep earthy brown + vibrant canopy green (DARK) */
+    --color-bg: #1C1917; /* Deep stone/brown */
+    --color-surface: #292524; /* Elevated dark earth */
+    --color-surface-2: #44403C; /* Lighter earthy accent */
+    --color-primary: #22C55E; /* Vibrant Green */
+    --color-primary-dark: #16A34A;
+    --color-accent: #4ADE80; /* Glowing Green */
+    --color-text-primary: #F5F5F4; /* Warm off-white */
+    --color-text-muted: #A8A29E; /* Muted earthy gray */
+    --color-border: #57534E;
   }
 
   [data-theme="sakura"] {

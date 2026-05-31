@@ -14,7 +14,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<ThemeName>(() => 
-    (localStorage.getItem('nitsforge-theme') as ThemeName) || 'ember'
+    (localStorage.getItem('nitsforge-theme') as ThemeName) || 'obsidian'
   );
 
   // Load user preference for animation, defaulting to true

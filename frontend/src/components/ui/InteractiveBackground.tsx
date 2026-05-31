@@ -1,22 +1,42 @@
 // src/components/ui/InteractiveBackground.tsx
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useEffect, useRef } from 'react';
-import { useTheme } from '../../store/ThemeContext'; // <-- ADDED: Theme Context
+import { useTheme } from '../../store/ThemeContext';
 
 export default function InteractiveBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { isBgAnimated } = useTheme(); // <-- ADDED: Toggle state
+  const { isBgAnimated, theme } = useTheme(); 
 
-  // --- 1. GPU Accelerated Spotlight Tracking ---
+  // 1. Store theme colors in a mutable ref so the render loop can access them instantly without DOM calls
+  const colorsRef = useRef({
+    bg: '#0F172A',
+    primary: '#F97316',
+    border: '#334155'
+  });
+
+  // 2. Instantly update colors when the theme changes (No 1-second delay!)
+  useEffect(() => {
+    // A tiny 10ms delay ensures the CSS variable swap in the DOM is complete before we read it
+    const timeoutId = setTimeout(() => {
+      const style = getComputedStyle(document.documentElement);
+      colorsRef.current = {
+        bg: style.getPropertyValue('--color-bg').trim() || '#0F172A',
+        primary: style.getPropertyValue('--color-primary').trim() || '#F97316',
+        border: style.getPropertyValue('--color-text-muted').trim() || '#334155'
+      };
+    }, 10);
+    return () => clearTimeout(timeoutId);
+  }, [theme]);
+
+  // --- GPU Accelerated Spotlight Tracking ---
   const mouseX = useMotionValue(-1000);
   const mouseY = useMotionValue(-1000);
   const springConfig = { damping: 30, stiffness: 300, mass: 0.1 };
   const smoothX = useSpring(mouseX, springConfig);
   const smoothY = useSpring(mouseY, springConfig);
 
-  // --- 2. The Engine Room (Depth-Enabled Involute Gears) ---
+  // --- The Engine Room (Depth-Enabled Involute Gears) ---
   useEffect(() => {
-    // If user disabled animations in Settings, do not initialize the canvas physics
     if (!isBgAnimated) return;
 
     const canvas = canvasRef.current;
@@ -25,20 +45,14 @@ export default function InteractiveBackground() {
     if (!ctx) return;
 
     let animationFrameId: number;
-    let frameCount = 0;
-    let mouseTimeout: ReturnType<typeof setTimeout>; // <-- ADDED: Mobile Timeout
+    let mouseTimeout: ReturnType<typeof setTimeout>; 
     
-    // Theme colors
-    let themeBg = '#0F172A';
-    let themePrimary = '#F97316';
-    let themeBorder = '#334155';
-
     // Physics config
     const mouse = { x: -1000, y: -1000, radius: 300 }; 
     const spacing = 80; 
     let gears: Gear[] = [];
 
-    // --- MOBILE & IDLE FIX ---
+    // Mobile & Idle Fix
     const handlePointerMove = (e: MouseEvent | TouchEvent) => {
       const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
       const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
@@ -48,14 +62,13 @@ export default function InteractiveBackground() {
       mouse.x = clientX;
       mouse.y = clientY;
 
-      // Reset the gears back to idle if no movement is detected for 1.2s (Fixes stuck mobile taps)
       clearTimeout(mouseTimeout);
       mouseTimeout = setTimeout(() => {
         mouse.x = -1000;
         mouse.y = -1000;
         mouseX.set(-1000);
         mouseY.set(-1000);
-      }, 3000);
+      }, 1200);
     };
 
     const handlePointerLeave = () => {
@@ -70,13 +83,12 @@ export default function InteractiveBackground() {
     window.addEventListener('mouseleave', handlePointerLeave);
     window.addEventListener('touchend', handlePointerLeave);
 
-    // Dynamic Theme Fetcher
-    const updateThemeColors = () => {
-      const style = getComputedStyle(document.body);
-      themeBg = style.getPropertyValue('--color-background').trim() || themeBg;
-      themePrimary = style.getPropertyValue('--color-primary').trim() || themePrimary;
-      // LIGHT MODE FIX: Use text-muted instead of borderline for starker contrast
-      themeBorder = style.getPropertyValue('--color-text-muted').trim() || themeBorder;
+    // Initial color fetch on mount
+    const style = getComputedStyle(document.documentElement);
+    colorsRef.current = {
+      bg: style.getPropertyValue('--color-bg').trim() || '#0F172A',
+      primary: style.getPropertyValue('--color-primary').trim() || '#F97316',
+      border: style.getPropertyValue('--color-text-muted').trim() || '#334155'
     };
 
     class Gear {
@@ -154,23 +166,22 @@ export default function InteractiveBackground() {
         ctx.closePath();
         ctx.arc(0, 0, rHole, 0, Math.PI * 2, true);
 
-        // --- THEME STYLING ---
+        // --- THEME STYLING (Instantly reads from the React Ref) ---
         if (this.intensity > 0.02) {
-          ctx.fillStyle = themePrimary;
+          ctx.fillStyle = colorsRef.current.primary;
           ctx.globalAlpha = 0.1 + (this.intensity * 0.3);
           ctx.fill();
 
-          ctx.strokeStyle = themePrimary;
+          ctx.strokeStyle = colorsRef.current.primary;
           ctx.globalAlpha = 0.3 + (this.intensity * 0.4);
           ctx.lineWidth = 1.5;
           ctx.stroke();
         } else {
-          ctx.fillStyle = themeBorder;
-          // LIGHT MODE FIX: Bumped resting alpha up slightly so they don't vanish
+          ctx.fillStyle = colorsRef.current.border;
           ctx.globalAlpha = 0.08; 
           ctx.fill();
 
-          ctx.strokeStyle = themeBorder;
+          ctx.strokeStyle = colorsRef.current.border;
           ctx.globalAlpha = 0.25; 
           ctx.lineWidth = 1;
           ctx.stroke();
@@ -184,7 +195,6 @@ export default function InteractiveBackground() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       gears = [];
-      updateThemeColors();
 
       const cols = Math.ceil(canvas.width / spacing) + 1;
       const rowHeight = spacing * 0.866; 
@@ -199,11 +209,8 @@ export default function InteractiveBackground() {
     };
 
     const animate = () => {
-      if (frameCount % 60 === 0) updateThemeColors();
-      frameCount++;
-
       ctx.globalAlpha = 1;
-      ctx.fillStyle = themeBg;
+      ctx.fillStyle = colorsRef.current.bg; 
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       gears.forEach(gear => {
@@ -229,9 +236,8 @@ export default function InteractiveBackground() {
       cancelAnimationFrame(animationFrameId);
       clearTimeout(mouseTimeout);
     };
-  }, [isBgAnimated]); // <-- Re-run effect if toggle changes
+  }, [isBgAnimated]); // ONLY re-run on toggle. Do NOT re-run on theme change to prevent flickering!
 
-  // Fully unmount DOM nodes if the user disabled the background in Settings
   if (!isBgAnimated) return null;
 
   return (
