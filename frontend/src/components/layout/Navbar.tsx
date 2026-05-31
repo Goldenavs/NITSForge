@@ -19,7 +19,7 @@ const AnimatedLink = ({
     <Link 
       to={path} 
       onClick={onClick}
-      className="font-display relative overflow-hidden group cursor-pointer text-[10px] xl:text-xs font-bold uppercase tracking-widest text-text-muted block shrink-0"
+      className="font-orbitron relative overflow-hidden group cursor-pointer text-[10px] xl:text-xs font-bold uppercase tracking-widest text-text-muted block shrink-0"
     >
       <span className={`block transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${isActive ? '-translate-y-full text-primary' : 'group-hover:-translate-y-full text-text-main'}`}>
         {title}
@@ -136,7 +136,7 @@ export default function Navbar() {
           <Link 
             to="/dashboard"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="font-display relative overflow-hidden text-base sm:text-lg font-black tracking-tighter uppercase group block shrink-0"
+            className="font-orbitron relative overflow-hidden text-base sm:text-lg font-black tracking-tighter uppercase group block shrink-0"
           >
             <span className={`block transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${location.pathname === '/dashboard' ? '-translate-y-full text-text-main' : 'group-hover:-translate-y-full text-text-main'}`}>
               NITS<span className="text-primary">Forge</span>
