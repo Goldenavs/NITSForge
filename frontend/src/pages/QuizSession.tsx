@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { QuizHeader } from '../components/quiz/QuizHeader';
 import { QuestionCard } from '../components/quiz/QuestionCard';
 import { ForgeFAB } from '../components/forge/ForgeFAB';
+import { useNavigate } from 'react-router-dom';
 
 // Mock Data representing a PhilNITS FE Syllabus Question
 const mockQuestion = {
@@ -21,6 +22,7 @@ const mockQuestion = {
 };
 
 export default function QuizSession() {
+  const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -31,8 +33,7 @@ export default function QuizSession() {
 
   const handleNext = () => {
     // Reset state for next question (mocked)
-    setSelectedOption(null);
-    setIsSubmitted(false);
+    navigate('/quiz/results/mock-session-123');
   };
 
   return (
