@@ -4,8 +4,6 @@ import MainLayout from './components/layout/MainLayout';
 
 // 1. Import Public Pages
 import LandingPage from './pages/LandingPage';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
 import About from './pages/About';
 
 // 2. Import Authenticated Pages (Dashboard & Core Features)
@@ -35,8 +33,8 @@ function App() {
         {/* PUBLIC ROUTES (No Sidebar)     */}
         {/* ============================== */}
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<LandingPage />} />
+        <Route path="/signup" element={<LandingPage />} />
         <Route path="/about" element={<About />} />
 
         {/* ============================== */}
