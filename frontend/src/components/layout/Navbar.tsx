@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-
 import { useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, User, Settings as SettingsIcon } from 'lucide-react';
+import { span } from 'framer-motion/client';
 
 const AnimatedLink = ({ 
   title, 
@@ -136,13 +137,17 @@ export default function Navbar() {
           <Link 
             to="/dashboard"
             onClick={() => setIsMobileMenuOpen(false)}
-            className="font-orbitron relative overflow-hidden text-base sm:text-lg font-black tracking-tighter uppercase group block shrink-0"
+            // 👇 1. Changed 'block' to 'grid'
+            className="font-orbitron relative overflow-hidden text-base sm:text-lg font-black tracking-tighter uppercase group grid shrink-0"
           >
-            <span className={`block transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${location.pathname === '/dashboard' ? '-translate-y-full text-text-main' : 'group-hover:-translate-y-full text-text-main'}`}>
+            {/* 👇 2. Changed 'block' to 'col-start-1 row-start-1' */}
+            <span className={`col-start-1 row-start-1 transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${location.pathname === '/dashboard' ? '-translate-y-full text-text-main' : 'group-hover:-translate-y-full text-text-main'}`}>
               NITS<span className="text-primary">Forge</span>
             </span>
-            <span className={`absolute inset-0 block transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] text-primary ${location.pathname === '/dashboard' ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'}`}>
-              NITS<span className="text-text-main">Forge</span>
+            
+            {/* 👇 3. Removed 'absolute inset-0 block' and used 'col-start-1 row-start-1' */}
+            <span className={`col-start-1 row-start-1 transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] text-primary ${location.pathname === '/dashboard' ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'}`}>
+              Dash<span className="text-text-main">Board</span>
             </span>
           </Link>
 
