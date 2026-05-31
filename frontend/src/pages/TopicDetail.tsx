@@ -62,7 +62,7 @@ const TOPIC_DATA = {
 };
 
 export default function TopicDetail() {
-  const { id } = useParams(); // In production, use this to fetch actual topic data
+  const {  } = useParams(); // In production, use this to fetch actual topic data
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
