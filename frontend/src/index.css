@@ -114,7 +114,7 @@
 
   /* Global Base Styles applied instantly */
   html, body {
-    @apply h-full w-full overflow-hidden antialiased;
+    @apply min-h-screen w-full overflow-x-hidden antialiased;
     background-color: var(--color-bg);
     color: var(--color-text-primary);
     font-family: var(--font-body); /* Defaults every paragraph/text to Inter */

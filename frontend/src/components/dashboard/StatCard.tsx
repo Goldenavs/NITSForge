@@ -14,7 +14,7 @@ interface StatCardProps {
 export function StatCard({ title, value, subtitle, icon: Icon, trend, trendValue, colorClass }: StatCardProps) {
   return (
     /* Glass Effect: Added bg-surface/40 and backdrop-blur-md */
-    <Card className="overflow-hidden bg-surface/40 backdrop-blur-md border border-borderline/60 group hover:border-primary/30 transition-all duration-300 shadow-sm">
+    <Card className="overflow-hidden bg-surface/85 backdrop-blur-sm border border-borderline/60 group hover:border-primary/40 transition-all duration-300 shadow-sm">
       <CardContent className="p-5 sm:p-6 flex items-center gap-4 relative">
         
         {/* Vertically centered icon container */}

@@ -1,4 +1,5 @@
 // src/pages/Dashboard.tsx
+import { motion, type Variants } from 'framer-motion';
 import { Flame, Trophy, Target, BookOpen, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
@@ -7,14 +8,40 @@ import { AIWeeklyReport } from '../components/dashboard/AIWeeklyReport';
 import { AccuracyChart, CategoryRadar } from '../components/dashboard/DashboardCharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 
+// Orchestration Variants for Framer Motion
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1, // Delays each child's animation by 100ms
+      delayChildren: 0.1,
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: ("spring" as const), stiffness: 300, damping: 24 }
+  }
+};
+
 export default function Dashboard() {
   return (
-    <div className="animate-page-entry flex flex-col gap-6 sm:gap-8 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 overflow-y-visible">
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="flex flex-col gap-6 sm:gap-8 w-full max-w-7xl mx-auto pb-24"
+    >
       
       {/* 1. WELCOME HEADER */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mt-1">
+      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mt-1">
         <div className="flex flex-col items-start justify-center">
-          <Badge className="mb-2 bg-surface-2/60 backdrop-blur-sm text-text-muted border-borderline font-orbitron tracking-widest uppercase text-[10px]">
+          <Badge className="mb-2 bg-surface-2/80 backdrop-blur-sm text-text-muted border-borderline font-orbitron tracking-widest uppercase text-[10px]">
             Level 4: Specialist
           </Badge>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main font-display tracking-tight leading-none pt-1">
@@ -28,10 +55,10 @@ export default function Dashboard() {
           <Button variant="outline" className="flex-1 sm:flex-initial font-orbitron text-[11px] tracking-wide py-2.5">Topic Drill</Button>
           <Button variant="primary" className="flex-1 sm:flex-initial font-orbitron text-[11px] tracking-wide py-2.5">Start Simulation</Button>
         </div>
-      </div>
+      </motion.div>
 
       {/* 2. OVERVIEW STATS ROW */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
           title="Total XP" 
           value="4,250" 
@@ -66,24 +93,26 @@ export default function Dashboard() {
           icon={BookOpen} 
           colorClass="text-blue-500 border-blue-500/20" 
         />
-      </div>
+      </motion.div>
 
       {/* 3. AI WEEKLY REPORT */}
-      <AIWeeklyReport />
+      <motion.div variants={itemVariants}>
+        <AIWeeklyReport />
+      </motion.div>
 
       {/* 4. MAIN VISUALIZATION GRID */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 min-w-0">
           <AccuracyChart />
         </div>
         <div className="min-w-0">
           <CategoryRadar />
         </div>
-      </div>
+      </motion.div>
 
       {/* 5. INSIGHTS & ACTIONS PANEL */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="border-red-500/20 bg-red-500/5 backdrop-blur-md">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border-red-500/20 bg-surface/85 backdrop-blur-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-red-500 flex items-center gap-2 font-display font-bold text-lg leading-none">
               <AlertTriangle className="w-5 h-5 shrink-0" /> Priority Focus
@@ -98,7 +127,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="border-green-500/20 bg-green-500/5 backdrop-blur-md">
+        <Card className="border-green-500/20 bg-surface/85 backdrop-blur-sm">
           <CardHeader className="pb-2">
             <CardTitle className="text-green-500 flex items-center gap-2 font-display font-bold text-lg leading-none">
               <Trophy className="w-5 h-5 shrink-0" /> Strongest Area
@@ -112,8 +141,8 @@ export default function Dashboard() {
             <Button variant="outline" size="sm" className="w-fit font-orbitron text-[10px] tracking-wider py-2 border-green-500/30 text-green-600 dark:text-green-400">View Concept Cards</Button>
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
-    </div>
+    </motion.div>
   );
 }

@@ -120,11 +120,12 @@ export default function Navbar() {
       // Bind visibility state to GPU-accelerated transforms
       variants={{
         visible: { y: 0 },
-        hidden: { y: -120 } // Translates it clean out of view (adjust if pill gets clipped)
+        hidden: { y: -120 } 
       }}
       initial="visible"
       animate={isHidden ? "hidden" : "visible"}
-      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      // 👇 Upgraded transition: Slower, zero-bounce spring for a premium glide
+      transition={{ type: "spring", bounce: 0, duration: 2.7 }}
       className="fixed top-0 left-0 w-full z-50 flex flex-col items-center px-4 md:px-6 py-4 sm:py-6 pointer-events-none"
     >
       <div className="w-full max-w-7xl relative pointer-events-none">
@@ -136,21 +137,18 @@ export default function Navbar() {
           <Link 
             to="/dashboard"
             onClick={() => setIsMobileMenuOpen(false)}
-            // 👇 1. Changed 'block' to 'grid'
             className="font-orbitron relative overflow-hidden text-base sm:text-lg font-black tracking-tighter uppercase group grid shrink-0"
           >
-            {/* 👇 2. Changed 'block' to 'col-start-1 row-start-1' */}
             <span className={`col-start-1 row-start-1 transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${location.pathname === '/dashboard' ? '-translate-y-full text-text-main' : 'group-hover:-translate-y-full text-text-main'}`}>
               NITS<span className="text-primary">Forge</span>
             </span>
             
-            {/* 👇 3. Removed 'absolute inset-0 block' and used 'col-start-1 row-start-1' */}
             <span className={`col-start-1 row-start-1 transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] text-primary ${location.pathname === '/dashboard' ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'}`}>
               Dash<span className="text-text-main">Board</span>
             </span>
           </Link>
 
-          {/* Desktop Links (Hidden on screens smaller than lg to prevent crowding) */}
+          {/* Desktop Links */}
           <div className="hidden lg:flex items-center gap-4 xl:gap-8">
             {links.map((link) => (
               <AnimatedLink 
@@ -165,8 +163,6 @@ export default function Navbar() {
 
           {/* Right Controls Container */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            
-            {/* Settings Icon Button */}
             <AnimatedIconButton 
               path="/settings" 
               icon={SettingsIcon} 
@@ -174,7 +170,6 @@ export default function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
-            {/* Profile Icon Button */}
             <AnimatedIconButton 
               path="/profile" 
               icon={User} 
@@ -182,7 +177,6 @@ export default function Navbar() {
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
-            {/* Mobile Menu Toggle Button (Visible only < lg) */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="lg:hidden flex items-center justify-center p-2 text-text-muted hover:text-primary transition-colors pointer-events-auto shrink-0 bg-surface-2 rounded-full border border-borderline"
