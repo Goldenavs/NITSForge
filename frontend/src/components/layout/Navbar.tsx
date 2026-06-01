@@ -107,9 +107,10 @@ export default function Navbar() {
 
   // The comprehensive NITSForge routing map
   const links = [
-    { name: 'Quiz Hub', path: '/quiz' },
+    { name: 'Quiz', path: '/quiz' },
     { name: 'Topics', path: '/topics' },
-    { name: 'Daily Challenge', path: '/daily' },
+    { name: 'Challenge', path: '/daily' },
+    { name: 'Planner', path: '/planner' },
     { name: 'Leaderboard', path: '/leaderboard' },
     { name: 'History', path: '/history' },
     { name: 'Bookmarks', path: '/bookmarks' },
