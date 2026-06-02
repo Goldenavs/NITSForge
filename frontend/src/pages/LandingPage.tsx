@@ -2,9 +2,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { Mail, Lock, ArrowRight, User, Eye, EyeOff, Target, Trophy, Sparkles, Zap } from 'lucide-react';
+import { Mail, Lock, ArrowRight, User, Eye, EyeOff, Target, Trophy, Sparkles, Zap, AlertCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import InteractiveBackground from '../components/ui/InteractiveBackground';
+
+// IMPORTANT: Make sure this path points to where you created your supabase client!
+import { supabase } from '../services/supabase'; 
 
 // NITSForge Onboarding Steps for the Carousel
 const onboardingSteps = [
@@ -60,7 +63,10 @@ export default function LandingPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // App State
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Auto-play the onboarding choreography every 5 seconds
   useEffect(() => {
@@ -70,19 +76,72 @@ export default function LandingPage() {
     return () => clearInterval(timer);
   }, []);
 
+  // --- SUPABASE AUTH LOGIC ---
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null); // Clear previous errors
+
     if (!isLogin && password !== confirmPassword) {
-      alert("Passwords do not match! Please check again.");
+      setErrorMsg("Passwords do not match! Please check again.");
       return;
     }
+    
     setLoading(true);
     
-    // Simulate Supabase API Call
-    setTimeout(() => {
+    try {
+      if (isLogin) {
+        // 1. Log In Existing User
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+        
+        if (data.session) {
+          navigate('/dashboard');
+        }
+      } else {
+        // 2. Sign Up New User
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              display_name: email.split('@')[0], // Give them a default display name based on email
+            }
+          }
+        });
+
+        if (error) throw error;
+        
+        // Supabase often requires email verification before providing a session
+        if (data.session) {
+          navigate('/dashboard');
+        } else {
+          alert("Account created! Please check your email to verify your account.");
+          setIsLogin(true); // Switch to login view for when they return
+        }
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || "An error occurred during authentication.");
+    } finally {
       setLoading(false);
-      navigate('/dashboard');
-    }, 1200);
+    }
+  };
+
+  const handleOAuth = async (provider: 'google' | 'github') => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`
+        }
+      });
+      if (error) throw error;
+    } catch (err: any) {
+      setErrorMsg(err.message);
+    }
   };
 
   const handleGuestLogin = () => {
@@ -108,7 +167,6 @@ export default function LandingPage() {
       {/* =========================================
         LEFT COLUMN: THE AUTHENTICATION SIDEBAR
         ========================================= */}
-      {/* On mobile, this takes full viewport height. On desktop, it pins to the left. */}
       <div className="w-full lg:w-[480px] lg:h-screen lg:sticky top-0 flex flex-col justify-center px-6 py-16 lg:py-0 bg-surface/80 backdrop-blur-2xl border-b lg:border-b-0 lg:border-r border-borderline z-20 shadow-[20px_0_40px_rgba(0,0,0,0.05)] transition-colors duration-500 shrink-0">
         
         <motion.div 
@@ -139,12 +197,35 @@ export default function LandingPage() {
             </p>
           </motion.div>
 
+          {/* Error Display */}
+          <AnimatePresence>
+            {errorMsg && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-6 bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg flex items-center gap-2"
+              >
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <p>{errorMsg}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {/* Social Logins */}
           <motion.div variants={itemVariants} className="flex gap-3 mb-6">
-            <button type="button" className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface-2 border border-borderline rounded-xl hover:border-primary/50 hover:bg-background transition-all text-sm font-medium">
+            <button 
+              type="button" 
+              onClick={() => handleOAuth('github')}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface-2 border border-borderline rounded-xl hover:border-primary/50 hover:bg-background transition-all text-sm font-medium"
+            >
               <GithubIcon /> GitHub
             </button>
-            <button type="button" className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface-2 border border-borderline rounded-xl hover:border-primary/50 hover:bg-background transition-all text-sm font-medium">
+            <button 
+              type="button" 
+              onClick={() => handleOAuth('google')}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface-2 border border-borderline rounded-xl hover:border-primary/50 hover:bg-background transition-all text-sm font-medium"
+            >
               <GoogleIcon /> Google
             </button>
           </motion.div>
@@ -252,6 +333,7 @@ export default function LandingPage() {
                 setIsLogin(!isLogin);
                 setPassword('');
                 setConfirmPassword('');
+                setErrorMsg(null);
               }}
               className="text-sm text-text-muted hover:text-text-main transition-colors"
             >
@@ -272,7 +354,6 @@ export default function LandingPage() {
       {/* =========================================
         RIGHT COLUMN: THE IMMERSIVE CHOREOGRAPHY
         ========================================= */}
-      {/* On mobile, this stacks under the auth form. On desktop, it takes the remaining width. */}
       <div className="flex-1 relative flex items-center justify-center p-8 lg:p-12 overflow-hidden min-h-screen lg:min-h-0 z-10">
         
         <div className="w-full max-w-2xl relative z-10">
