@@ -1,25 +1,25 @@
-import React from 'react';
-import { Navigate, Outlet } from 'react-router-dom';
+// src/components/layout/ProtectedRoute.tsx
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../store/AuthContext';
-import { Loader2 } from 'lucide-react'; // Optional: for the loading spinner
 
-export const ProtectedRoute: React.FC = () => {
-  const { session, loading } = useAuth();
+export function ProtectedRoute() {
+  const { user, isGuest, loading } = useAuth();
+  const location = useLocation();
 
-  // Show a loading screen while Supabase checks the session
+  // Show nothing (or a cool orbitron spinner) while checking auth status
   if (loading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[var(--color-bg)]">
-        <Loader2 className="w-8 h-8 animate-spin text-[var(--color-primary)]" />
+      <div className="flex h-screen w-screen items-center justify-center bg-bg-color">
+        <div className="text-primary font-orbitron animate-pulse">Loading Forge...</div>
       </div>
     );
   }
 
-  // If no session exists, boot them back to the landing page
-  if (!session) {
-    return <Navigate to="/" replace />;
+  // The Gatekeeper: If you aren't a Supabase user AND you aren't a guest, kick to Landing
+  if (!user && !isGuest) {
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
-  // If they are logged in, render the child routes (like /dashboard)
+  // Otherwise, render the nested routes (Dashboard, Quiz, etc.)
   return <Outlet />;
-};
+}

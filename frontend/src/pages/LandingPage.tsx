@@ -7,7 +7,8 @@ import { Button } from '../components/ui/Button';
 import InteractiveBackground from '../components/ui/InteractiveBackground';
 
 // IMPORTANT: Make sure this path points to where you created your supabase client!
-import { supabase } from '../services/supabase'; 
+import { supabase } from '../services/supabase';
+import { useAuth } from '../store/AuthContext'; 
 
 // NITSForge Onboarding Steps for the Carousel
 const onboardingSteps = [
@@ -52,6 +53,16 @@ const GithubIcon = () => (
 export default function LandingPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // 1. Pull in our new Auth Context methods
+  const { loginAsGuest, user, isGuest } = useAuth();
+  
+  // 2. Auto-Redirect: If they are already a user or guest, send them to the app!
+  useEffect(() => {
+    if (user || isGuest) {
+      navigate('/dashboard');
+    }
+  }, [user, isGuest, navigate]);
   
   // Auto-detect if user came from the /signup route to show the correct form instantly
   const [isLogin, setIsLogin] = useState(location.pathname !== '/signup');
@@ -145,6 +156,7 @@ export default function LandingPage() {
   };
 
   const handleGuestLogin = () => {
+    loginAsGuest(); // Set the localStorage flag and update Context state
     navigate('/dashboard');
   };
 
