@@ -1,12 +1,14 @@
 // src/pages/QuizResults.tsx
+import { useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
 import { Target, Trophy, Clock, ArrowRight, RotateCcw, CheckCircle2, XCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { StatCard } from '../components/dashboard/StatCard';
 import { AISummaryCard } from '../components/quiz/AISummaryCard';
 import { Card, CardContent } from '../components/ui/Card';
+import { useQuizStore } from '../store/useQuizStore';
 
 // Framer Motion Orchestration
 const staggerContainer: Variants = {
@@ -22,8 +24,36 @@ const fadeUpVariant: Variants = {
 const viewportConfig = { once: true, margin: "-50px" };
 
 export default function QuizResults() {
+  const navigate = useNavigate();
+  
+  // Pull our data from the Zustand state machine
+  const { questions, score, selectedAnswers, resetQuiz, status } = useQuizStore();
+
+  // If a user navigates here directly without taking a quiz, bounce them back to the hub
+  useEffect(() => {
+    if (questions.length === 0 || status !== 'finished') {
+      navigate('/quiz');
+    }
+  }, [questions, status, navigate]);
+
+  if (questions.length === 0) return null; // Prevent flicker while redirecting
+
+  // -------------------------
+  // DYNAMIC METRICS CALCULATION
+  // -------------------------
+  const total = questions.length;
+  const accuracy = Math.round((score / total) * 100) || 0;
+  
+  // From your docs: +5 XP per correct answer, +100 for finishing a simulation
+  const xpEarned = (score * 5) + 100; 
+
+  const handleReturnToHub = () => {
+    resetQuiz(); // Clear the store so it's fresh for the next session
+    navigate('/quiz');
+  };
+
   return (
-    <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-4xl mx-auto pb-24 px-1 sm:px-0 pt-4">
+    <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-4xl mx-auto pb-24 px-4 sm:px-0 pt-4">
       
       {/* 1. HEADER SECTION */}
       <motion.div 
@@ -53,8 +83,8 @@ export default function QuizResults() {
         <motion.div variants={fadeUpVariant} className="h-full">
           <StatCard 
             title="Accuracy" 
-            value="80%" 
-            subtitle="16 / 20 Correct"
+            value={`${accuracy}%`} 
+            subtitle={`${score} / ${total} Correct`}
             icon={Target} 
             colorClass="text-primary border-primary/30" 
           />
@@ -62,8 +92,8 @@ export default function QuizResults() {
         <motion.div variants={fadeUpVariant} className="h-full">
           <StatCard 
             title="XP Earned" 
-            value="+125" 
-            subtitle="Includes streak bonus"
+            value={`+${xpEarned}`} 
+            subtitle="Includes completion bonus"
             icon={Trophy} 
             colorClass="text-amber-500 border-amber-500/30" 
           />
@@ -71,15 +101,15 @@ export default function QuizResults() {
         <motion.div variants={fadeUpVariant} className="h-full">
           <StatCard 
             title="Time Spent" 
-            value="14:22" 
-            subtitle="Avg. 43s per question"
+            value="02:15" // Mocked for now until we build the interval timer
+            subtitle="Avg. 45s per question"
             icon={Clock} 
             colorClass="text-blue-500 border-blue-500/30" 
           />
         </motion.div>
       </motion.div>
 
-      {/* 3. AI DEBRIEF */}
+      {/* 3. AI DEBRIEF (Remains unchanged/mocked for now) */}
       <motion.div 
         initial="hidden"
         whileInView="visible"
@@ -89,7 +119,7 @@ export default function QuizResults() {
         <AISummaryCard />
       </motion.div>
 
-      {/* 4. QUICK REVIEW LOG */}
+      {/* 4. DYNAMIC SESSION LOG */}
       <motion.div 
         initial="hidden"
         whileInView="visible"
@@ -104,26 +134,35 @@ export default function QuizResults() {
             </Link>
           </div>
           <CardContent className="p-0">
-            {/* Mock Log Items */}
-            {[
-              { id: 'Q1', text: 'Which scheduling algorithm prevents starvation?', correct: true },
-              { id: 'Q2', text: 'In IPv4 addressing, which describes a Subnet Mask?', correct: false },
-              { id: 'Q3', text: 'What is the primary key constraint in an RDBMS?', correct: true },
-            ].map((q, idx) => (
-              <div key={idx} className="flex items-start gap-4 p-4 sm:p-6 border-b border-borderline/30 last:border-0 hover:bg-surface-2/30 transition-colors">
-                <div className="mt-1 shrink-0">
-                  {q.correct ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-red-500" />
-                  )}
+            {questions.map((q) => {
+              const userAnswer = selectedAnswers[q.id];
+              const isCorrect = userAnswer === q.correct_answer;
+
+              return (
+                <div key={q.id} className="flex items-start gap-4 p-4 sm:p-6 border-b border-borderline/30 last:border-0 hover:bg-surface-2/30 transition-colors">
+                  <div className="mt-1 shrink-0">
+                    {isCorrect ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    ) : (
+                      <XCircle className="w-5 h-5 text-red-500" />
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[10px] font-orbitron font-bold text-text-muted block">
+                        {q.id}
+                      </span>
+                      {!isCorrect && userAnswer && (
+                        <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded">
+                          Your Answer: {userAnswer}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-sm font-body text-text-main line-clamp-2">{q.text}</p>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-[10px] font-orbitron font-bold text-text-muted mb-1 block">{q.id}</span>
-                  <p className="text-sm font-body text-text-main line-clamp-2">{q.text}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </CardContent>
         </Card>
       </motion.div>
@@ -136,14 +175,20 @@ export default function QuizResults() {
         variants={fadeUpVariant}
         className="flex flex-col sm:flex-row gap-4 pt-4"
       >
-        <Button variant="outline" className="flex-1 font-orbitron tracking-widest py-4 bg-surface/50 backdrop-blur-sm">
-          <RotateCcw className="w-4 h-4 mr-2" /> Retry Missed
+        <Button 
+          variant="outline" 
+          onClick={handleReturnToHub} 
+          className="flex-1 font-orbitron tracking-widest py-4 bg-surface/50 backdrop-blur-sm"
+        >
+          <RotateCcw className="w-4 h-4 mr-2" /> Start New Session
         </Button>
-        <Link to="/quiz" className="flex-1 block">
-          <Button variant="primary" className="w-full font-orbitron tracking-widest py-4">
-            Return to Hub <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </Link>
+        <Button 
+          variant="primary" 
+          onClick={handleReturnToHub}
+          className="flex-1 w-full font-orbitron tracking-widest py-4"
+        >
+          Return to Hub <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
       </motion.div>
 
     </div>
