@@ -1,49 +1,71 @@
 // src/pages/QuizSession.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { QuizHeader } from '../components/quiz/QuizHeader';
 import { QuestionCard } from '../components/quiz/QuestionCard';
 import { ForgeFAB } from '../components/forge/ForgeFAB';
-import { useNavigate } from 'react-router-dom';
-
-// Mock Data representing a PhilNITS FE Syllabus Question
-const mockQuestion = {
-  id: 'FE-NET-042',
-  category: 'Networking & Communication',
-  text: 'In IPv4 addressing, which of the following perfectly describes the primary function of a Subnet Mask?',
-  options: {
-    A: 'It converts private IP addresses into globally routable public addresses.',
-    B: 'It separates the IP address into a network portion and a host portion.',
-    C: 'It resolves a human-readable domain name into an IP address.',
-    D: 'It dynamically assigns IP addresses to newly connected client devices.'
-  }
-};
+import { useQuizStore } from '../store/useQuizStore';
 
 export default function QuizSession() {
   const navigate = useNavigate();
+  
+  // Pull in our state machine
+  const { 
+    status, 
+    questions, 
+    currentIndex, 
+    startQuiz, 
+    answerQuestion, 
+    nextQuestion 
+  } = useQuizStore();
+
+  // Local state for the current question's UI flow
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+
+  // Auto-start or redirect
+  useEffect(() => {
+    if (status === 'idle') {
+      startQuiz();
+    } else if (status === 'finished') {
+      navigate('/quiz/results/mock-session-123'); 
+    }
+  }, [status, startQuiz, navigate]);
+
+  // Safeguard while loading
+  if (status !== 'in-progress' || questions.length === 0) return null;
+
+  const currentQ = questions[currentIndex];
 
   const handleSubmit = () => {
     if (!selectedOption) return;
     setIsSubmitted(true);
+    answerQuestion(currentQ.id, selectedOption as 'A' | 'B' | 'C' | 'D');
   };
 
   const handleNext = () => {
-    // Reset state for next question (mocked)
-    navigate('/quiz/results/mock-session-123');
+    // Reset local UI state for the next question
+    setIsSubmitted(false);
+    setSelectedOption(null);
+    nextQuestion(); // Move the Zustand store forward
   };
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-8 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
       
-      <QuizHeader currentQuestion={4} totalQuestions={80} mode="Practice Mode" />
+      {/* Dynamic Header */}
+      <QuizHeader 
+        currentQuestion={currentIndex + 1} 
+        totalQuestions={questions.length} 
+        mode="Practice Mode" 
+      />
 
       <AnimatePresence mode="wait">
         <motion.div
-          key="q4" // In production, this would be the actual question ID
+          key={currentQ.id} // Animate when question ID changes
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
@@ -51,7 +73,7 @@ export default function QuizSession() {
           className="w-full"
         >
           <QuestionCard 
-            question={mockQuestion}
+            question={currentQ}
             selectedOption={selectedOption}
             onSelect={(opt) => !isSubmitted && setSelectedOption(opt)}
             isSubmitted={isSubmitted}
@@ -74,7 +96,7 @@ export default function QuizSession() {
                 onClick={handleNext}
                 className="font-orbitron tracking-widest px-8 py-3"
               >
-                Next Question <ChevronRight className="w-4 h-4 ml-2" />
+                {currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'} <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             )}
           </div>

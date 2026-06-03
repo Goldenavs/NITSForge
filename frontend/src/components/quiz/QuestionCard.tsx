@@ -9,6 +9,8 @@ interface QuestionCardProps {
     text: string;
     options: { A: string; B: string; C: string; D: string };
     category: string;
+    correct_answer: string; // <-- Added this
+    explanation: string;    // <-- Added this
   };
   selectedOption: string | null;
   onSelect: (option: string) => void;
@@ -16,8 +18,8 @@ interface QuestionCardProps {
 }
 
 export function QuestionCard({ question, selectedOption, onSelect, isSubmitted }: QuestionCardProps) {
-  // Hardcoded for UI mock purposes
-  const correctAnswer = 'B'; 
+  // Use the dynamic correct answer from the data
+  const correctAnswer = question.correct_answer; 
 
   const getOptionStyles = (key: string) => {
     if (!isSubmitted) {
@@ -83,20 +85,27 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted }
         {isSubmitted && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            className="p-4 rounded-xl bg-surface-2/50 border border-borderline flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+            className="p-4 rounded-xl bg-surface-2/50 border border-borderline flex flex-col items-start gap-4"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-accent/10">
-                <Sparkles className="w-5 h-5 text-accent" />
+            {/* Added the actual explanation from the data to display here! */}
+            <p className="text-sm text-text-main leading-relaxed border-b border-borderline/50 pb-4 w-full">
+              {question.explanation}
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-accent/10">
+                  <Sparkles className="w-5 h-5 text-accent" />
+                </div>
+                <div>
+                  <p className="font-display font-bold text-sm text-text-main leading-none mb-1">Need more clarification?</p>
+                  <p className="text-xs text-text-muted">Deploy Gemini Flash for a deeper breakdown.</p>
+                </div>
               </div>
-              <div>
-                <p className="font-display font-bold text-sm text-text-main leading-none mb-1">Need clarification?</p>
-                <p className="text-xs text-text-muted">Deploy Gemini Flash for a quick, structured breakdown.</p>
-              </div>
+              <Button variant="outline" className="w-full sm:w-auto font-orbitron text-[10px] tracking-wider border-accent/30 text-accent hover:bg-accent/10">
+                Explain This
+              </Button>
             </div>
-            <Button variant="outline" className="w-full sm:w-auto font-orbitron text-[10px] tracking-wider border-accent/30 text-accent hover:bg-accent/10">
-              Explain This
-            </Button>
           </motion.div>
         )}
 
