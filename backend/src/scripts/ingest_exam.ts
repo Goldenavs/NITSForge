@@ -26,14 +26,16 @@ const proModel = genAI.getGenerativeModel({
   generationConfig: { responseMimeType: "application/json" }
 });
 
-const EXAM_PERIOD = "October 2022"; // Change this before running!
+const EXAM_PERIOD = "October 2025"; // Change this before running!
 
-const INSTRUCTION_PROMPT = `
+const getInstructionPrompt = (start: number, end: number) => `
 You are an expert data extractor. I am providing you with the text extracted from two PDFs:
 1) An ITPEC/PhilNITS multiple-choice examination (Questions).
 2) The corresponding answer key (Answers).
 
-Your job is to read the text, match the questions to their correct answers, and extract all the multiple-choice questions into a JSON array.
+Your job is to read the text, match the questions to their correct answers, and extract multiple-choice questions into a JSON array.
+
+CRITICAL: Extract ONLY questions in the range Question ${start} to Question ${end} (inclusive). If a question is outside this range, ignore it. Do not include it in the JSON array.
 
 Please follow this strict JSON schema for EACH question:
 {
@@ -76,51 +78,86 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
     const answersText = aData.text;
     console.log(`Successfully extracted ${answersText.length} characters from Answers PDF.`);
 
-    console.log(`Sending to Gemini 2.5 Flash for structured extraction... this may take a minute.`);
-
-    // Combining the prompt, questions, and answers into one payload
-    // Note: If the text is extremely large, it may hit token limits, but for standard exams it should be fine.
-    const promptPayload = [
-      INSTRUCTION_PROMPT,
-      questionsText.substring(0, 35000), // Safety substring
-      `\n\n--- ANSWERS TEXT ---\n`,
-      answersText.substring(0, 10000)
-    ];
-    let result: any;
-    let jsonString = "";
-    let parsedData: any;
-    let retries = 3;
-    while (retries > 0) {
-      try {
-        result = await proModel.generateContent(promptPayload);
-        jsonString = result.response.text().trim(); // evaluate here so RECITATION errors are caught and retried
-
-        // Clean up potential markdown formatting from Gemini
-        if (jsonString.startsWith('```json')) {
-          jsonString = jsonString.replace(/^```json\n/, '').replace(/\n```$/, '');
-        } else if (jsonString.startsWith('```')) {
-          jsonString = jsonString.replace(/^```\n/, '').replace(/\n```$/, '');
-        }
-
-        parsedData = JSON.parse(jsonString);
-        break; // If we reach here, extraction and parsing succeeded
-      } catch (err: any) {
-        if (jsonString) fs.writeFileSync("failed_parse.json", jsonString);
-        console.error(`Gemini extraction/parse error (retries left: ${retries - 1}):`, err.message);
-        retries--;
-        if (retries === 0) throw err;
-        console.log("Waiting 5 seconds before retrying...");
-        await new Promise(res => setTimeout(res, 5000)); // wait 5s before retrying
-      }
-    }
-
-    // Format the ID programmatically to be consistently FE-MONTHYEAR-XX (e.g. FE-OCT2024-01)
+    // Format the ID prefix programmatically
     const parts = EXAM_PERIOD.trim().split(/\s+/);
     const month = parts[0]?.substring(0, 3).toUpperCase() || 'EXAM';
     const year = parts[parts.length - 1] || 'YYYY';
     const prefix = `FE-${month}${year}`;
 
-    const questionsArray = parsedData.map((q: any, index: number) => {
+    // Define question ranges to extract in separate calls to avoid output token limits
+    const ranges = [
+      [1, 20],
+      [21, 40],
+      [41, 60],
+      [61, 80],
+      [81, 100]
+    ];
+
+    let allQuestions: any[] = [];
+
+    for (const [startQ, endQ] of ranges) {
+      console.log(`\n--- Extracting Questions ${startQ} to ${endQ} ---`);
+
+      const instructionPrompt = getInstructionPrompt(startQ, endQ);
+      const promptPayload = [
+        instructionPrompt,
+        questionsText,
+        `\n\n--- ANSWERS TEXT ---\n`,
+        answersText.substring(0, 10000)
+      ];
+
+      let parsedData: any[] = [];
+      let retries = 3;
+      let jsonString = "";
+
+      while (retries > 0) {
+        try {
+          const result = await proModel.generateContent(promptPayload);
+          jsonString = result.response.text().trim();
+
+          // Clean up potential markdown formatting from Gemini
+          if (jsonString.startsWith('```json')) {
+            jsonString = jsonString.replace(/^```json\n/, '').replace(/\n```$/, '');
+          } else if (jsonString.startsWith('```')) {
+            jsonString = jsonString.replace(/^```\n/, '').replace(/\n```$/, '');
+          }
+
+          parsedData = JSON.parse(jsonString);
+          if (!Array.isArray(parsedData)) {
+            throw new Error("Gemini response is not a JSON array.");
+          }
+          break; // Succeeded
+        } catch (err: any) {
+          const isRateLimit = err.message?.includes("429") || err.message?.toLowerCase().includes("quota") || err.message?.toLowerCase().includes("rate limit");
+          
+          if (isRateLimit) {
+            console.warn(`[Rate Limit Hit] Waiting 30 seconds for quota window to reset before retrying Q${startQ}-Q${endQ}...`);
+            await new Promise(res => setTimeout(res, 30000));
+            // Do not decrement retries on rate limit hit so we can try again
+            continue;
+          }
+
+          if (jsonString) fs.writeFileSync(`failed_parse_${startQ}_${endQ}.json`, jsonString);
+          console.error(`Gemini extraction/parse error for Q${startQ}-Q${endQ} (retries left: ${retries - 1}):`, err.message);
+          retries--;
+          if (retries === 0) throw err;
+          console.log("Waiting 5 seconds before retrying...");
+          await new Promise(res => setTimeout(res, 5000));
+        }
+      }
+
+      console.log(`Successfully extracted ${parsedData.length} questions in this range.`);
+      allQuestions = allQuestions.concat(parsedData);
+
+      // Introduce a 5-second pause between batches to respect rate limits naturally
+      if (endQ < 100) {
+        console.log("Waiting 5 seconds before fetching the next range...");
+        await new Promise(res => setTimeout(res, 5000));
+      }
+    }
+
+    // Assign consistent programmatically generated IDs
+    const finalQuestionsArray = allQuestions.map((q: any, index: number) => {
       const qNum = String(index + 1).padStart(2, '0');
       return {
         ...q,
@@ -130,16 +167,21 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
       };
     });
 
-    console.log(`Extracted ${questionsArray.length} questions. Inserting into Supabase...`);
+    console.log(`\nTotal questions extracted across all ranges: ${finalQuestionsArray.length}`);
+    if (finalQuestionsArray.length === 0) {
+      console.log("No questions were extracted. Aborting insertion.");
+      return;
+    }
 
+    console.log(`Inserting into Supabase...`);
     const { data, error } = await supabase
       .from('questions')
-      .insert(questionsArray);
+      .insert(finalQuestionsArray);
 
     if (error) {
       console.error('Error inserting into Supabase:', error);
     } else {
-      console.log('Successfully inserted questions into Supabase!');
+      console.log('Successfully inserted all questions into Supabase!');
     }
 
   } catch (error) {
