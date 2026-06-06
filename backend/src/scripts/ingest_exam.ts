@@ -26,7 +26,7 @@ const proModel = genAI.getGenerativeModel({
   generationConfig: { responseMimeType: "application/json" }
 });
 
-const EXAM_PERIOD = "October 2025"; // Change this before running!
+const EXAM_PERIOD = "October 2022"; // Change this before running!
 
 const INSTRUCTION_PROMPT = `
 You are an expert data extractor. I am providing you with the text extracted from two PDFs:
@@ -87,13 +87,26 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
       answersText.substring(0, 10000)
     ];
     let result: any;
+    let jsonString = "";
+    let parsedData: any;
     let retries = 3;
     while (retries > 0) {
       try {
         result = await proModel.generateContent(promptPayload);
-        break;
+        jsonString = result.response.text().trim(); // evaluate here so RECITATION errors are caught and retried
+
+        // Clean up potential markdown formatting from Gemini
+        if (jsonString.startsWith('```json')) {
+          jsonString = jsonString.replace(/^```json\n/, '').replace(/\n```$/, '');
+        } else if (jsonString.startsWith('```')) {
+          jsonString = jsonString.replace(/^```\n/, '').replace(/\n```$/, '');
+        }
+
+        parsedData = JSON.parse(jsonString);
+        break; // If we reach here, extraction and parsing succeeded
       } catch (err: any) {
-        console.error(`Gemini API error (retries left: ${retries - 1}):`, err.message);
+        if (jsonString) fs.writeFileSync("failed_parse.json", jsonString);
+        console.error(`Gemini extraction/parse error (retries left: ${retries - 1}):`, err.message);
         retries--;
         if (retries === 0) throw err;
         console.log("Waiting 5 seconds before retrying...");
@@ -101,27 +114,21 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
       }
     }
 
-    let jsonString = result.response.text().trim();
-    // Clean up potential markdown formatting from Gemini
-    if (jsonString.startsWith('```json')) {
-      jsonString = jsonString.replace(/^```json\n/, '').replace(/\n```$/, '');
-    } else if (jsonString.startsWith('```')) {
-      jsonString = jsonString.replace(/^```\n/, '').replace(/\n```$/, '');
-    }
+    // Format the ID programmatically to be consistently FE-MONTHYEAR-XX (e.g. FE-OCT2024-01)
+    const parts = EXAM_PERIOD.trim().split(/\s+/);
+    const month = parts[0]?.substring(0, 3).toUpperCase() || 'EXAM';
+    const year = parts[parts.length - 1] || 'YYYY';
+    const prefix = `FE-${month}${year}`;
 
-    let parsedData;
-    try {
-      parsedData = JSON.parse(jsonString);
-    } catch (e) {
-      fs.writeFileSync("failed_parse.json", jsonString);
-      console.error("JSON parse failed. Raw output written to failed_parse.json", e);
-      return;
-    }
-
-    const questionsArray = parsedData.map((q: any) => ({
-      ...q,
-      correct_answer: q.correct_answer?.toUpperCase().trim()
-    }));
+    const questionsArray = parsedData.map((q: any, index: number) => {
+      const qNum = String(index + 1).padStart(2, '0');
+      return {
+        ...q,
+        id: `${prefix}-${qNum}`,
+        correct_answer: q.correct_answer?.toUpperCase().trim(),
+        difficulty: q.difficulty?.toLowerCase().trim()
+      };
+    });
 
     console.log(`Extracted ${questionsArray.length} questions. Inserting into Supabase...`);
 
