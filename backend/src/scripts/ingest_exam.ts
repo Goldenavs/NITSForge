@@ -21,7 +21,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 // Use Gemini 2.5 Flash for extraction to avoid rate limits / quota exceeded
-const proModel = genAI.getGenerativeModel({ 
+const proModel = genAI.getGenerativeModel({
   model: "gemini-2.5-flash",
   generationConfig: { responseMimeType: "application/json" }
 });
@@ -77,7 +77,7 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
     console.log(`Successfully extracted ${answersText.length} characters from Answers PDF.`);
 
     console.log(`Sending to Gemini 2.5 Flash for structured extraction... this may take a minute.`);
-    
+
     // Combining the prompt, questions, and answers into one payload
     // Note: If the text is extremely large, it may hit token limits, but for standard exams it should be fine.
     const promptPayload = [
@@ -86,9 +86,21 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
       `\n\n--- ANSWERS TEXT ---\n`,
       answersText.substring(0, 10000)
     ];
+    let result: any;
+    let retries = 3;
+    while (retries > 0) {
+      try {
+        result = await proModel.generateContent(promptPayload);
+        break;
+      } catch (err: any) {
+        console.error(`Gemini API error (retries left: ${retries - 1}):`, err.message);
+        retries--;
+        if (retries === 0) throw err;
+        console.log("Waiting 5 seconds before retrying...");
+        await new Promise(res => setTimeout(res, 5000)); // wait 5s before retrying
+      }
+    }
 
-    const result = await proModel.generateContent(promptPayload);
-    
     let jsonString = result.response.text().trim();
     // Clean up potential markdown formatting from Gemini
     if (jsonString.startsWith('```json')) {
@@ -97,7 +109,15 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
       jsonString = jsonString.replace(/^```\n/, '').replace(/\n```$/, '');
     }
 
-    const parsedData = JSON.parse(jsonString);
+    let parsedData;
+    try {
+      parsedData = JSON.parse(jsonString);
+    } catch (e) {
+      fs.writeFileSync("failed_parse.json", jsonString);
+      console.error("JSON parse failed. Raw output written to failed_parse.json", e);
+      return;
+    }
+
     const questionsArray = parsedData.map((q: any) => ({
       ...q,
       correct_answer: q.correct_answer?.toUpperCase().trim()
