@@ -3,24 +3,28 @@ import path from 'path';
 import dotenv from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-const pdfParse = require('pdf-parse');
+// @ts-ignore
+import pdfParse from 'pdf-parse';
 
 dotenv.config();
 
 const SUPABASE_URL = process.env.SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY!;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !GEMINI_API_KEY) {
+if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY || !GEMINI_API_KEY) {
   console.error("Missing required environment variables.");
   process.exit(1);
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
-// Use Gemini 2.5 Pro for complex extraction
-const proModel = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
+// Use Gemini 2.5 Flash for extraction to avoid rate limits / quota exceeded
+const proModel = genAI.getGenerativeModel({ 
+  model: "gemini-2.5-flash",
+  generationConfig: { responseMimeType: "application/json" }
+});
 
 const EXAM_PERIOD = "October 2025"; // Change this before running!
 
@@ -34,9 +38,9 @@ Your job is to read the text, match the questions to their correct answers, and 
 Please follow this strict JSON schema for EACH question:
 {
   "id": "A unique string ID, e.g., 'FE-OCT2025-01'",
-  "text": "The full text of the question. Include any code snippets or text tables here as well.",
+  "text": "The full text of the question. CRITICAL: Use Markdown to preserve indentation, newlines, and structure for code blocks or multi-line questions. DO NOT put the A, B, C, D choices in this field! Only the main question text.",
   "options": {
-    "A": "First option text",
+    "A": "First option text (Must NOT contain 'A) ' or 'a) ' prefix)",
     "B": "Second option text",
     "C": "Third option text",
     "D": "Fourth option text"
@@ -45,7 +49,9 @@ Please follow this strict JSON schema for EACH question:
   "explanation": "A brief explanation of why the correct answer is correct based on your knowledge.",
   "category": "Must be one of: 'Basic Theory of Information', 'Computer Architecture', 'Operating Systems', 'Data Structures & Algorithms', 'Databases', 'Networking & Communication', 'Information Security', 'Software Engineering & Development'. Pick the most relevant one.",
   "difficulty": "Assign 'easy', 'medium', or 'hard'",
-  "exam_period": "${EXAM_PERIOD}"
+  "exam_period": "${EXAM_PERIOD}",
+  "source": "ITPEC",
+  "tags": ["Array of 1 to 3 relevant string tags, chosen exactly from this list: 'hardware', 'software', 'networking', 'security', 'database', 'algorithm', 'data structure', 'management', 'strategy', 'math', 'logic', 'programming'"]
 }
 
 Return ONLY the raw JSON array. Do not include markdown blocks like \`\`\`json. Just the array.
@@ -70,7 +76,7 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
     const answersText = aData.text;
     console.log(`Successfully extracted ${answersText.length} characters from Answers PDF.`);
 
-    console.log(`Sending to Gemini 2.5 Pro for structured extraction... this may take a minute.`);
+    console.log(`Sending to Gemini 2.5 Flash for structured extraction... this may take a minute.`);
     
     // Combining the prompt, questions, and answers into one payload
     // Note: If the text is extremely large, it may hit token limits, but for standard exams it should be fine.
@@ -91,7 +97,11 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
       jsonString = jsonString.replace(/^```\n/, '').replace(/\n```$/, '');
     }
 
-    const questionsArray = JSON.parse(jsonString);
+    const parsedData = JSON.parse(jsonString);
+    const questionsArray = parsedData.map((q: any) => ({
+      ...q,
+      correct_answer: q.correct_answer?.toUpperCase().trim()
+    }));
 
     console.log(`Extracted ${questionsArray.length} questions. Inserting into Supabase...`);
 

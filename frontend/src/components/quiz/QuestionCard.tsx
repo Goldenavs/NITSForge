@@ -52,7 +52,7 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted }
         </div>
 
         {/* Question Text */}
-        <h2 className="text-xl md:text-2xl font-body font-medium text-text-main leading-relaxed mb-8">
+        <h2 className="text-xl md:text-2xl font-body font-medium text-text-main leading-relaxed mb-8 whitespace-pre-wrap">
           {question.text}
         </h2>
 
@@ -88,7 +88,7 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted }
             className="p-4 rounded-xl bg-surface-2/50 border border-borderline flex flex-col items-start gap-4"
           >
             {/* Added the actual explanation from the data to display here! */}
-            <p className="text-sm text-text-main leading-relaxed border-b border-borderline/50 pb-4 w-full">
+            <p className="text-sm text-text-main leading-relaxed border-b border-borderline/50 pb-4 w-full whitespace-pre-wrap">
               {question.explanation}
             </p>
             
