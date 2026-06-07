@@ -83,8 +83,22 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     const userId = session?.user?.id;
 
     if (!userId) {
-      console.log('Guest user finished the quiz. Skipping session log to DB.');
-      // Keep data in state. Guest migration handles it on signup.
+      console.log('Guest user finished the quiz. Saving session to localStorage.');
+      
+      try {
+        const guestSessions = JSON.parse(localStorage.getItem('nitsforge_guest_sessions') || '[]');
+        
+        guestSessions.push({
+          questions,
+          selectedAnswers,
+          finalScore,
+          completedAt: new Date().toISOString()
+        });
+        
+        localStorage.setItem('nitsforge_guest_sessions', JSON.stringify(guestSessions));
+      } catch (err) {
+        console.error('Failed to save guest session to localStorage', err);
+      }
       return;
     }
 

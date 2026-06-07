@@ -86,11 +86,8 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
 
     // Define question ranges to extract in separate calls to avoid output token limits
     const ranges = [
-      [1, 20],
-      [21, 40],
-      [41, 60],
-      [61, 80],
-      [81, 100]
+      [1, 50],
+      [51, 100]
     ];
 
     let allQuestions: any[] = [];
@@ -128,12 +125,21 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
           }
           break; // Succeeded
         } catch (err: any) {
-          const isRateLimit = err.message?.includes("429") || err.message?.toLowerCase().includes("quota") || err.message?.toLowerCase().includes("rate limit");
-          
-          if (isRateLimit) {
-            console.warn(`[Rate Limit Hit] Waiting 30 seconds for quota window to reset before retrying Q${startQ}-Q${endQ}...`);
+          const errMsg = err.message || "";
+
+          if (errMsg.includes("API key expired") || errMsg.includes("API_KEY_INVALID") || errMsg.includes("400 Bad Request")) {
+            console.error("\n[CRITICAL ERROR] The Gemini API key in your .env file is invalid or expired. Please check your Google AI Studio dashboard and paste a valid key.");
+            process.exit(1);
+          }
+
+          const isRateLimit = errMsg.includes("429") || errMsg.toLowerCase().includes("quota") || errMsg.toLowerCase().includes("rate limit");
+          const isServiceUnavailable = errMsg.includes("503") || errMsg.toLowerCase().includes("service unavailable") || errMsg.toLowerCase().includes("high demand");
+
+          if (isRateLimit || isServiceUnavailable) {
+            const reason = isRateLimit ? "Rate Limit Hit" : "Service Overloaded (503)";
+            console.warn(`[${reason}] Waiting 30 seconds for the API window to reset before retrying Q${startQ}-Q${endQ}...`);
             await new Promise(res => setTimeout(res, 30000));
-            // Do not decrement retries on rate limit hit so we can try again
+            // Do not decrement retries on rate limit or 503 so we can try again
             continue;
           }
 
@@ -149,10 +155,10 @@ async function ingestPDF(questionsPdfPath: string, answersPdfPath: string) {
       console.log(`Successfully extracted ${parsedData.length} questions in this range.`);
       allQuestions = allQuestions.concat(parsedData);
 
-      // Introduce a 5-second pause between batches to respect rate limits naturally
+      // Introduce a 10-second pause between batches to respect rate limits naturally
       if (endQ < 100) {
-        console.log("Waiting 5 seconds before fetching the next range...");
-        await new Promise(res => setTimeout(res, 5000));
+        console.log("Waiting 10 seconds before fetching the next range...");
+        await new Promise(res => setTimeout(res, 10000));
       }
     }
 
