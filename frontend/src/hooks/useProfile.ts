@@ -11,6 +11,8 @@ export interface UserProfile {
   bio: string | null;
   course: string | null;
   year_level: number | null;
+  banner_url: string | null;
+  avatar_frame: string | null;
   total_xp: number;
   rank_level: number;
   current_streak: number;

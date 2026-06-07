@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Settings, Edit3, User as UserIcon } from 'lucide-react';
 import { ProfileRankCard } from '../components/profile/ProfileRankCard';
 import { ProfileStatsGrid } from '../components/profile/ProfileStatsGrid';
 import { FeaturedBadges } from '../components/profile/FeaturedBadges';
 import { useProfile } from '../hooks/useProfile';
-import { ProfileEditModal } from '../components/profile/ProfileEditModal';
+import { ProfileEditPanel } from '../components/profile/ProfileEditPanel';
 import { useAuth } from '../store/AuthContext';
+import { motion } from 'framer-motion';
+import { UserIcon, Edit3 } from 'lucide-react';
+import { useState } from 'react';
+
+const PRESET_FRAMES = [
+  { id: 'none', name: 'None', class: '' },
+  { id: 'neon', name: 'Neon Pulse', class: 'ring-4 ring-primary shadow-[0_0_15px_rgba(var(--color-primary),0.8)] animate-pulse' },
+  { id: 'gold', name: 'Golden Vanguard', class: 'ring-4 ring-yellow-400 shadow-[0_0_20px_rgba(250,204,21,0.5)]' },
+  { id: 'circuit', name: 'Circuit Board', class: 'border-[6px] border-dashed border-accent' }
+];
 
 export const ProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  useAuth();
   const { profile, loading, updateProfile } = useProfile();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
@@ -32,99 +39,111 @@ export const ProfilePage: React.FC = () => {
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
       className="max-w-5xl mx-auto space-y-6 pb-12"
     >
-      
+
       {/* Header Section */}
       <motion.div 
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-xl p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative overflow-hidden group"
+        className="relative z-10 rounded-3xl p-[2px] bg-gradient-to-br from-primary via-accent to-primary bg-[length:400%_400%] animate-gradient-xy shadow-lg overflow-hidden"
       >
-        {/* Dynamic theme-compliant background accent */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 blur-[80px] rounded-full pointer-events-none group-hover:bg-primary/30 transition-colors duration-700"></div>
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-accent/20 blur-[80px] rounded-full pointer-events-none group-hover:bg-accent/30 transition-colors duration-700"></div>
-        
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8">
-          <div className="relative">
+        <div className="bg-surface relative flex flex-col h-full w-full rounded-[22px] overflow-hidden">
+          {/* The Banner Area */}
+        <div className="relative h-48 md:h-64 w-full bg-surface-2 overflow-hidden">
+          {profile.banner_url ? (
+            <img src={profile.banner_url} alt="Profile Banner" className="w-full h-full object-cover" />
+          ) : (
+            <>
+              {/* Fallback gradients if no banner */}
+              <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-accent/40 blur-2xl opacity-50 mix-blend-overlay"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-accent/20 blur-[80px] rounded-full pointer-events-none"></div>
+            </>
+          )}
+          {/* Bottom Vignette to ensure contrast for the text below */}
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent"></div>
+        </div>
+
+        {/* Content overlaid on the banner */}
+        <div className="relative z-10 px-6 md:px-8 pb-8 pt-0 -mt-16 md:-mt-24 flex flex-col md:flex-row items-start md:items-end gap-6">
+          {/* Avatar Area */}
+          <div className="relative flex-shrink-0">
             <motion.div 
               whileHover={{ scale: 1.05 }}
-              className="relative rounded-full p-1 bg-gradient-to-tr from-primary to-accent"
+              className="relative rounded-full shadow-xl bg-black"
             >
               <img 
                 src={profile.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest'} 
                 alt={profile.display_name} 
-                className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-surface shadow-xl bg-surface-2 object-cover"
+                className={`w-28 h-28 md:w-36 md:h-36 rounded-full object-cover transition-all ${profile.avatar_frame && profile.avatar_frame !== 'none' ? PRESET_FRAMES.find(f => f.id === profile.avatar_frame)?.class : 'border-[6px] border-black bg-black'}`}
               />
             </motion.div>
-            <motion.button 
-              onClick={() => setIsEditModalOpen(true)}
-              whileHover={{ scale: 1.1, rotate: 15 }}
-              whileTap={{ scale: 0.9 }}
-              className="absolute bottom-1 right-1 p-2.5 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-colors ring-4 ring-surface"
-            >
-              <Edit3 className="w-4 h-4" />
-            </motion.button>
           </div>
           
-          <div className="flex-grow">
-            <h1 className="text-3xl md:text-4xl font-extrabold text-text-main font-display tracking-tight drop-shadow-sm">
+          {/* Text Area (Frosted Glass Container for better contrast) */}
+          <div className="flex-grow backdrop-blur-md bg-background/40 p-4 md:p-6 rounded-2xl border border-borderline/50 shadow-sm self-stretch flex flex-col justify-center mt-4 md:mt-0">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-white font-display tracking-tight drop-shadow-md">
               {profile.display_name}
             </h1>
-            <p className="text-lg text-primary font-semibold mt-1">
+            <p className="text-lg text-primary font-bold mt-1 drop-shadow-sm">
               {profile.year_level ? `${profile.year_level} Year` : 'Student'} • {profile.course || 'IT / CS'}
             </p>
-            <p className="mt-4 text-text-muted max-w-2xl text-base leading-relaxed">
+            <p className="mt-3 text-white/90 max-w-2xl text-base leading-relaxed drop-shadow-sm">
               {profile.bio || "No bio yet. Click the edit button to tell us about your journey!"}
             </p>
           </div>
 
-          <div className="flex gap-3 mt-4 md:mt-0 self-start md:self-center">
+          {/* Action Area */}
+          <div className="flex gap-3 mt-4 md:mt-0 self-stretch md:self-end md:pb-6">
             <motion.button 
+              onClick={() => setIsEditModalOpen(!isEditModalOpen)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="border border-borderline text-text-main bg-surface-2 rounded-xl px-5 py-2.5 flex items-center gap-2 hover:bg-surface transition-colors font-medium shadow-sm hover:shadow-md"
+              className={`border ${isEditModalOpen ? 'border-primary bg-primary text-white shadow-primary/30' : 'border-primary/50 text-primary bg-surface shadow-sm'} rounded-xl px-6 py-3 md:py-4 flex items-center justify-center gap-2 transition-all font-bold shadow-lg hover:shadow-xl w-full md:w-auto h-full font-display`}
             >
-              <Settings className="w-4 h-4 text-text-muted" />
-              Settings
+              <Edit3 className="w-5 h-5" />
+              {isEditModalOpen ? 'Close Panel' : 'Edit Profile'}
             </motion.button>
           </div>
+        </div>
+
+        {/* Edit Panel (Slides down below the header, now inside the border) */}
+        <ProfileEditPanel 
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          profile={profile}
+          onSave={updateProfile}
+        />
         </div>
       </motion.div>
 
       {/* Progression Components */}
-      <ProfileRankCard 
-        level={profile.calculatedLevel} 
-        title={profile.rankTitle} 
-        currentXp={profile.total_xp} 
-        nextLevelXp={profile.nextLevelXp} 
-      />
+      <div className="space-y-6 pt-4">
+        <ProfileRankCard
+          level={profile.calculatedLevel}
+          title={profile.rankTitle}
+          currentXp={profile.total_xp}
+          nextLevelXp={profile.nextLevelXp}
+        />
 
-      <ProfileStatsGrid 
-        totalXp={profile.total_xp}
-        currentStreak={profile.current_streak}
-        longestStreak={profile.longest_streak}
-        streakFreezes={profile.streak_freezes_available}
-      />
+        <ProfileStatsGrid
+          totalXp={profile.total_xp}
+          currentStreak={profile.current_streak}
+          longestStreak={profile.longest_streak}
+          streakFreezes={profile.streak_freezes_available}
+        />
 
-      {/* Mock Badges for now - can be connected to user_badges table later */}
-      <FeaturedBadges badges={[
-        { id: '1', name: 'First Step', icon: '📚', description: 'Joined NITSForge.' },
-      ]} />
-      
-      {/* Edit Modal */}
-      <ProfileEditModal 
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        profile={profile}
-        onSave={updateProfile}
-      />
+        {/* Mock Badges for now - can be connected to user_badges table later */}
+        <FeaturedBadges badges={[
+          { id: '1', name: 'First Step', icon: '📚', description: 'Joined NITSForge.' },
+        ]} />
+      </div>
     </motion.div>
   );
 };

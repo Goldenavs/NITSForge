@@ -137,6 +137,10 @@
   .animate-page-entry {
     animation: pageEntry 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
+  .animate-gradient-xy {
+    animation: gradientXY 8s ease infinite;
+    background-size: 400% 400%;
+  }
 }
 
 @keyframes pageEntry {
@@ -147,4 +151,13 @@
 @keyframes shine {
   from { transform: translateX(-100%); }
   to { transform: translateX(400%); }
+}
+
+@keyframes gradientXY {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }

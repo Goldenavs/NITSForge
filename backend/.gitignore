@@ -37,4 +37,4 @@ build/
 Thumbs.db
 
 *.pdf
-failed_parse.json
+failed_parse*.json
