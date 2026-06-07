@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Upload, Save, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
+import { Upload, Save, Image as ImageIcon, CheckCircle2 } from 'lucide-react';
 import type { UserProfile } from '../../hooks/useProfile';
 import { Button } from '../ui/Button';
 import { uploadProfileImage } from '../../services/storage';
@@ -102,25 +102,25 @@ export const ProfileEditPanel: React.FC<ProfileEditPanelProps> = ({ isOpen, onCl
           <div className="p-6 md:p-8 relative z-10">
             <div className="flex items-center justify-center border-b border-borderline pb-4 mb-6">
               <div className="flex flex-wrap gap-4 md:gap-8 w-full justify-center">
-                <button 
+                <button
                   onClick={() => setActiveTab('info')}
                   className={`font-orbitron tracking-widest text-sm pb-4 -mb-[17px] border-b-2 transition-colors whitespace-nowrap ${activeTab === 'info' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text-main'}`}
                 >
                   Basic Info
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('avatar')}
                   className={`font-orbitron tracking-widest text-sm pb-4 -mb-[17px] border-b-2 transition-colors whitespace-nowrap ${activeTab === 'avatar' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text-main'}`}
                 >
                   Avatar
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('banner')}
                   className={`font-orbitron tracking-widest text-sm pb-4 -mb-[17px] border-b-2 transition-colors whitespace-nowrap ${activeTab === 'banner' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text-main'}`}
                 >
                   Banner
                 </button>
-                <button 
+                <button
                   onClick={() => setActiveTab('frames')}
                   className={`font-orbitron tracking-widest text-sm pb-4 -mb-[17px] border-b-2 transition-colors whitespace-nowrap ${activeTab === 'frames' ? 'border-primary text-primary' : 'border-transparent text-text-muted hover:text-text-main'}`}
                 >
@@ -130,23 +130,23 @@ export const ProfileEditPanel: React.FC<ProfileEditPanelProps> = ({ isOpen, onCl
             </div>
 
             <form id="edit-profile-form" onSubmit={handleSubmit} className="min-h-[250px]">
-              
+
               {activeTab === 'info' && (
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 grid md:grid-cols-2 gap-x-6">
                   <div className="md:col-span-2">
                     <label className="text-sm font-semibold text-text-muted">Display Name</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       required
                       className="w-full mt-1.5 px-4 py-2.5 bg-background border border-borderline/80 shadow-inner rounded-xl focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all text-text-main font-medium"
                     />
                   </div>
-                  
+
                   <div className="md:col-span-2">
                     <label className="text-sm font-semibold text-text-muted">Bio</label>
-                    <textarea 
+                    <textarea
                       value={bio}
                       onChange={(e) => setBio(e.target.value)}
                       rows={3}
@@ -157,8 +157,8 @@ export const ProfileEditPanel: React.FC<ProfileEditPanelProps> = ({ isOpen, onCl
 
                   <div>
                     <label className="text-sm font-semibold text-text-muted">Course / Major</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={course}
                       onChange={(e) => setCourse(e.target.value)}
                       placeholder="BS Computer Science"
@@ -167,8 +167,8 @@ export const ProfileEditPanel: React.FC<ProfileEditPanelProps> = ({ isOpen, onCl
                   </div>
                   <div>
                     <label className="text-sm font-semibold text-text-muted">Year Level</label>
-                    <input 
-                      type="number" 
+                    <input
+                      type="number"
                       value={yearLevel}
                       onChange={(e) => setYearLevel(e.target.value)}
                       min="1"
@@ -192,14 +192,14 @@ export const ProfileEditPanel: React.FC<ProfileEditPanelProps> = ({ isOpen, onCl
                       <p className="text-xs text-text-muted mt-2">Recommended: 256x256 PNG or JPG.</p>
                     </div>
                   </div>
-                  
+
                   <div className="pt-4 border-t border-borderline">
                     <p className="text-sm font-semibold text-text-muted mb-3">Or choose a preset avatar:</p>
                     <div className="flex flex-wrap gap-3">
                       {PRESET_AVATARS.map((url, idx) => (
                         <div key={idx} onClick={() => setAvatarUrl(url)} className="relative cursor-pointer group">
-                          <img 
-                            src={url} 
+                          <img
+                            src={url}
                             className={`w-14 h-14 rounded-full transition-all hover:scale-110 bg-surface ${avatarUrl === url ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface-2 scale-110' : 'opacity-70 hover:opacity-100'}`}
                           />
                           {avatarUrl === url && (
@@ -224,10 +224,10 @@ export const ProfileEditPanel: React.FC<ProfileEditPanelProps> = ({ isOpen, onCl
                       </div>
                     ) : (
                       <div className="w-full h-32 rounded-xl border-2 border-dashed border-borderline flex items-center justify-center bg-surface">
-                        <p className="text-text-muted font-medium flex items-center gap-2"><ImageIcon className="w-5 h-5"/> No banner selected</p>
+                        <p className="text-text-muted font-medium flex items-center gap-2"><ImageIcon className="w-5 h-5" /> No banner selected</p>
                       </div>
                     )}
-                    
+
                     <div className="flex items-center gap-4">
                       <input type="file" accept="image/png, image/jpeg" className="hidden" ref={bannerInputRef} onChange={(e) => handleFileUpload(e, 'banners')} />
                       <Button type="button" onClick={() => bannerInputRef.current?.click()} disabled={loading} className="gap-2">
@@ -257,10 +257,10 @@ export const ProfileEditPanel: React.FC<ProfileEditPanelProps> = ({ isOpen, onCl
                   <div className="flex flex-col items-center gap-6 pb-6 border-b border-borderline">
                     <p className="text-sm font-semibold text-text-muted">Live Preview</p>
                     <div className="relative">
-                      <img 
-                        src={avatarUrl} 
-                        alt="Avatar Preview" 
-                        className={`w-32 h-32 rounded-full object-cover bg-surface transition-all duration-300 ${PRESET_FRAMES.find(f => f.id === avatarFrame)?.class || ''}`} 
+                      <img
+                        src={avatarUrl}
+                        alt="Avatar Preview"
+                        className={`w-32 h-32 rounded-full object-cover bg-surface transition-all duration-300 ${PRESET_FRAMES.find(f => f.id === avatarFrame)?.class || ''}`}
                       />
                     </div>
                   </div>
@@ -269,9 +269,9 @@ export const ProfileEditPanel: React.FC<ProfileEditPanelProps> = ({ isOpen, onCl
                     <p className="text-sm font-semibold text-text-muted mb-4">Choose a Frame:</p>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       {PRESET_FRAMES.map((frame) => (
-                        <div 
-                          key={frame.id} 
-                          onClick={() => setAvatarFrame(frame.id)} 
+                        <div
+                          key={frame.id}
+                          onClick={() => setAvatarFrame(frame.id)}
                           className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col items-center justify-center gap-4 ${avatarFrame === frame.id ? 'border-primary bg-primary/10' : 'border-borderline hover:border-primary/50'}`}
                         >
                           <div className={`w-16 h-16 rounded-full bg-surface-2 ${frame.class}`}></div>
