@@ -1,31 +1,35 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Edit3 } from 'lucide-react';
+import { Settings, Edit3, User as UserIcon } from 'lucide-react';
 import { ProfileRankCard } from '../components/profile/ProfileRankCard';
 import { ProfileStatsGrid } from '../components/profile/ProfileStatsGrid';
 import { FeaturedBadges } from '../components/profile/FeaturedBadges';
+import { useProfile } from '../hooks/useProfile';
+import { ProfileEditModal } from '../components/profile/ProfileEditModal';
+import { useAuth } from '../store/AuthContext';
 
 export const ProfilePage: React.FC = () => {
-  // Mock Data - To be replaced with Zustand/Supabase hooks
-  const userProfile = {
-    displayName: "John Michael A. Nave",
-    course: "BS Computer Engineering",
-    yearLevel: 3,
-    bio: "Project Manager & Full-Stack Developer. Forging my path to the FE!",
-    avatarUrl: "https://api.dicebear.com/7.x/avataaars/svg?seed=John",
-    totalXp: 8450,
-    rankLevel: 5,
-    rankTitle: "Engineer",
-    nextLevelXp: 13000,
-    currentStreak: 12,
-    longestStreak: 14,
-    streakFreezesAvailable: 1,
-    featuredBadges: [
-      { id: '1', name: 'Week Warrior', icon: '🔥', description: 'Maintained a 7-day study streak.' },
-      { id: '2', name: 'Sharpshooter', icon: '⭐', description: 'Achieved 90%+ accuracy in a session.' },
-      { id: '3', name: 'First Step', icon: '📚', description: 'Answered your first FE question.' },
-    ]
-  };
+  const { user } = useAuth();
+  const { profile, loading, updateProfile } = useProfile();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  if (loading) {
+    return (
+      <div className="max-w-5xl mx-auto flex items-center justify-center h-64">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="max-w-5xl mx-auto flex flex-col items-center justify-center h-64 text-text-muted">
+        <UserIcon className="w-16 h-16 mb-4 opacity-50" />
+        <h2 className="text-xl font-display font-bold">Profile Not Found</h2>
+        <p className="mt-2 text-sm">Please log in or try refreshing the page.</p>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
@@ -41,37 +45,43 @@ export const ProfilePage: React.FC = () => {
         initial={{ y: -20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 md:p-8 shadow-sm relative overflow-hidden"
+        className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-xl p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] relative overflow-hidden group"
       >
         {/* Dynamic theme-compliant background accent */}
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-[var(--color-primary)] to-[var(--color-accent)] opacity-10"></div>
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary/20 blur-[80px] rounded-full pointer-events-none group-hover:bg-primary/30 transition-colors duration-700"></div>
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-accent/20 blur-[80px] rounded-full pointer-events-none group-hover:bg-accent/30 transition-colors duration-700"></div>
         
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6">
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8">
           <div className="relative">
-            <motion.img 
+            <motion.div 
               whileHover={{ scale: 1.05 }}
-              src={userProfile.avatarUrl} 
-              alt={userProfile.displayName} 
-              className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-[var(--color-surface)] shadow-md bg-[var(--color-surface-2)] cursor-pointer"
-            />
+              className="relative rounded-full p-1 bg-gradient-to-tr from-primary to-accent"
+            >
+              <img 
+                src={profile.avatar_url || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest'} 
+                alt={profile.display_name} 
+                className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-surface shadow-xl bg-surface-2 object-cover"
+              />
+            </motion.div>
             <motion.button 
-              whileHover={{ scale: 1.1 }}
+              onClick={() => setIsEditModalOpen(true)}
+              whileHover={{ scale: 1.1, rotate: 15 }}
               whileTap={{ scale: 0.9 }}
-              className="absolute bottom-0 right-0 p-2 bg-[var(--color-primary)] text-white rounded-full shadow-lg hover:bg-[var(--color-primary-dark)] transition-colors"
+              className="absolute bottom-1 right-1 p-2.5 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-colors ring-4 ring-surface"
             >
               <Edit3 className="w-4 h-4" />
             </motion.button>
           </div>
           
           <div className="flex-grow">
-            <h1 className="text-3xl font-extrabold text-[var(--color-text-primary)] font-display tracking-tight">
-              {userProfile.displayName}
+            <h1 className="text-3xl md:text-4xl font-extrabold text-text-main font-display tracking-tight drop-shadow-sm">
+              {profile.display_name}
             </h1>
-            <p className="text-lg text-[var(--color-text-muted)] font-medium mt-1">
-              {userProfile.yearLevel}rd Year • {userProfile.course}
+            <p className="text-lg text-primary font-semibold mt-1">
+              {profile.year_level ? `${profile.year_level} Year` : 'Student'} • {profile.course || 'IT / CS'}
             </p>
-            <p className="mt-3 text-[var(--color-text-primary)] max-w-2xl">
-              {userProfile.bio}
+            <p className="mt-4 text-text-muted max-w-2xl text-base leading-relaxed">
+              {profile.bio || "No bio yet. Click the edit button to tell us about your journey!"}
             </p>
           </div>
 
@@ -79,9 +89,9 @@ export const ProfilePage: React.FC = () => {
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="border border-[var(--color-border)] text-[var(--color-text-primary)] bg-[var(--color-surface)] rounded-xl px-4 py-2 flex items-center gap-2 hover:bg-[var(--color-surface-2)] transition-colors font-medium shadow-sm"
+              className="border border-borderline text-text-main bg-surface-2 rounded-xl px-5 py-2.5 flex items-center gap-2 hover:bg-surface transition-colors font-medium shadow-sm hover:shadow-md"
             >
-              <Settings className="w-4 h-4 text-[var(--color-text-muted)]" />
+              <Settings className="w-4 h-4 text-text-muted" />
               Settings
             </motion.button>
           </div>
@@ -90,21 +100,31 @@ export const ProfilePage: React.FC = () => {
 
       {/* Progression Components */}
       <ProfileRankCard 
-        level={userProfile.rankLevel} 
-        title={userProfile.rankTitle} 
-        currentXp={userProfile.totalXp} 
-        nextLevelXp={userProfile.nextLevelXp} 
+        level={profile.calculatedLevel} 
+        title={profile.rankTitle} 
+        currentXp={profile.total_xp} 
+        nextLevelXp={profile.nextLevelXp} 
       />
 
       <ProfileStatsGrid 
-        totalXp={userProfile.totalXp}
-        currentStreak={userProfile.currentStreak}
-        longestStreak={userProfile.longestStreak}
-        streakFreezes={userProfile.streakFreezesAvailable}
+        totalXp={profile.total_xp}
+        currentStreak={profile.current_streak}
+        longestStreak={profile.longest_streak}
+        streakFreezes={profile.streak_freezes_available}
       />
 
-      <FeaturedBadges badges={userProfile.featuredBadges} />
+      {/* Mock Badges for now - can be connected to user_badges table later */}
+      <FeaturedBadges badges={[
+        { id: '1', name: 'First Step', icon: '📚', description: 'Joined NITSForge.' },
+      ]} />
       
+      {/* Edit Modal */}
+      <ProfileEditModal 
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        profile={profile}
+        onSave={updateProfile}
+      />
     </motion.div>
   );
 };

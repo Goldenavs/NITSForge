@@ -11,17 +11,19 @@ interface StatProps {
 const StatItem: React.FC<StatProps> = ({ label, value, icon }) => (
   <motion.div 
     variants={{
-      hidden: { opacity: 0, scale: 0.9 },
-      show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 24 } }
+      hidden: { opacity: 0, scale: 0.9, y: 10 },
+      show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
     }}
-    className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-5 shadow-sm flex items-center gap-4 hover:border-[var(--color-primary)] transition-colors cursor-default"
+    className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex flex-col justify-center gap-4 hover:border-primary/40 hover:-translate-y-1 hover:shadow-lg transition-all duration-300 group"
   >
-    <div className="p-3 rounded-xl bg-[var(--color-surface-2)] text-[var(--color-primary)]">
-      {icon}
-    </div>
-    <div>
-      <p className="text-sm text-[var(--color-text-muted)] font-medium">{label}</p>
-      <p className="text-xl font-bold text-[var(--color-text-primary)]">{value}</p>
+    <div className="flex items-center gap-4">
+      <div className="p-3.5 rounded-2xl bg-surface-2 text-primary shadow-inner group-hover:bg-primary group-hover:text-white transition-colors duration-300">
+        {icon}
+      </div>
+      <div>
+        <p className="text-xs text-text-muted font-bold uppercase tracking-wider">{label}</p>
+        <p className="text-2xl font-extrabold text-text-main font-display drop-shadow-sm tracking-tight mt-1">{value}</p>
+      </div>
     </div>
   </motion.div>
 );

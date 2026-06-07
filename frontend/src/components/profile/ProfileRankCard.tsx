@@ -16,33 +16,34 @@ export const ProfileRankCard: React.FC<ProfileRankCardProps> = ({ level, title, 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-surface)] p-6 shadow-sm flex flex-col md:flex-row items-center gap-6"
+      className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-xl p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] flex flex-col md:flex-row items-center gap-6 md:gap-8 relative overflow-hidden group hover:border-primary/50 transition-colors"
     >
-      <div className="flex-shrink-0 flex items-center justify-center w-20 h-20 rounded-full bg-[var(--color-surface-2)] border-4 border-[var(--color-primary)] shadow-inner relative overflow-hidden">
+      <div className="flex-shrink-0 flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-full bg-surface-2 border-[6px] border-primary shadow-[0_0_20px_rgba(var(--color-primary),0.3)] relative overflow-hidden transition-transform duration-500 group-hover:scale-105">
         {/* Subtle background glow for the rank icon */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-primary)] to-transparent opacity-20"></div>
-        <span className="relative z-10 text-3xl font-bold text-[var(--color-primary)]">{level}</span>
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-transparent opacity-20"></div>
+        <div className="absolute -top-1/2 -left-1/2 w-full h-full bg-white opacity-10 rotate-45 group-hover:translate-x-[200%] transition-transform duration-1000"></div>
+        <span className="relative z-10 text-4xl md:text-5xl font-extrabold text-primary font-display">{level}</span>
       </div>
       
       <div className="flex-grow w-full">
-        <div className="flex justify-between items-end mb-3">
+        <div className="flex justify-between items-end mb-4">
           <div>
-            <h3 className="text-2xl font-bold text-[var(--color-text-primary)] tracking-tight">{title}</h3>
-            <p className="text-sm text-[var(--color-text-muted)] font-medium">Rank Level {level}</p>
+            <h3 className="text-3xl font-extrabold text-text-main font-display tracking-tight drop-shadow-sm">{title}</h3>
+            <p className="text-sm text-text-muted font-medium uppercase tracking-wider mt-1">Level {level} Rank</p>
           </div>
-          <div className="text-right">
-            <span className="text-lg font-bold text-[var(--color-text-primary)]">{currentXp.toLocaleString()}</span>
-            <span className="text-sm text-[var(--color-text-muted)]"> / {nextLevelXp.toLocaleString()} XP</span>
+          <div className="text-right flex flex-col">
+            <span className="text-xl font-bold text-text-main drop-shadow-sm">{currentXp.toLocaleString()} <span className="text-sm font-medium text-text-muted">XP</span></span>
+            <span className="text-xs text-text-muted font-medium mt-1">{nextLevelXp.toLocaleString()} XP to Next Rank</span>
           </div>
         </div>
         
         {/* Animated XP Bar */}
-        <div className="h-2.5 rounded-full bg-[var(--color-surface-2)] overflow-hidden border border-[var(--color-border)] shadow-inner">
+        <div className="h-3.5 rounded-full bg-surface-2 overflow-hidden border border-borderline shadow-inner relative">
           <motion.div 
             initial={{ width: 0 }}
             animate={{ width: `${progressPercentage}%` }}
             transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
-            className="h-full rounded-full bg-[var(--color-xp)] relative"
+            className="h-full rounded-full bg-xp relative shadow-[0_0_10px_rgba(var(--color-xp),0.8)]"
           >
             {/* Shimmer effect inside the XP bar */}
             <motion.div 
