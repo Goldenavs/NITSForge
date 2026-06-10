@@ -1,6 +1,6 @@
 // src/pages/QuizSession.tsx
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -19,8 +19,13 @@ export default function QuizSession() {
     currentIndex, 
     startQuiz, 
     answerQuestion, 
-    nextQuestion 
+    nextQuestion,
+    tick,
+    mode
   } = useQuizStore();
+
+  const [searchParams] = useSearchParams();
+  const modeParam = searchParams.get('mode') || 'practice';
 
   // Local state for the current question's UI flow
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -29,11 +34,22 @@ export default function QuizSession() {
   // Auto-start or redirect
   useEffect(() => {
     if (status === 'idle') {
-      startQuiz();
+      startQuiz(modeParam);
     } else if (status === 'finished') {
       navigate('/quiz/results/mock-session-123'); 
     }
-  }, [status, startQuiz, navigate]);
+  }, [status, startQuiz, navigate, modeParam]);
+
+  // Timer Tick Interval
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (status === 'in-progress') {
+      interval = setInterval(() => {
+        tick();
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [status, tick]);
 
   // Safeguard while loading
   if (status !== 'in-progress' || questions.length === 0) return null;
@@ -60,7 +76,7 @@ export default function QuizSession() {
       <QuizHeader 
         currentQuestion={currentIndex + 1} 
         totalQuestions={questions.length} 
-        mode="Practice Mode" 
+        mode={mode === 'simulation' ? "Exam Simulation" : mode === 'quick' ? "Quick Quiz" : mode === 'missed' ? "Missed Questions" : "Practice Mode"} 
       />
 
       <AnimatePresence mode="wait">
@@ -77,6 +93,7 @@ export default function QuizSession() {
             selectedOption={selectedOption}
             onSelect={(opt) => !isSubmitted && setSelectedOption(opt)}
             isSubmitted={isSubmitted}
+            hideExplanation={mode === 'simulation'} // Simulation mode hides explanations
           />
 
           {/* Bottom Action Bar */}
@@ -103,7 +120,7 @@ export default function QuizSession() {
         </motion.div>
       </AnimatePresence>
 
-      <ForgeFAB />
+      {mode !== 'simulation' && <ForgeFAB />}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { X, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../ui/Badge';
+import { useQuizStore } from '../../store/useQuizStore';
 
 interface QuizHeaderProps {
   currentQuestion: number;
@@ -11,7 +12,18 @@ interface QuizHeaderProps {
 }
 
 export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeaderProps) {
+  const { timeRemaining } = useQuizStore();
   const progressPercentage = (currentQuestion / totalQuestions) * 100;
+
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) {
+      return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="w-full flex flex-col gap-4 mb-8">
@@ -30,10 +42,14 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
 
         {/* Right Controls: Timer & Exit */}
         <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 text-text-muted bg-surface-2/50 px-3 py-1.5 rounded-lg border border-borderline/50">
-            <Clock className="w-4 h-4 text-primary" />
-            <span className="font-orbitron text-xs font-bold tracking-wider">00:42:15</span>
-          </div>
+          {timeRemaining !== null && (
+            <div className="flex items-center gap-2 text-text-main bg-surface-2/80 px-3 py-1.5 rounded-lg border border-primary/50 shadow-[0_0_10px_rgba(var(--color-primary),0.2)]">
+              <Clock className={`w-4 h-4 ${timeRemaining < 300 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />
+              <span className={`font-orbitron text-xs md:text-sm font-bold tracking-wider ${timeRemaining < 300 ? 'text-red-500' : ''}`}>
+                {formatTime(timeRemaining)}
+              </span>
+            </div>
+          )}
           <Link 
             to="/quiz" 
             className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-2/60 backdrop-blur-sm border border-borderline text-text-muted hover:text-red-500 hover:border-red-500/30 transition-colors"

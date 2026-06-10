@@ -15,9 +15,10 @@ interface QuestionCardProps {
   selectedOption: string | null;
   onSelect: (option: string) => void;
   isSubmitted: boolean;
+  hideExplanation?: boolean;
 }
 
-export function QuestionCard({ question, selectedOption, onSelect, isSubmitted }: QuestionCardProps) {
+export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, hideExplanation = false }: QuestionCardProps) {
   // Use the dynamic correct answer from the data
   const correctAnswer = question.correct_answer; 
 
@@ -81,8 +82,8 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted }
           ))}
         </div>
 
-        {/* Explain This Button (Only visible after submission) */}
-        {isSubmitted && (
+        {/* Explain This Button (Only visible after submission, unless hidden by mode) */}
+        {isSubmitted && !hideExplanation && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="p-4 rounded-xl bg-surface-2/50 border border-borderline flex flex-col items-start gap-4"

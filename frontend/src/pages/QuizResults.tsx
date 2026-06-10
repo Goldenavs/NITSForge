@@ -9,6 +9,7 @@ import { StatCard } from '../components/dashboard/StatCard';
 import { AISummaryCard } from '../components/quiz/AISummaryCard';
 import { Card, CardContent } from '../components/ui/Card';
 import { useQuizStore } from '../store/useQuizStore';
+import { useState } from 'react';
 
 // Framer Motion Orchestration
 const staggerContainer: Variants = {
@@ -25,6 +26,7 @@ const viewportConfig = { once: true, margin: "-50px" };
 
 export default function QuizResults() {
   const navigate = useNavigate();
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   
   // Pull our data from the Zustand state machine
   const { questions, score, selectedAnswers, resetQuiz, status } = useQuizStore();
@@ -137,29 +139,82 @@ export default function QuizResults() {
             {questions.map((q) => {
               const userAnswer = selectedAnswers[q.id];
               const isCorrect = userAnswer === q.correct_answer;
+              const isExpanded = expandedId === q.id;
 
               return (
-                <div key={q.id} className="flex items-start gap-4 p-4 sm:p-6 border-b border-borderline/30 last:border-0 hover:bg-surface-2/30 transition-colors">
-                  <div className="mt-1 shrink-0">
-                    {isCorrect ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-500" />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-red-500" />
-                    )}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-orbitron font-bold text-text-muted block">
-                        {q.id}
-                      </span>
-                      {!isCorrect && userAnswer && (
-                        <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded">
-                          Your Answer: {userAnswer}
-                        </span>
+                <div 
+                  key={q.id} 
+                  className={`border-b border-borderline/30 last:border-0 transition-colors cursor-pointer ${isExpanded ? 'bg-surface-2/40' : 'hover:bg-surface-2/20'}`}
+                  onClick={() => setExpandedId(isExpanded ? null : q.id)}
+                >
+                  <div className="flex items-start gap-4 p-4 sm:p-6">
+                    <div className="mt-1 shrink-0">
+                      {isCorrect ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-red-500" />
                       )}
                     </div>
-                    <p className="text-sm font-body text-text-main line-clamp-2">{q.text}</p>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-orbitron font-bold text-text-muted block">
+                          {q.id}
+                        </span>
+                        {!isCorrect && userAnswer && (
+                          <span className="text-[10px] font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded">
+                            Your Answer: {userAnswer}
+                          </span>
+                        )}
+                        {isCorrect && (
+                          <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded">
+                            Correct
+                          </span>
+                        )}
+                        {!userAnswer && (
+                          <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded">
+                            Unanswered
+                          </span>
+                        )}
+                      </div>
+                      <p className={`text-sm font-body text-text-main ${!isExpanded && 'line-clamp-2'}`}>{q.text}</p>
+                    </div>
                   </div>
+                  
+                  {/* Expanded View for Reviewing */}
+                  {isExpanded && (
+                    <div className="px-4 sm:px-6 pb-6 pt-2 pl-14 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex flex-col gap-2 mb-4">
+                        {Object.entries(q.options).map(([key, value]) => {
+                          const isUserChoice = key === userAnswer;
+                          const isCorrectChoice = key === q.correct_answer;
+                          
+                          let bgStyle = 'bg-surface border-borderline/50';
+                          let textStyle = 'text-text-muted';
+                          
+                          if (isCorrectChoice) {
+                            bgStyle = 'bg-green-500/10 border-green-500/50';
+                            textStyle = 'text-green-500 font-medium';
+                          } else if (isUserChoice && !isCorrectChoice) {
+                            bgStyle = 'bg-red-500/10 border-red-500/50';
+                            textStyle = 'text-red-500 font-medium';
+                          }
+
+                          return (
+                            <div key={key} className={`flex items-center p-3 rounded-lg border ${bgStyle}`}>
+                              <span className={`font-orbitron font-bold w-6 shrink-0 ${textStyle}`}>{key}</span>
+                              <span className={`text-sm ${textStyle}`}>{value}</span>
+                              {isCorrectChoice && <CheckCircle2 className="w-4 h-4 ml-auto text-green-500 shrink-0" />}
+                              {isUserChoice && !isCorrectChoice && <XCircle className="w-4 h-4 ml-auto text-red-500 shrink-0" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="p-4 rounded-xl bg-surface border border-borderline/50">
+                        <span className="text-xs font-orbitron font-bold text-primary uppercase tracking-wider mb-2 block">Explanation</span>
+                        <p className="text-sm text-text-main whitespace-pre-wrap">{q.explanation}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

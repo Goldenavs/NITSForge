@@ -6,34 +6,49 @@ import { supabase } from '../services/supabase';
 interface QuizState {
   // State
   status: 'idle' | 'loading' | 'in-progress' | 'finished';
+  mode: 'practice' | 'simulation' | 'drill' | 'quick' | 'missed' | 'ai-generated';
   questions: Question[];
   currentIndex: number;
   selectedAnswers: Record<string, 'A' | 'B' | 'C' | 'D'>;
   score: number;
+  timeRemaining: number | null;
   
   // Actions
-  startQuiz: () => Promise<void>;
+  startQuiz: (mode?: string, options?: any) => Promise<void>;
   answerQuestion: (questionId: string, answer: 'A' | 'B' | 'C' | 'D') => void;
   nextQuestion: () => void;
   finishQuiz: () => Promise<void>;
   resetQuiz: () => void;
+  tick: () => void;
 }
 
 export const useQuizStore = create<QuizState>((set, get) => ({
   status: 'idle',
+  mode: 'practice',
   questions: [],
   currentIndex: 0,
   selectedAnswers: {},
   score: 0,
+  timeRemaining: null,
 
-  startQuiz: async () => {
-    set({ status: 'loading' });
+  startQuiz: async (mode = 'practice', options = {}) => {
+    set({ status: 'loading', mode: mode as any });
 
     // Fetch questions from Supabase
-    const { data, error } = await supabase
+    let query = supabase
       .from('questions')
       .select('*')
       .eq('is_active', true);
+      
+    // Future filtering e.g. options.category or options.source_exam
+    if (options.category) {
+      query = query.eq('category', options.category);
+    }
+    if (options.source) {
+      query = query.eq('source', options.source);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching questions:', error);
@@ -41,13 +56,44 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       return;
     }
 
+    // Local Shuffle
+    const fetchedQuestions = data as Question[] || [];
+    const shuffled = fetchedQuestions.sort(() => 0.5 - Math.random());
+
+    // Determine counts and timer based on mode
+    let finalQuestions = shuffled;
+    let timer = null;
+
+    if (mode === 'simulation') {
+      finalQuestions = shuffled.slice(0, 80);
+      timer = 150 * 60; // 150 minutes in seconds
+    } else if (mode === 'quick') {
+      finalQuestions = shuffled.slice(0, 10);
+    } else if (mode === 'practice') {
+      finalQuestions = shuffled.slice(0, 20); // Practice can be infinite, but limit to 20 for now
+    }
+
     set({
       status: 'in-progress',
-      questions: data as Question[] || [],
+      questions: finalQuestions,
       currentIndex: 0,
       selectedAnswers: {},
       score: 0,
+      timeRemaining: timer,
     });
+  },
+
+  tick: () => {
+    const { timeRemaining, status, finishQuiz } = get();
+    if (status !== 'in-progress' || timeRemaining === null) return;
+    
+    if (timeRemaining <= 1) {
+      // Time's up
+      set({ timeRemaining: 0 });
+      finishQuiz();
+    } else {
+      set({ timeRemaining: timeRemaining - 1 });
+    }
   },
 
   answerQuestion: (questionId, answer) => {
@@ -104,11 +150,13 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
     // Insert into quiz_sessions
     const accuracyRate = questions.length > 0 ? (finalScore / questions.length) * 100 : 0;
+    const { mode } = get();
+    
     const { data: sessionData, error: sessionError } = await supabase
       .from('quiz_sessions')
       .insert({
         user_id: userId,
-        mode: 'standard', // default mode
+        mode: mode,
         total_questions: questions.length,
         correct_answers: finalScore,
         accuracy_rate: accuracyRate,
@@ -147,10 +195,12 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   resetQuiz: () => {
     set({
       status: 'idle',
+      mode: 'practice',
       questions: [],
       currentIndex: 0,
       selectedAnswers: {},
       score: 0,
+      timeRemaining: null,
     });
   }
 }));
