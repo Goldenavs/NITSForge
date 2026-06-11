@@ -38,13 +38,13 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.3 }}
-      className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-xl shadow-lg overflow-hidden"
+      className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-sm shadow-lg overflow-hidden"
     >
       {/* Top Section - Major Badges Showcase */}
       <div className="p-6 md:p-8 relative overflow-hidden">
-        {/* Subtle background effects */}
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-[80px] rounded-full pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/5 blur-[60px] rounded-full pointer-events-none"></div>
+        {/* Subtle background effects reduced for performance */}
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 blur-2xl rounded-full pointer-events-none"></div>
+        <div className="absolute bottom-0 left-0 w-48 h-48 bg-accent/5 blur-xl rounded-full pointer-events-none"></div>
 
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
           <div>
@@ -71,8 +71,6 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
             <motion.div 
               key={badge.id}
               whileHover={{ scale: 1.05, y: -5 }}
-              animate={badge.unlocked ? { y: [0, -4, 0] } : {}}
-              transition={{ repeat: badge.unlocked ? Infinity : 0, duration: 3, delay: idx * 0.2 }}
               onClick={() => setSelectedBadge(badge)}
               className={`flex flex-col items-center gap-3 cursor-pointer group`}
             >

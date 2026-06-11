@@ -17,18 +17,16 @@ export const ProfileRankCard: React.FC<ProfileRankCardProps> = ({ level, title, 
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       whileHover={{ y: -4 }}
-      className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-xl p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_0_30px_rgba(var(--color-primary),0.3)] flex flex-col md:flex-row items-center gap-6 md:gap-8 relative overflow-hidden group hover:border-primary/50 transition-all duration-300"
+      className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-sm p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:shadow-[0_0_30px_rgba(var(--color-primary),0.3)] flex flex-col md:flex-row items-center gap-6 md:gap-8 relative overflow-hidden group hover:border-primary/50 transition-all duration-300"
     >
-      <motion.div 
-        animate={{ y: [0, -8, 0] }}
-        transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+      <div 
         className="flex-shrink-0 flex items-center justify-center w-24 h-24 md:w-28 md:h-28 rounded-full bg-surface-2 border-[6px] border-primary shadow-[0_0_20px_rgba(var(--color-primary),0.4)] relative overflow-hidden transition-transform duration-500 group-hover:scale-110 group-hover:shadow-[0_0_30px_rgba(var(--color-primary),0.6)]"
       >
         {/* Subtle background glow for the rank icon */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary to-transparent opacity-20"></div>
         <div className="absolute -top-[50%] -left-[100%] w-1/2 h-[200%] bg-gradient-to-r from-transparent via-white to-transparent opacity-30 rotate-45 group-hover:left-[200%] transition-all duration-1000 ease-in-out"></div>
         <span className="relative z-10 text-4xl md:text-5xl font-bold text-primary font-orbitron drop-shadow-md">{level}</span>
-      </motion.div>
+      </div>
       
       <div className="flex-grow w-full">
         <div className="flex justify-between items-end mb-4">

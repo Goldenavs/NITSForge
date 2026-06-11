@@ -14,16 +14,14 @@ const StatItem: React.FC<StatProps> = ({ label, value, icon }) => (
       hidden: { opacity: 0, scale: 0.9, y: 10 },
       show: { opacity: 1, scale: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
     }}
-    className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-xl p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_0_20px_rgba(var(--color-primary),0.2)] flex flex-col justify-center gap-4 hover:border-primary/50 hover:-translate-y-2 transition-all duration-300 group"
+    className="rounded-3xl border border-borderline bg-surface/80 backdrop-blur-sm p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_0_20px_rgba(var(--color-primary),0.2)] flex flex-col justify-center gap-4 hover:border-primary/50 hover:-translate-y-2 transition-all duration-300 group"
   >
     <div className="flex items-center gap-4">
-      <motion.div 
-        animate={{ scale: [1, 1.1, 1] }}
-        transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+      <div 
         className="p-3.5 rounded-2xl bg-surface-2 text-primary shadow-[0_0_10px_rgba(var(--color-primary),0.2)] group-hover:bg-primary group-hover:text-white transition-all duration-300 group-hover:shadow-[0_0_15px_rgba(var(--color-primary),0.5)] group-hover:rotate-12"
       >
         {icon}
-      </motion.div>
+      </div>
       <div>
         <p className="text-xs text-text-muted font-bold font-orbitron uppercase tracking-wider">{label}</p>
         <p className="text-2xl font-bold text-text-main font-orbitron drop-shadow-sm tracking-tight mt-1 group-hover:text-primary transition-colors">{value}</p>

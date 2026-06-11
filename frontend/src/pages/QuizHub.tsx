@@ -157,7 +157,7 @@ export default function QuizHub() {
             </CardContent>
             
             {/* Immersive AI glow */}
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 bg-accent opacity-[0.04] blur-[80px] pointer-events-none group-hover:opacity-[0.08] transition-opacity duration-700" />
+            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 bg-accent opacity-[0.04] blur-2xl pointer-events-none group-hover:opacity-[0.08] transition-opacity duration-700" />
           </Card>
         </Link>
       </motion.div>

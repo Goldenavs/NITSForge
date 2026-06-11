@@ -73,9 +73,9 @@ export const ProfilePage: React.FC = () => {
               <img src={profile.banner_url} alt="Profile Banner" className="w-full h-full object-cover" />
             ) : (
               <>
-                {/* Fallback gradients if no banner */}
-                <div className="absolute inset-0 bg-gradient-to-r from-primary/40 to-accent/40 blur-2xl opacity-50 mix-blend-overlay"></div>
-                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/20 blur-[80px] rounded-full pointer-events-none"></div>
+                {/* Background glow effect - toned down for performance */}
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 blur-xl opacity-30 mix-blend-overlay"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-accent/10 blur-xl rounded-full pointer-events-none"></div>
               </>
             )}
             {/* Bottom Vignette to ensure contrast for the text below */}
