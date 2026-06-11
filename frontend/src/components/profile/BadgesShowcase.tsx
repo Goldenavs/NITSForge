@@ -29,12 +29,12 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
 
   // Pick top 3 unlocked badges to showcase (or first 3 if not enough unlocked)
   const unlockedBadges = badges.filter(b => b.unlocked);
-  const majorBadges = unlockedBadges.length >= 3 
-    ? unlockedBadges.slice(0, 3) 
+  const majorBadges = unlockedBadges.length >= 3
+    ? unlockedBadges.slice(0, 3)
     : [...unlockedBadges, ...badges.filter(b => !b.unlocked)].slice(0, 3);
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.3 }}
@@ -56,7 +56,7 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
               {unlockedBadges.length} / {badges.length} Badges Unlocked
             </p>
           </div>
-          <button 
+          <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-surface-2 text-primary font-bold hover:bg-primary hover:text-white transition-colors duration-300 shadow-sm"
           >
@@ -67,8 +67,8 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
 
         {/* 3 Major Badges Display */}
         <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-3xl mx-auto">
-          {majorBadges.map((badge, idx) => (
-            <motion.div 
+          {majorBadges.map((badge) => (
+            <motion.div
               key={badge.id}
               whileHover={{ scale: 1.05, y: -5 }}
               onClick={() => setSelectedBadge(badge)}
@@ -76,13 +76,13 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
             >
               <div className={`
                 relative w-20 h-20 md:w-28 md:h-28 rounded-full flex items-center justify-center text-4xl md:text-5xl shadow-lg transition-all duration-300
-                ${badge.unlocked 
-                  ? `bg-gradient-to-br ${RARITY_COLORS[badge.rarity || 'common']} border-4 border-white/20 group-hover:shadow-[0_0_25px_rgba(var(--color-primary),0.5)]` 
+                ${badge.unlocked
+                  ? `bg-gradient-to-br ${RARITY_COLORS[badge.rarity || 'common']} border-4 border-white/20 group-hover:shadow-[0_0_25px_rgba(var(--color-primary),0.5)]`
                   : 'bg-surface-2 border-4 border-borderline grayscale opacity-60'}
               `}>
                 <span className="drop-shadow-md z-10">{badge.icon}</span>
                 {!badge.unlocked && <Lock className="absolute inset-0 m-auto text-text-muted/50 w-8 h-8" />}
-                
+
                 {/* Shine effect for unlocked badges */}
                 {badge.unlocked && (
                   <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rotate-45"></div>
@@ -118,8 +118,8 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
                   >
                     <div className={`
                       w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-sm
-                      ${badge.unlocked 
-                        ? `bg-gradient-to-br ${RARITY_COLORS[badge.rarity || 'common']} border-2 border-white/20` 
+                      ${badge.unlocked
+                        ? `bg-gradient-to-br ${RARITY_COLORS[badge.rarity || 'common']} border-2 border-white/20`
                         : 'bg-background border-2 border-borderline grayscale opacity-40'}
                     `}>
                       {badge.icon}
@@ -144,7 +144,7 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
             exit={{ opacity: 0, y: 20 }}
             className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-md bg-surface/95 backdrop-blur-xl border border-borderline shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl p-6"
           >
-            <button 
+            <button
               onClick={() => setSelectedBadge(null)}
               className="absolute top-4 right-4 text-text-muted hover:text-text-main transition-colors"
             >
@@ -153,8 +153,8 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
             <div className="flex gap-5 items-center mb-4">
               <div className={`
                 w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shadow-lg shrink-0
-                ${selectedBadge.unlocked 
-                  ? `bg-gradient-to-br ${RARITY_COLORS[selectedBadge.rarity || 'common']} border-2 border-white/20` 
+                ${selectedBadge.unlocked
+                  ? `bg-gradient-to-br ${RARITY_COLORS[selectedBadge.rarity || 'common']} border-2 border-white/20`
                   : 'bg-surface-2 border-2 border-borderline grayscale opacity-50'}
               `}>
                 {selectedBadge.icon}
@@ -168,7 +168,7 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
                 </span>
               </div>
             </div>
-            
+
             <div className="space-y-3 bg-surface-2/50 rounded-2xl p-4">
               <p className="text-sm text-text-main leading-relaxed">
                 {selectedBadge.description}
@@ -188,7 +188,7 @@ export const BadgesShowcase: React.FC<BadgesShowcaseProps> = ({ badges }) => {
 
       {/* Overlay to close tooltip by clicking outside */}
       {selectedBadge && (
-        <div 
+        <div
           className="fixed inset-0 z-40"
           onClick={() => setSelectedBadge(null)}
         />
