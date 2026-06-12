@@ -19,7 +19,7 @@ export function useLeaderboard(timeframe: 'all-time' | 'weekly' = 'all-time') {
     async function fetchLeaderboard() {
       setIsLoading(true);
       setError(null);
-      
+
       try {
         if (timeframe === 'all-time') {
           // Standard Supabase query for all-time
@@ -28,13 +28,13 @@ export function useLeaderboard(timeframe: 'all-time' | 'weekly' = 'all-time') {
             .select('id as user_id, display_name, avatar_url, rank_level, total_xp')
             .order('total_xp', { ascending: false })
             .limit(50);
-            
+
           if (dbError) throw dbError;
-          setData(allTimeData as LeaderboardEntry[]);
+          setData(allTimeData as unknown as LeaderboardEntry[]);
         } else {
           // RPC call for weekly
           const { data: weeklyData, error: rpcError } = await supabase.rpc('get_weekly_leaderboard');
-          
+
           if (rpcError) throw rpcError;
           setData(weeklyData as LeaderboardEntry[]);
         }
