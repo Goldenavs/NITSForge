@@ -120,7 +120,7 @@ export default function QuizSession() {
         </motion.div>
       </AnimatePresence>
 
-      {mode !== 'simulation' && <ForgeFAB />}
+      {mode !== 'simulation' && <ForgeFAB context={currentQ} />}
     </div>
   );
 }

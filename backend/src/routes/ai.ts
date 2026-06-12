@@ -56,5 +56,54 @@ router.post('/explain', requireAuth, async (req: Request, res: Response) => {
         res.status(500).json({ error: "Failed to generate explanation from Forge." });
     }
 });
+// POST /api/ai/chat (Streaming)
+router.post('/chat', requireAuth, async (req: Request, res: Response) => {
+    try {
+        const { messages, context } = req.body;
+        
+        if (!messages || !Array.isArray(messages) || messages.length === 0) {
+            return res.status(400).json({ error: "Missing or invalid messages array." });
+        }
+
+        let history = messages.slice(0, -1).map((m: any) => ({
+            role: m.role === 'user' ? 'user' : 'model',
+            parts: [{ text: m.text }]
+        }));
+
+        // Gemini API strictly requires history to start with a 'user' role
+        while (history.length > 0 && history[0].role !== 'user') {
+            history.shift();
+        }
+
+        const lastMessage = messages[messages.length - 1]?.text;
+        
+        let systemContext = "";
+        if (context && context.questionText) {
+            systemContext = `\n\n[SYSTEM CONTEXT - The user is currently looking at this quiz question]:\nQuestion: ${context.questionText}\nOptions: ${JSON.stringify(context.options)}\nUse this context ONLY if relevant to their prompt.`;
+        }
+
+        const chatSession = flashModel.startChat({ history });
+
+        // Set headers for streaming plain text
+        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+        res.setHeader('Transfer-Encoding', 'chunked');
+
+        const resultStream = await chatSession.sendMessageStream(lastMessage + systemContext);
+
+        for await (const chunk of resultStream.stream) {
+            const chunkText = chunk.text();
+            res.write(chunkText);
+        }
+        res.end();
+
+    } catch (error) {
+        console.error("AI Chat Error:", error);
+        if (!res.headersSent) {
+            res.status(500).json({ error: "Failed to generate chat response." });
+        } else {
+            res.end("\n[Error: Connection dropped]");
+        }
+    }
+});
 
 export default router;
