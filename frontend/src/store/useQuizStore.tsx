@@ -190,6 +190,19 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         console.error('Error saving session answers:', answersError);
       }
     }
+
+    // Call the Postgres RPC Gamification & Streak Engine
+    const { data: gamificationResult, error: rpcError } = await supabase
+      .rpc('process_quiz_completion', { 
+        p_session_id: sessionId, 
+        p_user_id: userId 
+      });
+
+    if (rpcError) {
+      console.error('Error processing gamification engine:', rpcError);
+    } else {
+      console.log('Gamification updated:', gamificationResult);
+    }
   },
 
   resetQuiz: () => {
