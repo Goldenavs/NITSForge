@@ -18,65 +18,11 @@ const fadeUpVariant: Variants = {
 
 const viewportConfig = { once: true, margin: "-50px" };
 
-// Deep Mock Data matching PhilNITS FE complexity
-const MOCK_HISTORY_LOGS = [
-  {
-    id: 'FE-NET-042',
-    date: 'Today, 14:22',
-    category: 'Networking & Communication',
-    mode: 'Daily Challenge',
-    text: 'In IPv4 addressing, which of the following perfectly describes the primary function of a Subnet Mask?',
-    options: {
-      A: 'It converts private IP addresses into globally routable public addresses.',
-      B: 'It separates the IP address into a network portion and a host portion.',
-      C: 'It resolves a human-readable domain name into an IP address.',
-      D: 'It dynamically assigns IP addresses to newly connected client devices.'
-    },
-    userAnswer: 'D',
-    correctAnswer: 'B',
-    isCorrect: false,
-    explanation: 'A subnet mask is a 32-bit number that masks an IP address, and divides the IP address into network address and host address. DHCP handles dynamic assignment (Option D).',
-    trend: [false, false]
-  },
-  {
-    id: 'FE-DB-014',
-    date: 'Yesterday, 09:15',
-    category: 'Databases',
-    mode: 'Topic Drill',
-    text: 'Which normal form (NF) ensures that there are no transitive dependencies of non-prime attributes on the primary key?',
-    options: {
-      A: 'First Normal Form (1NF)',
-      B: 'Second Normal Form (2NF)',
-      C: 'Third Normal Form (3NF)',
-      D: 'Boyce-Codd Normal Form (BCNF)'
-    },
-    userAnswer: 'C',
-    correctAnswer: 'C',
-    isCorrect: true,
-    explanation: '3NF dictates that every non-prime attribute is non-transitively dependent on every candidate key. 2NF only deals with partial dependencies.',
-    trend: [false, true, true]
-  },
-  {
-    id: 'FE-OS-088',
-    date: 'May 20, 18:40',
-    category: 'Operating Systems',
-    mode: 'Exam Simulation',
-    text: 'What is the primary consequence of a system entering a "thrashing" state?',
-    options: {
-      A: 'The CPU spends more time paging data than executing application code.',
-      B: 'The operating system kernel crashes due to a null pointer exception.',
-      C: 'The hard drive physical read/write head becomes damaged.',
-      D: 'The system successfully prevents a deadlocked process from executing.'
-    },
-    userAnswer: 'A',
-    correctAnswer: 'A',
-    isCorrect: true,
-    explanation: 'Thrashing occurs when a computer\'s virtual memory resources are overused, leading to a constant state of paging and page faults, severely degrading performance.',
-    trend: [true]
-  }
-];
+import { useHistory } from '../hooks/useHistory';
+import { Loader2, AlertTriangle } from 'lucide-react';
 
 export default function History() {
+  const { data: logs, isLoading, error, loadMore, hasMore } = useHistory();
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
       
@@ -118,18 +64,31 @@ export default function History() {
         viewport={viewportConfig}
         className="flex flex-col gap-3 mt-2"
       >
-        {MOCK_HISTORY_LOGS.map((log) => (
-          <motion.div key={log.id} variants={fadeUpVariant}>
+        {logs.map((log) => (
+          <motion.div key={log.answer_id} variants={fadeUpVariant}>
             <HistoryRow log={log} />
           </motion.div>
         ))}
         
+        {logs.length === 0 && !isLoading && (
+          <div className="text-center py-12 text-text-muted bg-surface-2/20 rounded-xl border border-borderline/30">
+            No history found. Start taking quizzes to see your performance logs!
+          </div>
+        )}
+        
         {/* Load More Button */}
-        <motion.div variants={fadeUpVariant} className="flex justify-center mt-6">
-          <Button variant="ghost" className="font-orbitron text-[10px] uppercase tracking-widest text-text-muted hover:text-primary leading-none pt-2.5 pb-2">
-            Load Older Records
-          </Button>
-        </motion.div>
+        {hasMore && (
+          <motion.div variants={fadeUpVariant} className="flex justify-center mt-6">
+            <Button 
+              variant="ghost" 
+              onClick={loadMore}
+              disabled={isLoading}
+              className="font-orbitron text-[10px] uppercase tracking-widest text-text-muted hover:text-primary leading-none pt-2.5 pb-2"
+            >
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Load Older Records'}
+            </Button>
+          </motion.div>
+        )}
       </motion.div>
 
     </div>

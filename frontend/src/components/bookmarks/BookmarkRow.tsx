@@ -6,28 +6,23 @@ import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 
+import type { BookmarkedQuestion } from '../../hooks/useBookmarks';
+
 interface BookmarkRowProps {
-  item: {
-    id: string;
-    category: string;
-    text: string;
-    options: { A: string; B: string; C: string; D: string };
-    correctAnswer: string;
-    explanation: string;
-    dateAdded: string;
-  };
+  item: BookmarkedQuestion;
   fadeUpVariant: Variants;
+  onRemove?: (id: string) => void;
 }
 
-export function BookmarkRow({ item, fadeUpVariant }: BookmarkRowProps) {
+export function BookmarkRow({ item, fadeUpVariant, onRemove }: BookmarkRowProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
     <motion.div variants={fadeUpVariant}>
       <Card className={`overflow-hidden transition-all duration-300 ${isOpen ? 'border-primary/40 shadow-md' : 'border-borderline/60 hover:border-text-muted/40'}`}>
-        
+
         {/* ALWAYS VISIBLE: Collapsed Header Row */}
-        <div 
+        <div
           onClick={() => setIsOpen(!isOpen)}
           className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4 cursor-pointer group bg-surface/60 backdrop-blur-sm hover:bg-surface"
         >
@@ -37,17 +32,17 @@ export function BookmarkRow({ item, fadeUpVariant }: BookmarkRowProps) {
                 <span className="text-[10px] font-orbitron font-bold text-primary tracking-widest uppercase leading-none pt-0.5">
                   {item.category}
                 </span>
-                <span className="text-[10px] text-text-muted/60 font-body hidden sm:inline-block">• Saved {item.dateAdded}</span>
+                <span className="text-[10px] text-text-muted/60 font-body hidden sm:inline-block">• Saved {new Date(item.bookmarked_at).toLocaleDateString()}</span>
               </div>
               <h4 className={`font-body text-sm sm:text-base leading-snug line-clamp-1 transition-colors ${isOpen ? 'text-text-main' : 'text-text-muted group-hover:text-text-main'}`}>
-                {item.text}
+                {item.question_text}
               </h4>
             </div>
           </div>
 
           <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0">
             <Badge className="bg-surface-2 text-text-muted border-borderline/50 font-orbitron text-[9px] uppercase tracking-widest leading-none pt-1 pb-0.5">
-              {item.id}
+              Q-ID
             </Badge>
             <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.3 }}>
               <ChevronDown className="w-5 h-5 text-text-muted group-hover:text-text-main transition-colors" />
@@ -66,21 +61,21 @@ export function BookmarkRow({ item, fadeUpVariant }: BookmarkRowProps) {
               className="overflow-hidden bg-surface"
             >
               <div className="p-4 sm:p-6 border-t border-borderline/50">
-                
+
                 <p className="text-text-main font-body leading-relaxed mb-6">
-                  {item.text}
+                  {item.question_text}
                 </p>
 
                 {/* Options Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                  {Object.entries(item.options).map(([key, value]) => (
-                    <div key={key} className={`flex items-center p-3 rounded-xl border ${key === item.correctAnswer ? 'bg-green-500/10 border-green-500/40 text-green-600 dark:text-green-400' : 'bg-surface-2/40 border-borderline/30 text-text-muted'}`}>
+                  {Object.entries(item.options || {}).map(([key, value]) => (
+                    <div key={key} className={`flex items-center p-3 rounded-xl border ${key === item.correct_answer ? 'bg-green-500/10 border-green-500/40 text-green-600 dark:text-green-400' : 'bg-surface-2/40 border-borderline/30 text-text-muted'}`}>
                       <div className={`w-6 h-6 rounded flex items-center justify-center font-orbitron font-bold text-xs shrink-0 mr-3 leading-none pt-0.5
-                        ${key === item.correctAnswer ? 'bg-green-500 text-surface' : 'bg-surface-2 text-text-muted'}`}
+                        ${key === item.correct_answer ? 'bg-green-500 text-surface' : 'bg-surface-2 text-text-muted'}`}
                       >
                         {key}
                       </div>
-                      <span className="font-body text-sm flex-1">{value}</span>
+                      <span className="font-body text-sm flex-1">{value as string}</span>
                     </div>
                   ))}
                 </div>
@@ -97,7 +92,7 @@ export function BookmarkRow({ item, fadeUpVariant }: BookmarkRowProps) {
                     <Button variant="outline" size="sm" className="w-full lg:w-auto font-orbitron text-[10px] tracking-widest border-accent/40 text-accent hover:bg-accent/10 leading-none pt-2.5 pb-2">
                       <Sparkles className="w-3 h-3 mr-2 -mt-0.5" /> AI Assist
                     </Button>
-                    <Button variant="ghost" size="sm" className="w-full lg:w-auto font-orbitron text-[10px] tracking-widest text-red-500 hover:text-red-400 hover:bg-red-500/10 leading-none pt-2.5 pb-2">
+                    <Button onClick={() => onRemove && onRemove(item.question_id)} variant="ghost" size="sm" className="w-full lg:w-auto font-orbitron text-[10px] tracking-widest text-red-500 hover:text-red-400 hover:bg-red-500/10 leading-none pt-2.5 pb-2">
                       <BookmarkMinus className="w-3 h-3 mr-2 -mt-0.5" /> Remove
                     </Button>
                   </div>

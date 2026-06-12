@@ -4,14 +4,10 @@ import { Folder, MoreVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Card } from '../ui/Card';
 
+import type { BookmarkCollection } from '../../hooks/useBookmarks';
+
 interface BookmarkFolderCardProps {
-  folder: {
-    id: string;
-    title: string;
-    count: number;
-    colorClass: string;
-    bgClass: string;
-  };
+  folder: BookmarkCollection;
   fadeUpVariant: Variants;
 }
 
@@ -20,14 +16,14 @@ export function BookmarkFolderCard({ folder, fadeUpVariant }: BookmarkFolderCard
     <motion.div variants={fadeUpVariant} className="h-full">
       <Link to={`/bookmarks/${folder.id}`}>
         <Card className="h-full bg-surface/85 backdrop-blur-md border border-borderline/60 hover:border-primary/40 hover:bg-surface transition-all duration-300 group cursor-pointer overflow-hidden relative">
-          
+
           {/* Subtle colored top edge */}
-          <div className={`absolute top-0 left-0 w-full h-1 ${folder.bgClass.split('/')[0]} opacity-50`} />
+          <div className={`absolute top-0 left-0 w-full h-1 ${folder.bg_class.split('/')[0]} opacity-50`} />
 
           <div className="p-5 flex flex-col h-full relative z-10">
             <div className="flex items-start justify-between mb-6">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${folder.bgClass}`}>
-                <Folder className={`w-6 h-6 ${folder.colorClass}`} fill="currentColor" fillOpacity={0.2} />
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${folder.bg_class}`}>
+                <Folder className={`w-6 h-6 ${folder.color_class}`} fill="currentColor" fillOpacity={0.2} />
               </div>
               <button className="text-text-muted hover:text-text-main p-1 rounded-md transition-colors" onClick={(e) => e.preventDefault()}>
                 <MoreVertical className="w-5 h-5" />
@@ -39,13 +35,13 @@ export function BookmarkFolderCard({ folder, fadeUpVariant }: BookmarkFolderCard
                 {folder.title}
               </h3>
               <p className="text-xs font-orbitron text-text-muted uppercase tracking-widest font-bold leading-none pt-0.5">
-                {folder.count} Items
+                {folder.question_count} Items
               </p>
             </div>
           </div>
-          
+
           {/* Background Glow */}
-          <div className={`absolute -bottom-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none ${folder.bgClass.split('/')[0]}`} />
+          <div className={`absolute -bottom-8 -right-8 w-32 h-32 rounded-full blur-3xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 pointer-events-none ${folder.bg_class.split('/')[0]}`} />
         </Card>
       </Link>
     </motion.div>

@@ -19,47 +19,11 @@ const fadeUpVariant: Variants = {
 
 const viewportConfig = { once: true, margin: "-50px" };
 
-// Mock Data: Collections
-const MOCK_FOLDERS = [
-  { id: 'math-formulas', title: 'Math & Formulas', count: 24, colorClass: 'text-blue-500', bgClass: 'bg-blue-500/10' },
-  { id: 'networking-traps', title: 'Networking Traps', count: 12, colorClass: 'text-rose-500', bgClass: 'bg-rose-500/10' },
-  { id: 'exam-eve', title: 'Exam Eve Review', count: 5, colorClass: 'text-amber-500', bgClass: 'bg-amber-500/10' },
-  { id: 'data-structs', title: 'Tricky Data Structs', count: 18, colorClass: 'text-emerald-500', bgClass: 'bg-emerald-500/10' },
-];
-
-// Mock Data: Uncategorized / Recent Bookmarks
-const MOCK_RECENT_BOOKMARKS = [
-  {
-    id: 'FE-SE-102',
-    category: 'Software Engineering',
-    dateAdded: '2 days ago',
-    text: 'Which of the following best describes the primary goal of the Agile methodology compared to the Waterfall model?',
-    options: {
-      A: 'To eliminate all software bugs before release through rigorous documentation.',
-      B: 'To deliver working software incrementally and adapt to changing requirements.',
-      C: 'To ensure strict adherence to a pre-defined budget and timeline.',
-      D: 'To minimize communication between developers and stakeholders.'
-    },
-    correctAnswer: 'B',
-    explanation: 'Agile prioritizes iterative development, flexibility, and customer collaboration over rigid planning and comprehensive documentation.'
-  },
-  {
-    id: 'FE-SEC-045',
-    category: 'Information Security',
-    dateAdded: '1 week ago',
-    text: 'What is the main difference between Symmetric and Asymmetric encryption algorithms?',
-    options: {
-      A: 'Symmetric encryption is only used for data at rest, while Asymmetric is for data in transit.',
-      B: 'Symmetric uses a single key for both encryption and decryption; Asymmetric uses a public/private key pair.',
-      C: 'Symmetric encryption cannot be broken by brute force; Asymmetric can.',
-      D: 'Symmetric uses the RSA algorithm; Asymmetric uses AES.'
-    },
-    correctAnswer: 'B',
-    explanation: 'Symmetric encryption relies on a shared secret key (like AES). Asymmetric relies on a mathematically linked public and private key pair (like RSA).'
-  }
-];
+import { useBookmarks } from '../hooks/useBookmarks';
+import { Loader2, AlertTriangle } from 'lucide-react';
 
 export default function Bookmarks() {
+  const { collections, recentBookmarks, isLoading, error, toggleBookmark } = useBookmarks();
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
       
@@ -110,9 +74,14 @@ export default function Bookmarks() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {MOCK_FOLDERS.map((folder) => (
+          {collections.map((folder) => (
             <BookmarkFolderCard key={folder.id} folder={folder} fadeUpVariant={fadeUpVariant} />
           ))}
+          {collections.length === 0 && !isLoading && (
+            <div className="col-span-full text-center py-8 text-text-muted bg-surface-2/20 rounded-xl border border-borderline/30">
+              No collections yet. Create a folder to organize your saved questions!
+            </div>
+          )}
         </div>
       </motion.div>
 
@@ -128,9 +97,15 @@ export default function Bookmarks() {
           <h2 className="text-xl font-display font-bold text-text-main leading-none pt-1">Recent Saves</h2>
         </div>
 
-        {MOCK_RECENT_BOOKMARKS.map((item) => (
-          <BookmarkRow key={item.id} item={item} fadeUpVariant={fadeUpVariant} />
+        {recentBookmarks.map((item) => (
+          <BookmarkRow key={item.bookmark_id} item={item} fadeUpVariant={fadeUpVariant} onRemove={toggleBookmark} />
         ))}
+        
+        {recentBookmarks.length === 0 && !isLoading && (
+          <div className="text-center py-12 text-text-muted bg-surface-2/20 rounded-xl border border-borderline/30">
+            No saved questions found. Click the Bookmark icon on any tricky question to save it here!
+          </div>
+        )}
         
       </motion.div>
 
