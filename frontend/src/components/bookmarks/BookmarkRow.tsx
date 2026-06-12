@@ -1,12 +1,13 @@
 // src/components/bookmarks/BookmarkRow.tsx
 import { useState } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { BookmarkMinus, ChevronDown, Sparkles } from 'lucide-react';
+import { BookmarkMinus, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 
 import type { BookmarkedQuestion } from '../../hooks/useBookmarks';
+import { explainQuestion } from '../../services/ai';
 
 interface BookmarkRowProps {
   item: BookmarkedQuestion;
@@ -16,6 +17,30 @@ interface BookmarkRowProps {
 
 export function BookmarkRow({ item, fadeUpVariant, onRemove }: BookmarkRowProps) {
   const [isOpen, setIsOpen] = useState(false);
+
+  // AI State
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  const handleExplain = async () => {
+    if (aiExplanation) return; // already loaded
+    setIsAiLoading(true);
+    setAiError(null);
+    try {
+      const result = await explainQuestion({
+        questionText: item.question_text,
+        options: item.options,
+        correctAnswer: item.correct_answer,
+        userAnswer: null
+      });
+      setAiExplanation(result);
+    } catch (err: any) {
+      setAiError(err.message);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   return (
     <motion.div variants={fadeUpVariant}>
@@ -89,14 +114,60 @@ export function BookmarkRow({ item, fadeUpVariant, onRemove }: BookmarkRowProps)
                     </p>
                   </div>
                   <div className="shrink-0 flex flex-col gap-2 justify-center pt-4 lg:pt-0 border-t lg:border-t-0 border-borderline/50 lg:pl-4 lg:border-l">
-                    <Button variant="outline" size="sm" className="w-full lg:w-auto font-orbitron text-[10px] tracking-widest border-accent/40 text-accent hover:bg-accent/10 leading-none pt-2.5 pb-2">
-                      <Sparkles className="w-3 h-3 mr-2 -mt-0.5" /> AI Assist
+                    <Button 
+                      onClick={handleExplain}
+                      disabled={isAiLoading}
+                      variant="outline" size="sm" className="w-full lg:w-auto font-orbitron text-[10px] tracking-widest border-accent/40 text-accent hover:bg-accent/10 leading-none pt-2.5 pb-2">
+                      {isAiLoading ? <Loader2 className="w-3 h-3 mr-2 animate-spin -mt-0.5" /> : <Sparkles className="w-3 h-3 mr-2 -mt-0.5" />}
+                      {isAiLoading ? 'Analyzing...' : 'AI Assist'}
                     </Button>
                     <Button onClick={() => onRemove && onRemove(item.question_id)} variant="ghost" size="sm" className="w-full lg:w-auto font-orbitron text-[10px] tracking-widest text-red-500 hover:text-red-400 hover:bg-red-500/10 leading-none pt-2.5 pb-2">
                       <BookmarkMinus className="w-3 h-3 mr-2 -mt-0.5" /> Remove
                     </Button>
                   </div>
                 </div>
+
+                {/* AI Explanation Inline Expansion */}
+                <AnimatePresence>
+                  {(aiExplanation || isAiLoading || aiError) && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                      animate={{ height: 'auto', opacity: 1, marginTop: 16 }}
+                      exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 sm:p-5 rounded-xl bg-accent/5 border border-accent/20 relative">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-accent rounded-l-xl opacity-50"></div>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Sparkles className="w-4 h-4 text-accent" />
+                          <span className="text-xs font-orbitron font-bold text-accent tracking-widest uppercase leading-none pt-0.5">Forge AI Analysis</span>
+                        </div>
+                        
+                        {isAiLoading && (
+                          <div className="flex flex-col gap-2 animate-pulse">
+                            <div className="h-3 bg-surface-2/60 rounded w-3/4"></div>
+                            <div className="h-3 bg-surface-2/60 rounded w-full"></div>
+                            <div className="h-3 bg-surface-2/60 rounded w-5/6"></div>
+                          </div>
+                        )}
+
+                        {aiError && (
+                          <div className="text-red-400 text-sm font-body">
+                            {aiError}
+                          </div>
+                        )}
+
+                        {aiExplanation && !isAiLoading && (
+                          <div className="text-sm text-text-main font-body leading-relaxed prose prose-invert max-w-none">
+                            {aiExplanation.split('\n\n').map((paragraph, i) => (
+                              <p key={i} className="mb-2 last:mb-0">{paragraph}</p>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
               </div>
             </motion.div>
