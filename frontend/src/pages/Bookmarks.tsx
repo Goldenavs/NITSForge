@@ -20,15 +20,14 @@ const fadeUpVariant: Variants = {
 const viewportConfig = { once: true, margin: "-50px" };
 
 import { useBookmarks } from '../hooks/useBookmarks';
-import { Loader2, AlertTriangle } from 'lucide-react';
 
 export default function Bookmarks() {
-  const { collections, recentBookmarks, isLoading, error, toggleBookmark } = useBookmarks();
+  const { collections, recentBookmarks, isLoading, toggleBookmark } = useBookmarks();
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
-      
+
       {/* 1. HEADER SECTION */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         animate="visible"
         variants={fadeUpVariant}
@@ -49,9 +48,9 @@ export default function Bookmarks() {
         <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
           <div className="relative flex-1 md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-            <input 
-              type="text" 
-              placeholder="Search bookmarks..." 
+            <input
+              type="text"
+              placeholder="Search bookmarks..."
               className="w-full bg-surface-2/60 border border-borderline text-text-main text-sm rounded-lg pl-10 pr-4 py-2.5 focus:outline-none focus:border-primary/50 transition-colors"
             />
           </div>
@@ -59,7 +58,7 @@ export default function Bookmarks() {
       </motion.div>
 
       {/* 2. COLLECTIONS GRID */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
@@ -86,7 +85,7 @@ export default function Bookmarks() {
       </motion.div>
 
       {/* 3. RECENT / UNCATEGORIZED LIST */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
@@ -100,13 +99,13 @@ export default function Bookmarks() {
         {recentBookmarks.map((item) => (
           <BookmarkRow key={item.bookmark_id} item={item} fadeUpVariant={fadeUpVariant} onRemove={toggleBookmark} />
         ))}
-        
+
         {recentBookmarks.length === 0 && !isLoading && (
           <div className="text-center py-12 text-text-muted bg-surface-2/20 rounded-xl border border-borderline/30">
             No saved questions found. Click the Bookmark icon on any tricky question to save it here!
           </div>
         )}
-        
+
       </motion.div>
 
     </div>

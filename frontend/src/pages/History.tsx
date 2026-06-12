@@ -19,10 +19,10 @@ const fadeUpVariant: Variants = {
 const viewportConfig = { once: true, margin: "-50px" };
 
 import { useHistory } from '../hooks/useHistory';
-import { Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function History() {
-  const { data: logs, isLoading, error, loadMore, hasMore } = useHistory();
+  const { data: logs, isLoading, loadMore, hasMore } = useHistory();
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
       

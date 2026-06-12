@@ -29,45 +29,54 @@ const COLLECTION_DATA = {
   borderColorClass: 'border-rose-500/30',
   items: [
     {
-      id: 'FE-NET-088',
+      bookmark_id: 'mock-1',
+      user_id: 'mock-user',
+      collection_id: 'networking-traps',
+      bookmarked_at: new Date().toISOString(),
+      question_id: 'FE-NET-088',
       category: 'Networking & Communication',
-      dateAdded: '3 days ago',
-      text: 'Which transport layer protocol is connectionless and does not guarantee delivery of packets?',
+      question_text: 'Which transport layer protocol is connectionless and does not guarantee delivery of packets?',
       options: {
         A: 'TCP (Transmission Control Protocol)',
         B: 'UDP (User Datagram Protocol)',
         C: 'ICMP (Internet Control Message Protocol)',
         D: 'IGMP (Internet Group Management Protocol)'
       },
-      correctAnswer: 'B',
+      correct_answer: 'B',
       explanation: 'UDP is a connectionless protocol that prioritizes speed over reliability. Unlike TCP, it has no handshaking, error checking, or packet sequencing.'
     },
     {
-      id: 'FE-NET-112',
+      bookmark_id: 'mock-2',
+      user_id: 'mock-user',
+      collection_id: 'networking-traps',
+      bookmarked_at: new Date().toISOString(),
+      question_id: 'FE-NET-112',
       category: 'Networking & Communication',
-      dateAdded: '5 days ago',
-      text: 'In the OSI model, at which layer does a standard network switch operate?',
+      question_text: 'In the OSI model, at which layer does a standard network switch operate?',
       options: {
         A: 'Layer 1 (Physical)',
         B: 'Layer 2 (Data Link)',
         C: 'Layer 3 (Network)',
         D: 'Layer 4 (Transport)'
       },
-      correctAnswer: 'B',
+      correct_answer: 'B',
       explanation: 'Standard switches operate at Layer 2 (Data Link) using MAC addresses to forward frames. Routers operate at Layer 3 using IP addresses.'
     },
     {
-      id: 'FE-NET-042',
+      bookmark_id: 'mock-3',
+      user_id: 'mock-user',
+      collection_id: 'networking-traps',
+      bookmarked_at: new Date().toISOString(),
+      question_id: 'FE-NET-042',
       category: 'Networking & Communication',
-      dateAdded: '1 week ago',
-      text: 'In IPv4 addressing, which of the following perfectly describes the primary function of a Subnet Mask?',
+      question_text: 'In IPv4 addressing, which of the following perfectly describes the primary function of a Subnet Mask?',
       options: {
         A: 'It converts private IP addresses into globally routable public addresses.',
         B: 'It separates the IP address into a network portion and a host portion.',
         C: 'It resolves a human-readable domain name into an IP address.',
         D: 'It dynamically assigns IP addresses to newly connected client devices.'
       },
-      correctAnswer: 'B',
+      correct_answer: 'B',
       explanation: 'A subnet mask is a 32-bit number that masks an IP address, and divides the IP address into network address and host address.'
     }
   ]
@@ -149,8 +158,8 @@ export default function BookmarkCollection() {
         viewport={viewportConfig}
         className="flex flex-col gap-3"
       >
-        {COLLECTION_DATA.items.map((item) => (
-          <BookmarkRow key={item.id} item={item} fadeUpVariant={fadeUpVariant} />
+        {COLLECTION_DATA.items.map((item: any) => (
+          <BookmarkRow key={item.bookmark_id} item={item} fadeUpVariant={fadeUpVariant} />
         ))}
       </motion.div>
 
