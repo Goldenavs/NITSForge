@@ -60,7 +60,7 @@ export default function History() {
       <motion.div 
         variants={staggerContainer}
         initial="hidden"
-        whileInView="visible"
+        animate="visible"
         viewport={viewportConfig}
         className="flex flex-col gap-3 mt-2"
       >
