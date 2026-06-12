@@ -7,6 +7,8 @@ import { StatCard } from '../components/dashboard/StatCard';
 import { AIWeeklyReport } from '../components/dashboard/AIWeeklyReport';
 import { AccuracyChart, CategoryRadar } from '../components/dashboard/DashboardCharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { useDashboardStats } from '../hooks/useDashboardStats';
+import { Loader2 } from 'lucide-react';
 
 // 1. Group Stagger Orchestrator (Used for rows with multiple items like StatCards)
 const staggerContainer = {
@@ -31,6 +33,30 @@ const fadeUpVariant = {
 const viewportConfig = { once: true, margin: "-50px" };
 
 export default function Dashboard() {
+  const { data, isLoading, error } = useDashboardStats();
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="flex justify-center items-center h-[50vh] text-text-muted">
+        <AlertTriangle className="w-6 h-6 mr-2" /> Failed to load dashboard data.
+      </div>
+    );
+  }
+
+  const { profile, overview, accuracy_trends, category_radar, insights } = data;
+
+  // Rank Names
+  const rankNames = ['Apprentice', 'Technician', 'Analyst', 'Specialist', 'Engineer', 'Senior Engineer', 'Architect', 'FE Master'];
+  const currentRankName = rankNames[(profile?.rank_level || 1) - 1];
+
   return (
     <div className="flex flex-col gap-6 sm:gap-8 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 overflow-y-visible pt-4">
       
@@ -43,10 +69,10 @@ export default function Dashboard() {
       >
         <div className="flex flex-col items-start justify-center">
           <Badge className="mb-2 bg-surface-2/60 backdrop-blur-sm text-text-muted border-borderline font-orbitron tracking-widest uppercase text-[10px]">
-            Level 4: Specialist
+            Level {profile?.rank_level || 1}: {currentRankName}
           </Badge>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main font-display tracking-tight leading-none pt-1">
-            Welcome back, <span className="text-primary">Engineer.</span>
+            Welcome back, <span className="text-primary">{profile?.display_name || 'Guest'}.</span>
           </h1>
           <p className="text-sm sm:text-base text-text-muted mt-2 font-body flex items-center h-5">
             Your PhilNITS FE Exam is in&nbsp;<strong className="text-text-main font-orbitron font-bold text-base sm:text-lg text-primary leading-none pt-0.5">42</strong>&nbsp;days.
@@ -67,16 +93,16 @@ export default function Dashboard() {
         className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-4"
       >
         <motion.div variants={fadeUpVariant}>
-          <StatCard title="Total XP" value="4,250" subtitle="1,250 to next level" icon={Trophy} trend="up" trendValue="+350" colorClass="text-amber-500 border-amber-500/20" />
+          <StatCard title="Total XP" value={profile?.total_xp?.toString() || '0'} subtitle="Keep forging!" icon={Trophy} colorClass="text-amber-500 border-amber-500/20" />
         </motion.div>
         <motion.div variants={fadeUpVariant}>
-          <StatCard title="Overall Accuracy" value="78%" subtitle="Target: 85% for Exam Ready" icon={Target} trend="up" trendValue="+2.4%" colorClass="text-primary border-primary/20" />
+          <StatCard title="Overall Accuracy" value={`${overview?.overall_accuracy || 0}%`} subtitle="Target: 85% for Exam Ready" icon={Target} colorClass="text-primary border-primary/20" />
         </motion.div>
         <motion.div variants={fadeUpVariant}>
-          <StatCard title="Current Streak" value="12" subtitle="Days active" icon={Flame} trend="neutral" trendValue="Saved" colorClass="text-orange-500 border-orange-500/20" />
+          <StatCard title="Current Streak" value={profile?.current_streak?.toString() || '0'} subtitle="Days active" icon={Flame} colorClass="text-orange-500 border-orange-500/20" />
         </motion.div>
         <motion.div variants={fadeUpVariant}>
-          <StatCard title="Questions Answered" value="842" subtitle="Across 11 categories" icon={BookOpen} colorClass="text-blue-500 border-blue-500/20" />
+          <StatCard title="Questions Answered" value={overview?.total_questions_answered?.toString() || '0'} subtitle="Across all categories" icon={BookOpen} colorClass="text-blue-500 border-blue-500/20" />
         </motion.div>
       </motion.div>
 
@@ -99,10 +125,10 @@ export default function Dashboard() {
         className="grid grid-cols-1 lg:grid-cols-3 gap-6"
       >
         <motion.div variants={fadeUpVariant} className="lg:col-span-2 min-w-0">
-          <AccuracyChart />
+          <AccuracyChart data={accuracy_trends} />
         </motion.div>
         <motion.div variants={fadeUpVariant} className="min-w-0">
-          <CategoryRadar />
+          <CategoryRadar data={category_radar} />
         </motion.div>
       </motion.div>
 
@@ -123,8 +149,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="flex flex-col justify-between h-[calc(100%-3rem)]">
               <div>
-                <p className="text-text-main font-bold font-display text-sm mb-1">Networking & Communication</p>
-                <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-4">Your accuracy in this category has dropped to 45% over the last 3 sessions. Subnetting questions are causing the most errors.</p>
+                <p className="text-text-main font-bold font-display text-sm mb-1">{insights?.weakest_category || 'Keep Playing'}</p>
+                <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-4">This is currently your weakest area based on your answer history. Running a targeted drill can help.</p>
               </div>
               <Button variant="danger" size="sm" className="w-fit font-orbitron text-[10px] tracking-wider py-2">Run Targeted Drill</Button>
             </CardContent>
@@ -140,8 +166,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="flex flex-col justify-between h-[calc(100%-3rem)]">
               <div>
-                <p className="text-text-main font-bold font-display text-sm mb-1">Data Structures</p>
-                <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-4">You are consistently scoring above 90% in this category. You are effectively exam-ready for these topics.</p>
+                <p className="text-text-main font-bold font-display text-sm mb-1">{insights?.strongest_category || 'Keep Playing'}</p>
+                <p className="text-xs sm:text-sm text-text-muted leading-relaxed mb-4">You are consistently scoring highest in this category. You are effectively exam-ready for these topics.</p>
               </div>
               <Button variant="outline" size="sm" className="w-fit font-orbitron text-[10px] tracking-wider py-2 border-green-500/30 text-green-600 dark:text-green-400">View Concept Cards</Button>
             </CardContent>

@@ -26,7 +26,7 @@ const proModel = genAI.getGenerativeModel({
   generationConfig: { responseMimeType: "application/json" }
 });
 
-const EXAM_PERIOD = "March 2018"; // Change this before running!
+const EXAM_PERIOD = "October 2017"; // Change this before running!
 
 const getInstructionPrompt = (start: number, end: number) => `
 You are an expert data extractor. I am providing you with the text extracted from two PDFs:

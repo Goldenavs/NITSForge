@@ -3,32 +3,27 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 
-// Mock Data
-const accuracyData = [
-  { session: 'S1', score: 45 }, { session: 'S2', score: 52 }, { session: 'S3', score: 48 },
-  { session: 'S4', score: 61 }, { session: 'S5', score: 59 }, { session: 'S6', score: 68 },
-  { session: 'S7', score: 72 }, { session: 'S8', score: 76 }, { session: 'S9', score: 81 },
-];
+export interface AccuracyData {
+  session: string;
+  score: number;
+}
 
-const radarData = [
-  { subject: 'Net & Comm', A: 45, fullMark: 100 },
-  { subject: 'Data Struct', A: 90, fullMark: 100 },
-  { subject: 'Algorithms', A: 75, fullMark: 100 },
-  { subject: 'Databases', A: 85, fullMark: 100 },
-  { subject: 'OS', A: 65, fullMark: 100 },
-  { subject: 'Security', A: 60, fullMark: 100 },
-];
+export interface RadarData {
+  subject: string;
+  A: number;
+  fullMark: number;
+}
 
-export function AccuracyChart() {
+export function AccuracyChart({ data }: { data: AccuracyData[] }) {
   return (
     <Card className="flex flex-col h-[400px]">
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <CardTitle>Accuracy Trends</CardTitle>
-        <Badge variant="outline">Last 9 Sessions</Badge>
+        <Badge variant="outline">Last {data.length} Sessions</Badge>
       </CardHeader>
       <CardContent className="flex-1 pt-4 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={accuracyData} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
+          <LineChart data={data} margin={{ top: 5, right: 20, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-borderline)" vertical={false} />
             <XAxis dataKey="session" stroke="var(--color-text-muted)" fontSize={12} tickLine={false} axisLine={false} />
             <YAxis stroke="var(--color-text-muted)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
@@ -44,7 +39,7 @@ export function AccuracyChart() {
   );
 }
 
-export function CategoryRadar() {
+export function CategoryRadar({ data }: { data: RadarData[] }) {
   return (
     <Card className="flex flex-col h-[400px]">
       <CardHeader className="pb-0">
@@ -52,7 +47,7 @@ export function CategoryRadar() {
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
             <PolarGrid stroke="var(--color-borderline)" />
             <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--color-text-muted)', fontSize: 10 }} />
             <Radar name="Accuracy" dataKey="A" stroke="var(--color-primary)" fill="var(--color-primary)" fillOpacity={0.2} />
