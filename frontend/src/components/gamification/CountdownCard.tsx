@@ -72,7 +72,7 @@ export function CountdownCard({ isCompleted, viewportConfig, fadeUpVariant }: Co
               <span className="font-display font-bold text-sm">Protocol Complete. Streak Secured.</span>
             </div>
           ) : (
-            <Link to="/quiz/session?mode=daily" className="w-full sm:w-auto">
+            <Link to="/quiz/session?mode=daily-challenge" className="w-full sm:w-auto">
               <Button 
                 variant="primary" 
                 className="w-full sm:w-auto px-10 py-5 text-lg font-orbitron tracking-widest shadow-[0_0_25px_rgba(var(--color-primary),0.4)] hover:shadow-[0_0_35px_rgba(var(--color-primary),0.6)] hover:scale-105 transition-all duration-300 leading-none pt-6 pb-5"

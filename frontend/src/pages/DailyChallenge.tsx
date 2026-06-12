@@ -1,4 +1,6 @@
 // src/pages/DailyChallenge.tsx
+import { useState, useEffect } from 'react';
+import { supabase } from '../services/supabase';
 import { motion, type Variants } from 'framer-motion';
 import { Trophy, Flame, Zap } from 'lucide-react';
 import { DailyHeader } from '../components/gamification/DailyHeader';
@@ -18,7 +20,28 @@ const fadeUpVariant: Variants = {
 const viewportConfig = { once: true, margin: "-50px" };
 
 export default function DailyChallenge() {
-  const isCompleted = false; 
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  useEffect(() => {
+    const checkStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('last_daily_challenge_date')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!error && data?.last_daily_challenge_date) {
+        const today = new Date().toISOString().split('T')[0];
+        if (data.last_daily_challenge_date === today) {
+          setIsCompleted(true);
+        }
+      }
+    };
+    checkStatus();
+  }, []);
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-4xl mx-auto pb-24 px-1 sm:px-0 pt-4">
