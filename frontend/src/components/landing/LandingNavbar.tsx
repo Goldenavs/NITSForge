@@ -1,15 +1,17 @@
 // src/components/landing/LandingNavbar.tsx
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, X } from 'lucide-react';
 
 const AnimatedLink = ({ 
   title, 
   id, 
+  isActive,
   onClick 
 }: { 
   title: string; 
   id: string; 
+  isActive?: boolean;
   onClick: (id: string) => void; 
 }) => {
   return (
@@ -17,10 +19,10 @@ const AnimatedLink = ({
       onClick={() => onClick(id)}
       className="font-orbitron relative overflow-hidden group cursor-pointer text-[10px] xl:text-xs font-bold uppercase tracking-widest text-text-muted block shrink-0"
     >
-      <span className="block transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] group-hover:-translate-y-full text-text-main">
+      <span className={`block transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${isActive ? '-translate-y-full text-primary' : 'group-hover:-translate-y-full text-text-main'}`}>
         {title}
       </span>
-      <span className="absolute inset-0 block transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] text-primary translate-y-full group-hover:translate-y-0">
+      <span className={`absolute inset-0 block transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] text-primary ${isActive ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'}`}>
         {title}
       </span>
     </button>
@@ -29,12 +31,11 @@ const AnimatedLink = ({
 
 export function LandingNavbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isHidden, setIsHidden] = useState(false);
-  const lastScrollY = useRef(0);
+  const [activeSection, setActiveSection] = useState('hero');
+  const isScrollingRef = useRef(false);
 
-  // Scroll detection logic
+  // Scroll logic for scroll spy
   useEffect(() => {
-    // Determine the scroll container based on screen size (matches our layout logic)
     const container = window.innerWidth >= 1024 
       ? document.getElementById('right-scroll') 
       : document.getElementById('main-scroll');
@@ -42,106 +43,136 @@ export function LandingNavbar() {
     if (!container) return;
 
     const handleScroll = () => {
-      const currentScrollY = container.scrollTop;
-      const diff = currentScrollY - lastScrollY.current;
-
-      if (currentScrollY < 50) {
-        setIsHidden(false);
-      } else if (diff > 10) {
-        // Scrolling down
-        if (!isMobileMenuOpen) setIsHidden(true);
-      } else if (diff < -10) {
-        // Scrolling up
-        setIsHidden(false);
+      if (isScrollingRef.current) return; // Prevent flickering during programmatic scroll
+      
+      const sections = ['hero', 'features', 'core-engine', 'faqs', 'footer'];
+      const containerTop = container.getBoundingClientRect().top;
+      
+      for (const id of [...sections].reverse()) {
+        const element = document.getElementById(id);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          // If the element's top is less than half the container's height, it's considered active
+          if (rect.top - containerTop < container.clientHeight * 0.4) {
+            setActiveSection(id);
+            break;
+          }
+        }
       }
-
-      lastScrollY.current = currentScrollY;
     };
 
     container.addEventListener('scroll', handleScroll, { passive: true });
+    // Trigger once on mount
+    handleScroll();
     return () => container.removeEventListener('scroll', handleScroll);
-  }, [isMobileMenuOpen]);
+  }, []);
 
   const scrollTo = (id: string) => {
     setIsMobileMenuOpen(false);
+    setActiveSection(id);
+    isScrollingRef.current = true;
+    
     const element = document.getElementById(id);
     if (element) {
-      // Offset scrolling slightly to account for the sticky navbar
       const container = window.innerWidth >= 1024 
         ? document.getElementById('right-scroll') 
         : document.getElementById('main-scroll');
         
       if (container) {
-        const top = element.getBoundingClientRect().top + container.scrollTop - 100;
+        const top = element.getBoundingClientRect().top + container.scrollTop;
         container.scrollTo({ top, behavior: 'smooth' });
+        
+        // Unlock scroll spy after smooth scroll completes (~800ms)
+        setTimeout(() => {
+          isScrollingRef.current = false;
+        }, 800);
+      } else {
+        isScrollingRef.current = false;
       }
+    } else {
+      isScrollingRef.current = false;
     }
   };
 
+  const links = [
+    { name: 'Features', id: 'features' },
+    { name: 'Core Engine', id: 'core-engine' },
+    { name: 'FAQs', id: 'faqs' }
+  ];
+
   return (
-    <>
-      <motion.nav 
-        initial={{ y: -100 }}
-        animate={{ y: isHidden ? -150 : 0 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="sticky top-6 z-50 mx-6 lg:mx-10 mt-6 rounded-2xl bg-surface/80 backdrop-blur-xl border border-borderline px-6 py-4 flex items-center justify-between shadow-[0_8px_30px_rgba(0,0,0,0.12)]"
-      >
-        <button 
-          onClick={() => scrollTo('hero')} 
-          className="font-display font-bold text-xl tracking-tight text-text-main hover:text-primary transition-colors flex items-center gap-2 group"
-        >
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-surface font-bold text-lg group-hover:scale-105 transition-transform shadow-md">
-            F
-          </div>
-          <span>NITSForge<span className="text-primary">.</span></span>
-        </button>
-
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8">
-          <AnimatedLink title="Features" id="features" onClick={scrollTo} />
-          <AnimatedLink title="Core Engine" id="core-engine" onClick={scrollTo} />
-          <AnimatedLink title="FAQs" id="faqs" onClick={scrollTo} />
-          <AnimatedLink title="More" id="footer" onClick={scrollTo} />
-        </div>
-
-        {/* Mobile Menu Toggle */}
-        <div className="md:hidden">
+    <motion.nav 
+      initial={{ y: -120 }}
+      animate={{ y: 0 }}
+      transition={{ type: "spring", bounce: 0, duration: 2.7 }}
+      className="sticky top-0 w-full z-50 flex flex-col items-center px-4 md:px-6 py-4 sm:py-6 pointer-events-none"
+    >
+      <div className="w-full max-w-7xl relative pointer-events-none">
+        
+        <div className="w-full flex items-center justify-between lg:justify-evenly pointer-events-auto bg-surface/80 backdrop-blur-2xl border border-borderline rounded-full px-6 sm:px-10 py-2.5 sm:py-3 shadow-lg shadow-black/5 transition-all duration-500 hover:border-text-muted/30 hover:shadow-xl">
+          
           <button 
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="w-10 h-10 rounded-full bg-surface-2 border border-borderline flex items-center justify-center text-text-main hover:text-primary transition-colors"
+            onClick={() => scrollTo('hero')}
+            className="font-orbitron relative overflow-hidden text-base sm:text-lg font-black tracking-tighter uppercase group grid shrink-0"
           >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            <span className={`col-start-1 row-start-1 transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${activeSection === 'hero' ? '-translate-y-full text-text-main' : 'group-hover:-translate-y-full text-text-main'}`}>
+              NITS<span className="text-primary">Forge</span>
+            </span>
+            <span className={`col-start-1 row-start-1 transition-transform duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] text-primary ${activeSection === 'hero' ? 'translate-y-0' : 'translate-y-full group-hover:translate-y-0'}`}>
+              Over<span className="text-text-main">View</span>
+            </span>
           </button>
-        </div>
-      </motion.nav>
 
-      {/* Mobile Dropdown Menu */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="md:hidden sticky top-[96px] z-40 mx-6 mt-2 rounded-2xl bg-surface/95 backdrop-blur-xl border border-borderline p-4 shadow-2xl flex flex-col gap-2"
-          >
-            {[
-              { title: 'Features', id: 'features' },
-              { title: 'Core Engine', id: 'core-engine' },
-              { title: 'FAQs', id: 'faqs' },
-              { title: 'More', id: 'footer' }
-            ].map((link) => (
-              <button
-                key={link.id}
-                onClick={() => scrollTo(link.id)}
-                className="w-full text-left px-4 py-3 rounded-xl hover:bg-surface-2 text-text-main hover:text-primary font-medium transition-colors"
-              >
-                {link.title}
-              </button>
+          <div className="hidden lg:contents">
+            {links.map((link) => (
+              <AnimatedLink 
+                key={link.id} 
+                title={link.name} 
+                id={link.id} 
+                isActive={activeSection === link.id}
+                onClick={scrollTo}
+              />
             ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </>
+          </div>
+
+          <div className="flex items-center shrink-0 lg:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="flex items-center justify-center p-2 text-text-muted hover:text-primary transition-colors pointer-events-auto shrink-0 bg-surface-2 rounded-full border border-borderline"
+              aria-label="Toggle mobile menu"
+            >
+              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Main Menu Dropdown */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: [0.76, 0, 0.24, 1] }}
+              className="absolute top-full mt-4 left-0 w-full pointer-events-auto lg:hidden"
+            >
+              <div className="bg-surface/95 backdrop-blur-3xl border border-borderline rounded-[2rem] p-6 flex flex-col gap-5 shadow-2xl">
+                {links.map((link) => (
+                  <div key={link.id} className="border-b border-borderline/50 pb-4 last:border-0 last:pb-0">
+                    <AnimatedLink 
+                      title={link.name} 
+                      id={link.id} 
+                      isActive={activeSection === link.id}
+                      onClick={scrollTo}
+                    />
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+      </div>
+    </motion.nav>
   );
 }
