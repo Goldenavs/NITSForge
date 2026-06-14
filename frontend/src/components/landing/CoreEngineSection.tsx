@@ -148,7 +148,7 @@ export function CoreEngineSection() {
         </motion.div>
 
         {/* Engine Stats / Sub-features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 items-start">
+        <div className="flex flex-col md:flex-row w-full gap-4 mt-8 md:h-[320px]">
           {[
             {
               icon: <Server className="w-5 h-5 text-accent" />,
@@ -175,17 +175,21 @@ export function CoreEngineSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.6 + i * 0.1 }}
-              className="group text-center p-8 bg-surface-2/20 hover:bg-surface-2/60 border border-borderline hover:border-primary/30 rounded-2xl transition-all duration-300 cursor-default flex flex-col items-center"
+              className="group relative flex flex-col items-center justify-center text-center p-6 bg-surface-2/20 hover:bg-surface border border-borderline hover:border-primary/40 rounded-3xl transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] flex-1 md:hover:flex-[2.2] overflow-hidden min-h-[250px] md:min-h-0"
             >
-              <div className="w-12 h-12 mx-auto bg-surface border border-borderline rounded-xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform duration-300 group-hover:border-primary/40">
-                {stat.icon}
-              </div>
-              <h4 className="font-bold text-text-main mb-2 group-hover:text-primary transition-colors">{stat.title}</h4>
-              <p className="text-sm text-text-muted leading-relaxed">{stat.desc}</p>
+              <div className="flex flex-col md:flex-row items-center justify-center w-full h-full">
+                {/* Left: Original Info */}
+                <div className="flex flex-col items-center justify-center w-full md:group-hover:w-1/2 transition-all duration-500 shrink-0 h-full">
+                  <div className="w-12 h-12 shrink-0 mx-auto bg-surface border border-borderline rounded-xl flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform duration-500 group-hover:border-primary/40 group-hover:shadow-[0_0_20px_-5px_var(--color-primary)]">
+                    {stat.icon}
+                  </div>
+                  <h4 className="font-bold text-text-main mb-2 group-hover:text-primary transition-colors duration-300">{stat.title}</h4>
+                  <p className="text-sm text-text-muted leading-relaxed max-w-[200px] transition-all duration-500">{stat.desc}</p>
+                </div>
 
-              <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-500 overflow-hidden w-full">
-                <div className="min-h-0">
-                  <div className="pt-4 mt-4 border-t border-borderline/50 text-xs text-text-muted/80 leading-relaxed text-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                {/* Right: Extra Info (Desktop horizontal, Mobile vertical) */}
+                <div className="flex flex-col justify-center overflow-hidden transition-all duration-500 opacity-0 group-hover:opacity-100 w-full max-h-0 group-hover:max-h-[200px] md:w-0 md:max-h-full md:h-full md:group-hover:w-1/2">
+                  <div className="md:min-w-[220px] md:pl-6 md:border-l border-t md:border-t-0 border-borderline/50 pt-4 mt-4 md:mt-0 md:pt-0 text-sm text-text-muted/80 leading-relaxed text-center md:text-left">
                     {stat.extra}
                   </div>
                 </div>
