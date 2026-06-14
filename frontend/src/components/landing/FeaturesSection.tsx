@@ -1,6 +1,12 @@
 // src/components/landing/FeaturesSection.tsx
 import { motion, type Variants } from 'framer-motion';
 import { Target, Zap, Trophy, Sparkles } from 'lucide-react';
+import { 
+  MockExamSimulation, 
+  DeepAnalyticsSimulation, 
+  ForgeAISimulation, 
+  GamifiedLearningSimulation 
+} from './FeatureSimulations';
 
 const features = [
   {
@@ -63,9 +69,9 @@ export function FeaturesSection() {
             <motion.div 
               key={i}
               variants={cardVariants}
-              className="group bg-surface-2/40 hover:bg-surface border border-borderline hover:border-primary/50 rounded-2xl p-6 transition-all duration-300 shadow-sm hover:shadow-xl"
+              className="group flex flex-col bg-surface-2/40 hover:bg-surface border border-borderline hover:border-primary/50 rounded-2xl p-6 transition-all duration-300 shadow-sm hover:shadow-xl"
             >
-              <div className="flex gap-4">
+              <div className="flex gap-4 mb-6">
                 <div className="shrink-0 w-12 h-12 rounded-xl bg-surface border border-borderline flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform duration-300">
                   {feat.icon}
                 </div>
@@ -73,19 +79,19 @@ export function FeaturesSection() {
                   <h3 className="font-display font-bold text-lg text-text-main mb-2 group-hover:text-primary transition-colors">
                     {feat.title}
                   </h3>
-                  <p className="text-sm text-text-muted leading-relaxed mb-6">
+                  <p className="text-sm text-text-muted leading-relaxed">
                     {feat.desc}
                   </p>
-                  
-                  {/* Placeholder for Spot Illustration */}
-                  <div className="w-full aspect-square max-w-[200px] mx-auto bg-background/50 border border-dashed border-borderline rounded-xl flex items-center justify-center">
-                    <div className="text-center p-4">
-                      <p className="text-[10px] font-orbitron font-bold text-text-muted/60 uppercase tracking-widest">
-                        Spot Art Placeholder
-                      </p>
-                      <p className="text-[10px] text-text-muted/40 mt-1">400x400 px</p>
-                    </div>
-                  </div>
+                </div>
+              </div>
+              
+              {/* Interactive Simulation Area */}
+              <div className="w-full h-[280px] relative">
+                <div className="absolute inset-0">
+                  {i === 0 && <MockExamSimulation />}
+                  {i === 1 && <DeepAnalyticsSimulation />}
+                  {i === 2 && <ForgeAISimulation />}
+                  {i === 3 && <GamifiedLearningSimulation />}
                 </div>
               </div>
             </motion.div>
