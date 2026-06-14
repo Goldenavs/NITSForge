@@ -5,6 +5,7 @@ import { Mail, Lock, ArrowRight, User, Eye, EyeOff, AlertCircle, ChevronLeft, Ch
 import { Button } from '../ui/Button';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../store/AuthContext';
+import { useTheme } from '../../store/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 
 const GoogleIcon = () => (
@@ -25,9 +26,13 @@ const GithubIcon = () => (
 export function AuthSidebar() {
   const navigate = useNavigate();
   const { loginAsGuest } = useAuth();
+  const { theme } = useTheme();
 
   const [isLogin, setIsLogin] = useState(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const isDarkTheme = ['midnight', 'forest', 'obsidian'].includes(theme);
+  const logoSrc = isDarkTheme ? '/NITSForge-banner-light.png' : '/NITSForge-banner-dark.png';
 
   // Form State
   const [email, setEmail] = useState('');
@@ -120,7 +125,7 @@ export function AuthSidebar() {
   };
 
   return (
-    <div className={`relative min-h-screen lg:h-screen lg:sticky top-0 bg-surface/90 backdrop-blur-3xl border-b lg:border-b-0 lg:border-r border-borderline z-30 shadow-[20px_0_40px_rgba(0,0,0,0.05)] shrink-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${isCollapsed ? 'w-full lg:w-[2%]' : 'w-full lg:w-[30%]'
+    <div className={`relative min-h-screen lg:h-screen lg:sticky top-0 bg-surface/50 backdrop-blur-3xl border-b lg:border-b-0 lg:border-r border-borderline z-30 shadow-[20px_0_40px_rgba(0,0,0,0.05)] shrink-0 flex flex-col justify-center transition-all duration-500 ease-[cubic-bezier(0.76,0,0.24,1)] ${isCollapsed ? 'w-full lg:w-[2%]' : 'w-full lg:w-[30%]'
       }`}>
 
       {/* Desktop Toggle Button */}
@@ -143,16 +148,12 @@ export function AuthSidebar() {
               className="relative z-10 w-full max-w-sm mx-auto"
             >
               {/* Logo Section */}
-              <motion.div variants={itemVariants} className="flex items-center gap-3 mb-10">
-                <div className="relative group">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-surface font-bold text-xl relative z-10">
-                    F
-                  </div>
-                  <div className="absolute inset-0 bg-primary blur-xl opacity-40 group-hover:opacity-80 transition-opacity duration-500" />
-                </div>
-                <h1 className="font-display text-3xl font-bold tracking-tight">
-                  NITSForge<span className="text-primary">.</span>
-                </h1>
+              <motion.div variants={itemVariants} className="flex justify-center mb-6">
+                <img
+                  src={logoSrc}
+                  alt="NITSForge"
+                  className="w-full max-w-[240px] h-auto object-contain"
+                />
               </motion.div>
 
               <motion.div variants={itemVariants} className="mb-8">
