@@ -86,13 +86,15 @@ export function FeaturesSection() {
               </div>
               
               {/* Interactive Simulation Area */}
-              <div className="w-full h-[280px] relative">
-                <div className="absolute inset-0">
-                  {i === 0 && <MockExamSimulation />}
-                  {i === 1 && <DeepAnalyticsSimulation />}
-                  {i === 2 && <ForgeAISimulation />}
-                  {i === 3 && <GamifiedLearningSimulation />}
-                </div>
+              <div className="w-full min-h-[280px] flex-1 flex flex-col mt-auto relative">
+                {i === 0 && <MockExamSimulation />}
+                {i !== 0 && (
+                  <div className="absolute inset-0 flex flex-col">
+                    {i === 1 && <DeepAnalyticsSimulation />}
+                    {i === 2 && <ForgeAISimulation />}
+                    {i === 3 && <GamifiedLearningSimulation />}
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}

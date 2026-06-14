@@ -107,7 +107,7 @@ export function HeroSection() {
         className="max-w-5xl z-10 flex flex-col items-center"
       >
         <motion.div variants={itemVariants} className="inline-block px-4 py-1.5 rounded-full border border-primary/30 bg-primary/10 text-primary font-orbitron text-xs font-bold tracking-wider mb-6">
-          V2.0 Core Engine Active
+          V0.1 Pre-Alpha
         </motion.div>
 
         <motion.h1 variants={itemVariants} className="text-4xl lg:text-7xl font-display font-bold leading-tight tracking-tighter mb-6 text-text-main">

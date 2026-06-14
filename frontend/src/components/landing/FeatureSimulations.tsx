@@ -1,8 +1,23 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, XCircle, Bot, User, Trophy } from 'lucide-react';
+import { Bot, User, Trophy } from 'lucide-react';
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer } from 'recharts';
 import { useLeaderboard } from '../../hooks/useLeaderboard';
+
+const CheckIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+    <polyline points="22 4 12 14.01 9 11.01" />
+  </svg>
+);
+
+const CrossIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="15" y1="9" x2="9" y2="15" />
+    <line x1="9" y1="9" x2="15" y2="15" />
+  </svg>
+);
 
 // --- 1. Mock Exam Simulation ---
 const MOCK_QUESTIONS = [
@@ -42,7 +57,7 @@ export function MockExamSimulation() {
   }, [isSubmitted]);
 
   return (
-    <div className="w-full h-full flex flex-col bg-surface rounded-xl p-4 shadow-inner border border-borderline/50 relative overflow-hidden">
+    <div className="flex-1 w-full flex flex-col bg-surface rounded-xl p-4 shadow-inner border border-borderline/50 relative overflow-hidden">
       <div className="flex justify-between items-center mb-3">
         <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Mock Question</span>
         <span className="text-xs font-orbitron text-primary">{qIndex + 1}/{MOCK_QUESTIONS.length}</span>
@@ -64,10 +79,10 @@ export function MockExamSimulation() {
               disabled={isSubmitted}
               className={`w-full text-left px-3 py-2 text-xs rounded-lg border transition-all duration-200 ${stateClass}`}
             >
-              <div className="flex justify-between items-center">
+              <div className="flex justify-between items-center gap-2">
                 <span>{opt}</span>
-                {isSubmitted && i === question.answer && <CheckCircle2 className="w-4 h-4 text-green-500" />}
-                {isSubmitted && selected === i && i !== question.answer && <XCircle className="w-4 h-4 text-red-500" />}
+                {isSubmitted && i === question.answer && <CheckIcon className="w-4 h-4 text-green-500 shrink-0" />}
+                {isSubmitted && selected === i && i !== question.answer && <CrossIcon className="w-4 h-4 text-red-500 shrink-0" />}
               </div>
             </button>
           );
@@ -111,7 +126,7 @@ export function DeepAnalyticsSimulation() {
   }, []);
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-surface rounded-xl p-2 shadow-inner border border-borderline/50">
+    <div className="flex-1 w-full flex items-center justify-center bg-surface rounded-xl p-2 shadow-inner border border-borderline/50 min-h-[250px]">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart cx="50%" cy="50%" outerRadius="60%" data={data}>
           <PolarGrid stroke="var(--color-borderline)" />
@@ -183,7 +198,7 @@ export function ForgeAISimulation() {
   }, []);
 
   return (
-    <div className="w-full h-full flex flex-col bg-surface rounded-xl shadow-inner border border-borderline/50 overflow-hidden relative group">
+    <div className="flex-1 min-h-0 w-full flex flex-col bg-surface rounded-xl shadow-inner border border-borderline/50 overflow-hidden relative group">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-borderline/50 bg-surface-2/50 backdrop-blur-md">
         <div className="relative">
@@ -201,7 +216,7 @@ export function ForgeAISimulation() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4" ref={scrollRef}>
         <AnimatePresence initial={false}>
           {messages.map((msg, i) => (
             <motion.div
@@ -265,7 +280,7 @@ export function GamifiedLearningSimulation() {
   ];
 
   return (
-    <div className="w-full h-full flex flex-col bg-surface rounded-xl p-4 shadow-inner border border-borderline/50">
+    <div className="flex-1 w-full flex flex-col bg-surface rounded-xl p-4 shadow-inner border border-borderline/50 min-h-[250px]">
       <div className="flex items-center gap-2 mb-6">
         <Trophy className="w-4 h-4 text-amber-500" />
         <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Top Forgers</span>
