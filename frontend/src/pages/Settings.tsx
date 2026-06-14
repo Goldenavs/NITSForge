@@ -16,7 +16,7 @@ const itemVariants: Variants = {
 };
 
 export default function Settings() {
-  const { theme, setTheme, isBgAnimated, toggleBgAnimation } = useTheme();
+  const { theme, setTheme, bgMode, setBgMode } = useTheme();
 
   // Reordered and typed for Light/Dark categorization
   const themes = [
@@ -55,22 +55,43 @@ export default function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div className="pr-4">
+            <div className="flex flex-col gap-6">
+              <div>
                 <p className="text-text-main font-display font-bold mb-1 flex items-center gap-2">
                   Interactive Background <Sparkles className="w-4 h-4 text-accent" />
                 </p>
-                <p className="text-sm text-text-muted leading-relaxed">
-                  Enable the dynamic, mouse-reactive particle background. Disable this to save battery life or improve performance on older devices.
+                <p className="text-sm text-text-muted leading-relaxed max-w-2xl">
+                  Adjust the visual fidelity of the background. Lower settings save battery and improve performance, while higher settings add more physics, speed, and particle effects.
                 </p>
               </div>
               
-              <button 
-                onClick={toggleBgAnimation}
-                className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 ease-in-out focus:outline-none ${isBgAnimated ? 'bg-primary' : 'bg-surface-2 border-borderline'}`}
-              >
-                <span className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-surface shadow ring-0 transition duration-300 ease-in-out ${isBgAnimated ? 'translate-x-7' : 'translate-x-0'}`} />
-              </button>
+              {/* 4-Step Slider */}
+              <div className="relative flex items-center w-full max-w-xl bg-surface-2/40 border border-borderline/50 rounded-2xl p-1.5 overflow-hidden">
+                {[
+                  { val: 0, label: 'Performance' },
+                  { val: 1, label: 'Static' },
+                  { val: 2, label: 'Standard' },
+                  { val: 3, label: 'Overclocked' }
+                ].map((mode) => {
+                  const isActive = bgMode === mode.val;
+                  return (
+                    <button
+                      key={mode.val}
+                      onClick={() => setBgMode(mode.val as any)}
+                      className={`relative flex-1 py-2.5 text-xs sm:text-sm font-bold tracking-wide rounded-xl transition-colors z-10 ${isActive ? 'text-surface' : 'text-text-muted hover:text-text-main'}`}
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="bgModeActiveIndicator"
+                          className="absolute inset-0 bg-primary rounded-xl shadow-md -z-10"
+                          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                        />
+                      )}
+                      {mode.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </CardContent>
         </Card>

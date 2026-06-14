@@ -5,7 +5,7 @@ import { useTheme } from '../../store/ThemeContext';
 
 export default function InteractiveBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const { isBgAnimated, theme } = useTheme(); 
+  const { bgMode, theme } = useTheme();
 
   // 1. Store theme colors in a mutable ref so the render loop can access them instantly without DOM calls
   const colorsRef = useRef({
@@ -37,19 +37,22 @@ export default function InteractiveBackground() {
 
   // --- The Engine Room (Depth-Enabled Involute Gears) ---
   useEffect(() => {
-    if (!isBgAnimated) return;
+    if (bgMode === 0) return;
 
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { alpha: false }); 
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
     let animationFrameId: number;
-    let mouseTimeout: ReturnType<typeof setTimeout>; 
-    
-    // Physics config
-    const mouse = { x: -1000, y: -1000, radius: 300 }; 
-    const spacing = 80; 
+    let mouseTimeout: ReturnType<typeof setTimeout>;
+
+    // Physics config based on Mode
+    const isStatic = bgMode === 1;
+    const isCrazy = bgMode === 3;
+
+    const mouse = { x: -1000, y: -1000, radius: isCrazy ? 500 : 300 };
+    const spacing = isCrazy ? 80 : 80;
     let gears: Gear[] = [];
 
     // Mobile & Idle Fix
@@ -106,21 +109,23 @@ export default function InteractiveBackground() {
       constructor(x: number, y: number, col: number, row: number) {
         this.x = x;
         this.y = y;
-        this.teeth = 8; 
-        
-        this.baseRadius = 12; 
+        this.teeth = 8;
+
+        this.baseRadius = 12;
         this.currentRadius = this.baseRadius;
 
         this.direction = (col + row) % 2 === 0 ? 1 : -1;
         const offset = this.direction === 1 ? 0 : (Math.PI / this.teeth);
         this.rotation = offset;
-        
-        this.baseSpeed = 0.001; 
+
+        this.baseSpeed = isCrazy ? 0.01 : 0.001;
         this.currentSpeed = this.baseSpeed;
         this.intensity = 0;
       }
 
       update() {
+        if (isStatic) return; // Do not update physics in static mode
+
         const dx = mouse.x - this.x;
         const dy = mouse.y - this.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -131,15 +136,17 @@ export default function InteractiveBackground() {
 
         if (distance < mouse.radius) {
           targetIntensity = 1 - Math.pow(distance / mouse.radius, 1.5);
-          targetSpeed = this.baseSpeed + (targetIntensity * 0.035);
-          targetRadius = this.baseRadius + (targetIntensity * 16); 
+          if (isCrazy) targetIntensity *= 1.5; // Stronger reaction in crazy mode
+
+          targetSpeed = this.baseSpeed + (targetIntensity * (isCrazy ? 0.06 : 0.035));
+          targetRadius = this.baseRadius + (targetIntensity * (isCrazy ? 16 : 16));
         }
 
         // Smooth Linear Interpolation
         this.intensity += (targetIntensity - this.intensity) * 0.1;
         this.currentSpeed += (targetSpeed - this.currentSpeed) * 0.05;
-        this.currentRadius += (targetRadius - this.currentRadius) * 0.12; 
-        
+        this.currentRadius += (targetRadius - this.currentRadius) * (isCrazy ? 0.12 : 0.12);
+
         this.rotation += this.currentSpeed * this.direction;
       }
 
@@ -152,8 +159,8 @@ export default function InteractiveBackground() {
         ctx.beginPath();
         const step = (Math.PI * 2) / this.teeth;
         const halfStep = step / 2;
-        const slope = halfStep * 0.25; 
-        
+        const slope = halfStep * 0.25;
+
         const rInner = this.currentRadius * 0.75;
         const rOuter = this.currentRadius;
         const rHole = this.currentRadius * 0.35;
@@ -167,22 +174,22 @@ export default function InteractiveBackground() {
         ctx.arc(0, 0, rHole, 0, Math.PI * 2, true);
 
         // --- THEME STYLING (Instantly reads from the React Ref) ---
-        if (this.intensity > 0.02) {
+        if (this.intensity > 0.02 || isStatic) {
           ctx.fillStyle = colorsRef.current.primary;
-          ctx.globalAlpha = 0.1 + (this.intensity * 0.3);
+          ctx.globalAlpha = isStatic ? 0.05 : 0.1 + (this.intensity * (isCrazy ? 0.5 : 0.3));
           ctx.fill();
 
           ctx.strokeStyle = colorsRef.current.primary;
-          ctx.globalAlpha = 0.3 + (this.intensity * 0.4);
-          ctx.lineWidth = 1.5;
+          ctx.globalAlpha = isStatic ? 0.15 : 0.3 + (this.intensity * (isCrazy ? 0.6 : 0.4));
+          ctx.lineWidth = isCrazy ? 2 : 1.5;
           ctx.stroke();
         } else {
           ctx.fillStyle = colorsRef.current.border;
-          ctx.globalAlpha = 0.08; 
+          ctx.globalAlpha = isCrazy ? 0.12 : 0.08;
           ctx.fill();
 
           ctx.strokeStyle = colorsRef.current.border;
-          ctx.globalAlpha = 0.25; 
+          ctx.globalAlpha = 0.25;
           ctx.lineWidth = 1;
           ctx.stroke();
         }
@@ -197,7 +204,7 @@ export default function InteractiveBackground() {
       gears = [];
 
       const cols = Math.ceil(canvas.width / spacing) + 1;
-      const rowHeight = spacing * 0.866; 
+      const rowHeight = spacing * 0.866;
       const rows = Math.ceil(canvas.height / rowHeight) + 1;
 
       for (let row = -1; row < rows; row++) {
@@ -209,14 +216,19 @@ export default function InteractiveBackground() {
     };
 
     const animate = () => {
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = colorsRef.current.bg; 
+      ctx.globalAlpha = isCrazy ? 0.3 : 1; // Creates motion blur in crazy mode
+      ctx.fillStyle = colorsRef.current.bg;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       gears.forEach(gear => {
         gear.update();
         gear.draw();
       });
+
+      if (isStatic) {
+        // Render once and stop for static mode
+        return;
+      }
 
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -233,23 +245,23 @@ export default function InteractiveBackground() {
       window.removeEventListener('mouseleave', handlePointerLeave);
       window.removeEventListener('touchend', handlePointerLeave);
       window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
       clearTimeout(mouseTimeout);
     };
-  }, [isBgAnimated]); // ONLY re-run on toggle. Do NOT re-run on theme change to prevent flickering!
+  }, [bgMode]); // ONLY re-run on mode toggle. Do NOT re-run on theme change to prevent flickering!
 
-  if (!isBgAnimated) return null;
+  if (bgMode === 0) return null;
 
   return (
     <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none transition-colors duration-500">
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
-      <div 
-        className="absolute inset-0 opacity-[0.03] mix-blend-overlay z-10" 
+      <div
+        className="absolute inset-0 opacity-[0.03] mix-blend-overlay z-10"
         style={{ backgroundImage: "url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E')" }}
       />
       <motion.div
-        style={{ 
-          x: smoothX, 
+        style={{
+          x: smoothX,
           y: smoothY,
           background: 'radial-gradient(circle, color-mix(in srgb, var(--color-primary) 10%, transparent) 0%, transparent 60%)'
         }}

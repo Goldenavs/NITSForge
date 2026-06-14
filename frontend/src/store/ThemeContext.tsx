@@ -3,11 +3,13 @@ import { createContext, useContext, useState, useEffect } from 'react';
 
 type ThemeName = 'ember' | 'midnight' | 'forest' | 'sakura' | 'obsidian' | 'arctic';
 
+export type BgMode = 0 | 1 | 2 | 3;
+
 interface ThemeContextType {
   theme: ThemeName;
   setTheme: (theme: ThemeName) => void;
-  isBgAnimated: boolean;
-  toggleBgAnimation: () => void;
+  bgMode: BgMode;
+  setBgMode: (mode: BgMode) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -17,10 +19,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     (localStorage.getItem('nitsforge-theme') as ThemeName) || 'obsidian'
   );
 
-  // Load user preference for animation, defaulting to true
-  const [isBgAnimated, setIsBgAnimated] = useState<boolean>(() => {
-    const saved = localStorage.getItem('nitsforge-bg-animated');
-    return saved !== null ? saved === 'true' : true;
+  // Load user preference for animation mode, defaulting to 2 (Standard)
+  const [bgMode, setBgModeState] = useState<BgMode>(() => {
+    const saved = localStorage.getItem('nitsforge-bg-mode');
+    if (saved !== null) {
+      const parsed = parseInt(saved, 10);
+      if ([0, 1, 2, 3].includes(parsed)) return parsed as BgMode;
+    }
+    
+    // Migration from old boolean
+    const oldSaved = localStorage.getItem('nitsforge-bg-animated');
+    if (oldSaved !== null) {
+      localStorage.removeItem('nitsforge-bg-animated');
+      const mode = oldSaved === 'true' ? 2 : 0;
+      localStorage.setItem('nitsforge-bg-mode', String(mode));
+      return mode;
+    }
+
+    return 2;
   });
 
   useEffect(() => {
@@ -32,16 +48,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setThemeState(newTheme);
   };
 
-  const toggleBgAnimation = () => {
-    setIsBgAnimated(prev => {
-      const newVal = !prev;
-      localStorage.setItem('nitsforge-bg-animated', String(newVal));
-      return newVal;
-    });
+  const setBgMode = (newMode: BgMode) => {
+    setBgModeState(newMode);
+    localStorage.setItem('nitsforge-bg-mode', String(newMode));
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, isBgAnimated, toggleBgAnimation }}>
+    <ThemeContext.Provider value={{ theme, setTheme, bgMode, setBgMode }}>
       {children}
     </ThemeContext.Provider>
   );
