@@ -1,9 +1,8 @@
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Database, Cpu, BrainCircuit, MonitorSmartphone, Server } from 'lucide-react';
 
 const Node = ({ icon, label, color, bg, border, glow, delay }: any) => (
-  <motion.div 
+  <motion.div
     initial={{ opacity: 0, scale: 0.8 }}
     whileInView={{ opacity: 1, scale: 1 }}
     viewport={{ once: true }}
@@ -29,7 +28,7 @@ export function CoreEngineSection() {
       <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px] -translate-y-1/2 pointer-events-none" />
 
       <div className="max-w-5xl mx-auto relative z-10">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -48,7 +47,7 @@ export function CoreEngineSection() {
         </motion.div>
 
         {/* The Animated Flowchart */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
@@ -59,7 +58,7 @@ export function CoreEngineSection() {
           <div className="min-w-[700px] w-full h-full relative">
             {/* Subtle grid background */}
             <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] rounded-3xl pointer-events-none" />
-            
+
             {/* SVG Connecting Lines & Particles */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none" preserveAspectRatio="none">
               <defs>
@@ -69,20 +68,20 @@ export function CoreEngineSection() {
                   <stop offset="100%" stopColor="rgb(34, 197, 94)" stopOpacity="0.2" />
                 </linearGradient>
                 <filter id="glow">
-                  <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                  <feGaussianBlur stdDeviation="3" result="coloredBlur" />
                   <feMerge>
-                    <feMergeNode in="coloredBlur"/>
-                    <feMergeNode in="SourceGraphic"/>
+                    <feMergeNode in="coloredBlur" />
+                    <feMergeNode in="SourceGraphic" />
                   </feMerge>
                 </filter>
               </defs>
-              
+
               {/* Base Dashed Line */}
               <line x1="15%" y1="50%" x2="85%" y2="50%" stroke="url(#lineGrad)" strokeWidth="2" strokeDasharray="6 6" className="opacity-50" />
-              
+
               {/* Auto Particles Left to Center */}
               {[0, 1.5, 3].map((delay, i) => (
-                <motion.circle 
+                <motion.circle
                   key={`left-${i}`}
                   cx="0" cy="50%" r="4" fill="var(--color-accent)"
                   filter="url(#glow)"
@@ -93,7 +92,7 @@ export function CoreEngineSection() {
 
               {/* Auto Particles Center to Right */}
               {[0, 1, 2].map((delay, i) => (
-                <motion.circle 
+                <motion.circle
                   key={`right-${i}`}
                   cx="0" cy="50%" r="4" fill="var(--color-primary)"
                   filter="url(#glow)"
@@ -108,40 +107,40 @@ export function CoreEngineSection() {
             <div className="absolute inset-0">
               {/* Node 1: Vault */}
               <div className="absolute left-[15%] top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 group/node">
-                <Node 
+                <Node
                   delay={0.2}
-                  icon={<Database />} 
-                  label="The Vault" 
-                  color="text-accent" 
-                  bg="bg-accent/5 group-hover/node:bg-accent/20" 
-                  border="border-accent/30 group-hover/node:border-accent/80" 
-                  glow="shadow-[0_0_40px_-10px_var(--color-accent)] group-hover/node:shadow-[0_0_60px_0px_var(--color-accent)]" 
+                  icon={<Database />}
+                  label="The Vault"
+                  color="text-accent"
+                  bg="bg-accent/5 group-hover/node:bg-accent/20"
+                  border="border-accent/30 group-hover/node:border-accent/80"
+                  glow="shadow-[0_0_40px_-10px_var(--color-accent)] group-hover/node:shadow-[0_0_60px_0px_var(--color-accent)]"
                 />
               </div>
 
               {/* Node 2: Forge Engine */}
               <div className="absolute left-[50%] top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 group/node">
-                <Node 
+                <Node
                   delay={0.4}
-                  icon={<BrainCircuit />} 
-                  label="Adaptive Engine" 
-                  color="text-primary" 
-                  bg="bg-primary/10 group-hover/node:bg-primary/30" 
-                  border="border-primary/40 group-hover/node:border-primary/80" 
-                  glow="shadow-[0_0_60px_-10px_var(--color-primary)] group-hover/node:shadow-[0_0_80px_0px_var(--color-primary)]" 
+                  icon={<BrainCircuit />}
+                  label="Adaptive Engine"
+                  color="text-primary"
+                  bg="bg-primary/10 group-hover/node:bg-primary/30"
+                  border="border-primary/40 group-hover/node:border-primary/80"
+                  glow="shadow-[0_0_60px_-10px_var(--color-primary)] group-hover/node:shadow-[0_0_80px_0px_var(--color-primary)]"
                 />
               </div>
 
               {/* Node 3: Interface */}
               <div className="absolute left-[85%] top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 group/node cursor-default">
-                <Node 
+                <Node
                   delay={0.6}
-                  icon={<MonitorSmartphone />} 
-                  label="The Interface" 
-                  color="text-green-500" 
-                  bg="bg-green-500/5 group-hover/node:bg-green-500/20" 
-                  border="border-green-500/30 group-hover/node:border-green-500/80" 
-                  glow="shadow-[0_0_40px_-10px_rgb(34_197_94)] group-hover/node:shadow-[0_0_60px_0px_rgb(34_197_94)]" 
+                  icon={<MonitorSmartphone />}
+                  label="The Interface"
+                  color="text-green-500"
+                  bg="bg-green-500/5 group-hover/node:bg-green-500/20"
+                  border="border-green-500/30 group-hover/node:border-green-500/80"
+                  glow="shadow-[0_0_40px_-10px_rgb(34_197_94)] group-hover/node:shadow-[0_0_60px_0px_rgb(34_197_94)]"
                 />
               </div>
             </div>
@@ -151,26 +150,26 @@ export function CoreEngineSection() {
         {/* Engine Stats / Sub-features */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 items-start">
           {[
-            { 
-              icon: <Server className="w-5 h-5 text-accent" />, 
-              title: "1000+ Questions", 
+            {
+              icon: <Server className="w-5 h-5 text-accent" />,
+              title: "1000+ Questions",
               desc: "Sourced from real ITPEC/PhilNITS exams from 2010 to present.",
               extra: "Our vault is constantly updated and tagged by domain (Hardware, Software, Math, etc.), ensuring you never run out of syllabus-accurate practice material."
             },
-            { 
-              icon: <BrainCircuit className="w-5 h-5 text-primary" />, 
-              title: "Adaptive Spacing", 
+            {
+              icon: <BrainCircuit className="w-5 h-5 text-primary" />,
+              title: "Adaptive Spacing",
               desc: "The engine remembers your mistakes and re-tests weak points.",
               extra: "Using spaced repetition algorithms, it calculates the exact moment you're about to forget a concept and intercepts it to solidify your long-term memory."
             },
-            { 
-              icon: <Cpu className="w-5 h-5 text-green-500" />, 
-              title: "Zero Lag", 
+            {
+              icon: <Cpu className="w-5 h-5 text-green-500" />,
+              title: "Zero Lag",
               desc: "Built on a modern React + Supabase edge architecture.",
               extra: "Exam sessions run instantaneously in your browser with background sync. Say goodbye to loading spinners between questions."
             }
           ].map((stat, i) => (
-            <motion.div 
+            <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -183,7 +182,7 @@ export function CoreEngineSection() {
               </div>
               <h4 className="font-bold text-text-main mb-2 group-hover:text-primary transition-colors">{stat.title}</h4>
               <p className="text-sm text-text-muted leading-relaxed">{stat.desc}</p>
-              
+
               <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-all duration-500 overflow-hidden w-full">
                 <div className="min-h-0">
                   <div className="pt-4 mt-4 border-t border-borderline/50 text-xs text-text-muted/80 leading-relaxed text-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
