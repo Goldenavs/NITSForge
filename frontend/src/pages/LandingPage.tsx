@@ -35,6 +35,7 @@ export default function LandingPage() {
 
       {/* RIGHT COLUMN: SCROLLABLE LANDING PAGE */}
       <div id="right-scroll" className="flex-1 lg:h-screen lg:overflow-y-auto scroll-smooth relative z-10 flex flex-col p-4 lg:p-0">
+        <div id="landing-modal-root" className="sticky top-0 z-[100] h-0 w-full overflow-visible pointer-events-none" />
         <LandingNavbar />
         
         <main className="flex-1">

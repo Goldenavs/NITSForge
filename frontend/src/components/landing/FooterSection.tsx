@@ -24,10 +24,34 @@ const UserIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const CloseIcon = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../store/ThemeContext';
+
+type LegalDoc = 'Terms of Service' | 'Privacy Policy' | 'Cookie Policy' | null;
+
+const legalContent = {
+  'Terms of Service': "Welcome to NITSForge. By using this platform, you agree to these Terms of Service. This platform is built as an open-source educational tool. You agree not to misuse the content, disrupt the services, or attempt to exploit any vulnerabilities in the system. The platform is provided 'as is' without warranties of any kind. We reserve the right to modify or terminate the service at any time.",
+  'Privacy Policy': "We value your privacy. Your data (such as mock exam results, progress, and analytics) is stored securely in our database solely to provide you with personalized learning experiences. We do not sell your personal data to third parties. If you wish to have your data completely removed, you can delete your account at any time from your settings.",
+  'Cookie Policy': "NITSForge uses minimal cookies strictly necessary for the platform to function properly. We use cookies to save your theme preferences, keep you securely logged in, and remember your session state. We do not use third-party tracking or advertising cookies."
+};
 
 export function FooterSection() {
   const { theme } = useTheme();
+  const [activeDoc, setActiveDoc] = useState<LegalDoc>(null);
+  const [modalRoot, setModalRoot] = useState<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setModalRoot(document.getElementById('landing-modal-root'));
+  }, []);
 
   const scrollToTop = () => {
     const element = document.getElementById('hero');
@@ -114,8 +138,23 @@ export function FooterSection() {
         </div>
       </div>
 
-      {/* Flag / Community Note */}
-      <div className="max-w-5xl mx-auto px-6 lg:px-16 mt-6 flex justify-center md:justify-end">
+      {/* Legal & Community Note */}
+      <div className="max-w-5xl mx-auto px-6 lg:px-16 mt-6 flex flex-col md:flex-row justify-between items-center gap-4">
+        
+        {/* Legal Links */}
+        <div className="flex items-center gap-4 text-[10px] font-medium text-text-muted/50">
+          {(['Terms of Service', 'Privacy Policy', 'Cookie Policy'] as LegalDoc[]).map(doc => (
+            <button 
+              key={doc!} 
+              onClick={() => setActiveDoc(doc)}
+              className="hover:text-primary transition-colors focus:outline-none"
+            >
+              {doc}
+            </button>
+          ))}
+        </div>
+
+        {/* Community Note */}
         <div className="flex items-center gap-1.5 text-[10px] font-medium text-text-muted/50 hover:text-text-muted transition-colors">
           <span>Built with passion for the</span>
           <span className="inline-flex items-center justify-center w-3 h-3 rounded-full overflow-hidden opacity-80">
@@ -127,9 +166,46 @@ export function FooterSection() {
               <circle cx="10" cy="32" r="3" fill="#FCD116" />
             </svg>
           </span>
-          <span>community.</span>
+          <span>IT community.</span>
         </div>
       </div>
+
+      {/* Legal Modal */}
+      {modalRoot && createPortal(
+        <AnimatePresence>
+          {activeDoc && (
+            <div className="absolute top-0 left-0 w-full h-screen flex items-center justify-center p-4 pointer-events-auto">
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                onClick={() => setActiveDoc(null)}
+                className="absolute inset-0 bg-background/80 backdrop-blur-sm cursor-pointer"
+              />
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="relative w-full max-w-lg bg-surface border border-borderline rounded-2xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[80vh]"
+              >
+                <div className="p-6 border-b border-borderline flex items-center justify-between bg-surface-2/30">
+                  <h3 className="text-xl font-display font-bold text-text-main">{activeDoc}</h3>
+                  <button 
+                    onClick={() => setActiveDoc(null)} 
+                    className="p-2 text-text-muted hover:text-primary transition-colors rounded-lg bg-surface hover:bg-primary/10 border border-transparent hover:border-primary/20"
+                  >
+                    <CloseIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="p-6 text-sm text-text-muted leading-relaxed overflow-y-auto">
+                  <p>{legalContent[activeDoc]}</p>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        modalRoot
+      )}
     </footer>
   );
 }
