@@ -7,12 +7,14 @@ export default function InteractiveBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { bgMode, theme } = useTheme();
 
-  // 1. Store theme colors in a mutable ref so the render loop can access them instantly without DOM calls
   const colorsRef = useRef({
     bg: '#0F172A',
     primary: '#F97316',
     border: '#334155'
   });
+
+  // Reference to force a redraw in static mode when the theme changes
+  const redrawStaticRef = useRef<(() => void) | null>(null);
 
   // 2. Instantly update colors when the theme changes (No 1-second delay!)
   useEffect(() => {
@@ -24,6 +26,11 @@ export default function InteractiveBackground() {
         primary: style.getPropertyValue('--color-primary').trim() || '#F97316',
         border: style.getPropertyValue('--color-text-muted').trim() || '#334155'
       };
+      
+      // If we are in static mode, the animation loop isn't running, so force a redraw
+      if (redrawStaticRef.current) {
+        redrawStaticRef.current();
+      }
     }, 10);
     return () => clearTimeout(timeoutId);
   }, [theme]);
@@ -226,7 +233,13 @@ export default function InteractiveBackground() {
       });
 
       if (isStatic) {
-        // Render once and stop for static mode
+        // Render once and stop for static mode, but register a redraw function for theme changes
+        redrawStaticRef.current = () => {
+          ctx.globalAlpha = 1;
+          ctx.fillStyle = colorsRef.current.bg;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          gears.forEach(gear => gear.draw());
+        };
         return;
       }
 

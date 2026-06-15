@@ -55,18 +55,18 @@ export default function Settings() {
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="flex flex-col gap-6">
-              <div>
-                <p className="text-text-main font-display font-bold mb-1 flex items-center gap-2">
+            <div className="flex flex-col gap-6 items-center text-center">
+              <div className="flex flex-col items-center">
+                <p className="text-text-main font-display font-bold mb-1 flex items-center justify-center gap-2">
                   Interactive Background <Sparkles className="w-4 h-4 text-accent" />
                 </p>
-                <p className="text-sm text-text-muted leading-relaxed max-w-2xl">
+                <p className="text-sm text-text-muted leading-relaxed max-w-2xl text-center">
                   Adjust the visual fidelity of the background. Lower settings save battery and improve performance, while higher settings add more physics, speed, and particle effects.
                 </p>
               </div>
               
               {/* 4-Step Slider */}
-              <div className="relative flex items-center w-full max-w-xl bg-surface-2/40 border border-borderline/50 rounded-2xl p-1.5 overflow-hidden">
+              <div className="relative flex items-center w-full bg-surface-2/40 border border-borderline/50 rounded-2xl p-1.5 overflow-hidden">
                 {[
                   { val: 0, label: 'Performance' },
                   { val: 1, label: 'Static' },
@@ -78,7 +78,7 @@ export default function Settings() {
                     <button
                       key={mode.val}
                       onClick={() => setBgMode(mode.val as any)}
-                      className={`relative flex-1 py-2.5 text-xs sm:text-sm font-bold tracking-wide rounded-xl transition-colors z-10 ${isActive ? 'text-surface' : 'text-text-muted hover:text-text-main'}`}
+                      className={`relative flex-1 py-2.5 text-xs sm:text-sm font-bold tracking-wide rounded-xl transition-colors z-10 flex items-center justify-center text-center ${isActive ? 'text-surface' : 'text-text-muted hover:text-text-main'}`}
                     >
                       {isActive && (
                         <motion.div
