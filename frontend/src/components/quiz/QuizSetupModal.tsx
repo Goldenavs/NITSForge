@@ -1,7 +1,7 @@
 // src/components/quiz/QuizSetupModal.tsx
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Layers, Calendar, Box, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { X, Layers, Calendar, Box, Sparkles } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 // Copying topics from Topics.tsx to decouple
@@ -88,7 +88,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
     <AnimatePresence>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         {/* Backdrop */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -97,7 +97,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
         />
 
         {/* Modal */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -130,7 +130,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
 
           {/* Body */}
           <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-            
+
             {/* SANDBOX EXCLUSIVE CONTROLS */}
             {configType === 'sandbox' && (
               <div className="mb-8 space-y-6">
@@ -159,7 +159,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
                     })}
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-bold text-text-main font-orbitron block mb-2">Time Limit</label>
                   <div className="relative flex items-center w-full bg-surface-2/40 border border-borderline/50 rounded-2xl p-1 overflow-hidden">
@@ -200,11 +200,11 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
                       <p className="text-xs text-text-muted">Enables Forge AI explanations during quiz</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => setSandboxAI(!sandboxAI)}
                     className={`w-12 h-6 rounded-full relative transition-colors ${sandboxAI ? 'bg-accent' : 'bg-surface-2 border border-borderline'}`}
                   >
-                    <motion.div 
+                    <motion.div
                       className="w-5 h-5 rounded-full bg-white absolute top-0.5 shadow-sm"
                       animate={{ left: sandboxAI ? '26px' : '2px' }}
                       transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -217,17 +217,16 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
             {/* TOPIC SELECTOR */}
             {(configType === 'topic' || configType === 'sandbox') && (
               <div className="mb-8">
-                {configType === 'sandbox' && <h3 className="text-sm font-bold text-text-main font-orbitron mb-3 flex items-center gap-2"><Layers className="w-4 h-4"/> Filter by Topic (Optional)</h3>}
+                {configType === 'sandbox' && <h3 className="text-sm font-bold text-text-main font-orbitron mb-3 flex items-center gap-2"><Layers className="w-4 h-4" /> Filter by Topic (Optional)</h3>}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {PHILNITS_CATEGORIES.map(topic => (
                     <button
                       key={topic.id}
                       onClick={() => toggleTopic(topic.id)}
-                      className={`text-left p-3 rounded-xl border text-xs transition-all ${
-                        selectedTopics.includes(topic.id) 
-                          ? 'border-primary bg-primary/10 text-primary font-bold shadow-[0_0_10px_rgba(var(--color-primary),0.2)]' 
+                      className={`text-left p-3 rounded-xl border text-xs transition-all ${selectedTopics.includes(topic.id)
+                          ? 'border-primary bg-primary/10 text-primary font-bold shadow-[0_0_10px_rgba(var(--color-primary),0.2)]'
                           : 'border-borderline bg-surface-2/50 text-text-muted hover:border-borderline/80 hover:text-text-main'
-                      }`}
+                        }`}
                     >
                       {topic.title}
                     </button>
@@ -239,17 +238,16 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
             {/* DATE SELECTOR */}
             {(configType === 'date' || configType === 'sandbox') && (
               <div>
-                {configType === 'sandbox' && <h3 className="text-sm font-bold text-text-main font-orbitron mb-3 flex items-center gap-2"><Calendar className="w-4 h-4"/> Filter by Date (Optional)</h3>}
+                {configType === 'sandbox' && <h3 className="text-sm font-bold text-text-main font-orbitron mb-3 flex items-center gap-2"><Calendar className="w-4 h-4" /> Filter by Date (Optional)</h3>}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                   {PAST_EXAM_DATES.map(date => (
                     <button
                       key={date}
                       onClick={() => toggleDate(date)}
-                      className={`text-center py-2 px-1 rounded-lg border text-xs transition-all ${
-                        selectedDates.includes(date) 
-                          ? 'border-primary bg-primary/10 text-primary font-bold shadow-[0_0_10px_rgba(var(--color-primary),0.2)]' 
+                      className={`text-center py-2 px-1 rounded-lg border text-xs transition-all ${selectedDates.includes(date)
+                          ? 'border-primary bg-primary/10 text-primary font-bold shadow-[0_0_10px_rgba(var(--color-primary),0.2)]'
                           : 'border-borderline bg-surface-2/50 text-text-muted hover:border-borderline/80 hover:text-text-main'
-                      }`}
+                        }`}
                     >
                       {date.replace(" (latest)", "")}
                     </button>
@@ -257,7 +255,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
                 </div>
               </div>
             )}
-            
+
           </div>
 
           {/* Footer */}
@@ -271,8 +269,8 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
               <Button variant="outline" onClick={onClose} className="border-borderline/50 text-text-muted">
                 Cancel
               </Button>
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={handleStart}
                 disabled={(configType === 'topic' && selectedTopics.length === 0) || (configType === 'date' && selectedDates.length === 0)}
                 className="disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(var(--color-primary),0.3)]"

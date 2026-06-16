@@ -1,7 +1,6 @@
 // src/components/quiz/QuizHeader.tsx
 import { motion } from 'framer-motion';
 import { X, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useQuizStore } from '../../store/useQuizStore';
@@ -38,7 +37,7 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
   return (
     <div className="w-full flex flex-col gap-4 mb-8">
       <div className="flex items-center justify-between">
-        
+
         {/* Mode & Progress Indicator */}
         <div className="flex items-center gap-3">
           <Badge className="bg-surface-2/80 text-text-muted border-borderline font-orbitron uppercase tracking-widest text-[10px]">
@@ -60,7 +59,7 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
               </span>
             </div>
           )}
-          <button 
+          <button
             onClick={() => setShowConfirmModal(true)}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-2/60 backdrop-blur-sm border border-borderline text-text-muted hover:text-red-500 hover:border-red-500/30 transition-colors"
           >
@@ -71,7 +70,7 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
 
       {/* Animated Progress Bar */}
       <div className="w-full h-2 bg-surface-2 rounded-full overflow-hidden border border-borderline/50">
-        <motion.div 
+        <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${progressPercentage}%` }}
           transition={{ type: "spring", stiffness: 100, damping: 20 }}
@@ -85,7 +84,7 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
       {/* Confirm Abandon Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-background/80 backdrop-blur-sm">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-surface border border-borderline p-6 rounded-xl shadow-2xl max-w-sm w-full"
