@@ -1,16 +1,23 @@
 // src/components/quiz/QuestionCard.tsx
-import { motion } from 'framer-motion';
-import { Bookmark, Sparkles, CheckCircle2, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Bookmark, Sparkles, CheckCircle2, XCircle, Calendar, Loader2, Tag } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
+import { Badge } from '../ui/Badge';
+import { supabase } from '../../services/supabase';
 
 interface QuestionCardProps {
   question: {
     text: string;
     options: { A: string; B: string; C: string; D: string };
     category: string;
-    correct_answer: string; // <-- Added this
-    explanation: string;    // <-- Added this
+    correct_answer: string;
+    explanation: string;
+    difficulty?: string;
+    exam_period?: string;
+    source?: string;
+    tags?: string[];
   };
   selectedOption: string | null;
   onSelect: (option: string) => void;
@@ -19,6 +26,46 @@ interface QuestionCardProps {
 }
 
 export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, hideExplanation = false }: QuestionCardProps) {
+  const [isExplanationOpen, setIsExplanationOpen] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+
+  const handleExplainThis = async () => {
+    setIsExplanationOpen(true);
+    if (aiExplanation || isAiLoading) return;
+
+    setIsAiLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      // Construct dynamic API URL (handle dev vs prod proxy)
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/api/ai/explain`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          questionText: question.text,
+          options: question.options,
+          correctAnswer: question.correct_answer,
+          userAnswer: selectedOption
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch explanation');
+      const data = await response.json();
+      setAiExplanation(data.explanation);
+    } catch (err) {
+      console.error(err);
+      setAiExplanation(`**Failed to generate AI breakdown.**\n\n**Standard Answer Key:**\n${question.explanation}`);
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
+
   // Use the dynamic correct answer from the data
   const correctAnswer = question.correct_answer; 
 
@@ -43,11 +90,24 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
       <CardContent className="p-6 md:p-8 flex flex-col">
         
         {/* Top Actions */}
-        <div className="flex items-center justify-between mb-6">
-          <span className="text-xs font-bold font-orbitron tracking-widest text-text-muted uppercase">
-            {question.category}
-          </span>
-          <button className="text-text-muted hover:text-accent transition-colors">
+        <div className="flex items-start sm:items-center justify-between mb-6 gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge className="bg-primary/10 text-primary border-primary/20 font-orbitron tracking-widest uppercase text-[10px] sm:text-xs font-bold">
+              {question.category || 'Uncategorized'}
+            </Badge>
+            <Badge className="bg-surface-2/60 text-text-muted border-borderline font-orbitron tracking-widest uppercase text-[9px] sm:text-[10px] flex items-center gap-1">
+              <Calendar className="w-3 h-3" /> {question.exam_period || 'Mock Data'}
+            </Badge>
+            <Badge className={`font-orbitron tracking-widest uppercase text-[9px] sm:text-[10px] ${question.difficulty === 'hard' ? 'bg-red-500/10 text-red-500 border-red-500/20' : question.difficulty === 'easy' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-orange-500/10 text-orange-500 border-orange-500/20'}`}>
+              {question.difficulty || 'Medium'}
+            </Badge>
+            {question.tags && question.tags.length > 0 && question.tags.map((tag, idx) => (
+              <Badge key={idx} className="bg-accent/10 text-accent border-accent/20 font-orbitron tracking-widest uppercase text-[9px] sm:text-[10px] flex items-center gap-1">
+                <Tag className="w-3 h-3" /> {tag}
+              </Badge>
+            ))}
+          </div>
+          <button className="text-text-muted hover:text-accent transition-colors shrink-0">
             <Bookmark className="w-5 h-5" />
           </button>
         </div>
@@ -82,31 +142,56 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
           ))}
         </div>
 
-        {/* Explain This Button (Only visible after submission, unless hidden by mode) */}
+        {/* Explain This Section (Only visible after submission, unless hidden by mode) */}
         {isSubmitted && !hideExplanation && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="p-4 rounded-xl bg-surface-2/50 border border-borderline flex flex-col items-start gap-4"
           >
-            {/* Added the actual explanation from the data to display here! */}
-            <p className="text-sm text-text-main leading-relaxed border-b border-borderline/50 pb-4 w-full whitespace-pre-wrap">
-              {question.explanation}
-            </p>
-            
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 w-full">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-accent/10">
                   <Sparkles className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="font-display font-bold text-sm text-text-main leading-none mb-1">Need more clarification?</p>
-                  <p className="text-xs text-text-muted">Deploy Gemini Flash for a deeper breakdown.</p>
+                  <p className="font-display font-bold text-sm text-text-main leading-none mb-1">Need clarification?</p>
+                  <p className="text-xs text-text-muted">Deploy Gemini Flash for a quick, structured breakdown.</p>
                 </div>
               </div>
-              <Button variant="outline" className="w-full sm:w-auto font-orbitron text-[10px] tracking-wider border-accent/30 text-accent hover:bg-accent/10">
-                Explain This
+              <Button 
+                variant="outline" 
+                onClick={handleExplainThis}
+                disabled={isAiLoading}
+                className="w-full sm:w-auto font-orbitron text-[10px] tracking-wider border-accent/30 text-accent hover:bg-accent/10"
+              >
+                {isAiLoading ? (
+                  <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analyzing...</>
+                ) : (
+                  'Explain This'
+                )}
               </Button>
             </div>
+
+            <AnimatePresence>
+              {isExplanationOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden w-full"
+                >
+                  <div className="pt-4 border-t border-borderline/50 mt-2 text-sm text-text-main leading-relaxed whitespace-pre-wrap">
+                    {isAiLoading ? (
+                      <div className="flex items-center gap-2 text-accent animate-pulse">
+                        <Sparkles className="w-4 h-4" /> Generating AI breakdown...
+                      </div>
+                    ) : (
+                      aiExplanation
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
 

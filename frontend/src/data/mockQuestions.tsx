@@ -20,6 +20,7 @@ export interface Question {
   category: QuestionCategory;
   difficulty: 'easy' | 'medium' | 'hard';
   exam_period?: string;
+  tags?: string[];
 }
 
 export const mockQuestions: Question[] = [

@@ -1,5 +1,5 @@
 // src/components/forge/ForgeFAB.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import { ForgeChatDrawer } from './ForgeChatDrawer';
 
@@ -9,6 +9,12 @@ interface ForgeFABProps {
 
 export function ForgeFAB({ context }: ForgeFABProps) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenForge = () => setIsDrawerOpen(true);
+    window.addEventListener('open-forge', handleOpenForge);
+    return () => window.removeEventListener('open-forge', handleOpenForge);
+  }, []);
 
   return (
     <>
