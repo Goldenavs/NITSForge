@@ -12,6 +12,7 @@ interface QuizState {
   selectedAnswers: Record<string, 'A' | 'B' | 'C' | 'D'>;
   score: number;
   timeRemaining: number | null;
+  endTime: number | null;
   
   // Actions
   startQuiz: (mode?: string, options?: any) => Promise<void>;
@@ -19,6 +20,7 @@ interface QuizState {
   nextQuestion: () => void;
   finishQuiz: () => Promise<void>;
   resetQuiz: () => void;
+  abandonQuiz: () => void;
   tick: () => void;
 }
 
@@ -30,12 +32,14 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   selectedAnswers: {},
   score: 0,
   timeRemaining: null,
+  endTime: null,
 
   startQuiz: async (mode = 'practice', options: any = {}) => {
     set({ status: 'loading', mode: mode as any });
 
     let finalQuestions: Question[] = [];
     let timer: number | null = null;
+    let endTime: number | null = null;
 
     if (mode === 'daily-challenge') {
       const { data: { session } } = await supabase.auth.getSession();
@@ -90,6 +94,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       if (mode === 'simulation') {
         finalQuestions = shuffled.slice(0, 80);
         timer = 150 * 60; // 150 minutes in seconds
+        endTime = Date.now() + timer * 1000;
       } else if (mode === 'quick') {
         finalQuestions = shuffled.slice(0, 10);
       } else if (mode === 'practice') {
@@ -104,19 +109,28 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       selectedAnswers: {},
       score: 0,
       timeRemaining: timer,
+      endTime: endTime,
     });
   },
 
   tick: () => {
-    const { timeRemaining, status, finishQuiz } = get();
+    const { timeRemaining, status, finishQuiz, mode, endTime } = get();
     if (status !== 'in-progress' || timeRemaining === null) return;
     
-    if (timeRemaining <= 1) {
+    let newTimeRemaining = timeRemaining;
+
+    if (mode === 'simulation' && endTime !== null) {
+      newTimeRemaining = Math.max(0, Math.floor((endTime - Date.now()) / 1000));
+    } else {
+      newTimeRemaining = timeRemaining - 1;
+    }
+
+    if (newTimeRemaining <= 0) {
       // Time's up
       set({ timeRemaining: 0 });
       finishQuiz();
     } else {
-      set({ timeRemaining: timeRemaining - 1 });
+      set({ timeRemaining: newTimeRemaining });
     }
   },
 
@@ -251,6 +265,20 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       selectedAnswers: {},
       score: 0,
       timeRemaining: null,
+      endTime: null,
+    });
+  },
+
+  abandonQuiz: () => {
+    set({
+      status: 'idle',
+      mode: 'practice',
+      questions: [],
+      currentIndex: 0,
+      selectedAnswers: {},
+      score: 0,
+      timeRemaining: null,
+      endTime: null,
     });
   }
 }));

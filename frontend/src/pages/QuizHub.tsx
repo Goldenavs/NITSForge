@@ -4,7 +4,10 @@ import { Target, Timer, Zap, BookOpen, RotateCcw, Sparkles, ChevronRight } from 
 import { QuizModeCard } from '../components/quiz/QuizModeCard';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useQuizStore } from '../store/useQuizStore';
+import { useState } from 'react';
+import { Button } from '../components/ui/Button';
 
 // 1. Group Stagger Orchestrator
 const staggerContainer = {
@@ -29,6 +32,30 @@ const fadeUpVariant = {
 const viewportConfig = { once: true, margin: "-50px" };
 
 export default function QuizHub() {
+  const { status, abandonQuiz, mode } = useQuizStore();
+  const navigate = useNavigate();
+  const [showActiveModal, setShowActiveModal] = useState(false);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+
+  const handleCardClick = (e: React.MouseEvent, path: string) => {
+    if (status === 'in-progress') {
+      e.preventDefault();
+      setPendingPath(path);
+      setShowActiveModal(true);
+    }
+  };
+
+  const handleAbandonAndContinue = () => {
+    abandonQuiz();
+    setShowActiveModal(false);
+    if (pendingPath) navigate(pendingPath);
+  };
+
+  const handleResume = () => {
+    setShowActiveModal(false);
+    navigate(`/quiz/session?mode=${mode}`);
+  };
+
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 pt-4">
       
@@ -67,6 +94,7 @@ export default function QuizHub() {
             colorClass="text-primary border-primary/30"
             path="/quiz/session?mode=practice"
             isPopular={true}
+            onClick={(e) => handleCardClick(e, "/quiz/session?mode=practice")}
           />
         </motion.div>
 
@@ -78,6 +106,7 @@ export default function QuizHub() {
             tags={['150 Mins', '80 Items', 'Official Scoring']}
             colorClass="text-red-500 border-red-500/30"
             path="/quiz/session?mode=simulation"
+            onClick={(e) => handleCardClick(e, "/quiz/session?mode=simulation")}
           />
         </motion.div>
 
@@ -89,6 +118,7 @@ export default function QuizHub() {
             tags={['Targeted', 'Custom Length']}
             colorClass="text-amber-500 border-amber-500/30"
             path="/quiz/setup?mode=drill"
+            onClick={(e) => handleCardClick(e, "/quiz/setup?mode=drill")}
           />
         </motion.div>
 
@@ -100,6 +130,7 @@ export default function QuizHub() {
             tags={['10 Items', 'Randomized', 'Fast']}
             colorClass="text-blue-500 border-blue-500/30"
             path="/quiz/session?mode=quick"
+            onClick={(e) => handleCardClick(e, "/quiz/session?mode=quick")}
           />
         </motion.div>
 
@@ -111,6 +142,7 @@ export default function QuizHub() {
             tags={['Adaptive', 'Spaced Repetition']}
             colorClass="text-emerald-500 border-emerald-500/30"
             path="/quiz/session?mode=missed"
+            onClick={(e) => handleCardClick(e, "/quiz/session?mode=missed")}
           />
         </motion.div>
       </motion.div>
@@ -123,7 +155,7 @@ export default function QuizHub() {
         variants={fadeUpVariant}
         className="mt-4"
       >
-        <Link to="/quiz/ai" className="block group">
+        <Link to="/quiz/ai" className="block group" onClick={(e) => handleCardClick(e, "/quiz/ai")}>
           <Card className="relative overflow-hidden bg-surface/85 backdrop-blur-md border border-accent/40 group-hover:border-accent transition-colors duration-500 shadow-lg">
             
             {/* Animated Gradient Edge */}
@@ -161,6 +193,35 @@ export default function QuizHub() {
           </Card>
         </Link>
       </motion.div>
+
+      {/* Active Session Modal */}
+      {showActiveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-background/80 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-borderline p-6 rounded-xl shadow-2xl max-w-sm w-full"
+          >
+            <h3 className="text-xl font-bold text-text-main font-display mb-2">Active Quiz Detected</h3>
+            <p className="text-sm text-text-muted mb-6 leading-relaxed">
+              You currently have an active <strong className="text-primary capitalize">{mode}</strong> session in progress. What would you like to do?
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button variant="primary" onClick={handleResume} className="w-full justify-center">
+                Resume Active Quiz
+              </Button>
+              <Button variant="outline" className="w-full text-red-500 hover:bg-red-500 hover:text-white border-red-500/30" onClick={handleAbandonAndContinue}>
+                Discard & Start New
+              </Button>
+            </div>
+            <div className="mt-4 text-center">
+              <button className="text-xs text-text-muted hover:text-text-main" onClick={() => setShowActiveModal(false)}>
+                Cancel
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
     </div>
   );

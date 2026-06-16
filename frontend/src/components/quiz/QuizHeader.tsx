@@ -3,7 +3,10 @@ import { motion } from 'framer-motion';
 import { X, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
 import { useQuizStore } from '../../store/useQuizStore';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface QuizHeaderProps {
   currentQuestion: number;
@@ -12,8 +15,15 @@ interface QuizHeaderProps {
 }
 
 export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeaderProps) {
-  const { timeRemaining } = useQuizStore();
+  const { timeRemaining, abandonQuiz } = useQuizStore();
   const progressPercentage = (currentQuestion / totalQuestions) * 100;
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const navigate = useNavigate();
+
+  const handleAbandon = () => {
+    abandonQuiz();
+    navigate('/quiz');
+  };
 
   const formatTime = (seconds: number) => {
     const h = Math.floor(seconds / 3600);
@@ -50,12 +60,12 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
               </span>
             </div>
           )}
-          <Link 
-            to="/quiz" 
+          <button 
+            onClick={() => setShowConfirmModal(true)}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-2/60 backdrop-blur-sm border border-borderline text-text-muted hover:text-red-500 hover:border-red-500/30 transition-colors"
           >
             <X className="w-5 h-5" />
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -71,6 +81,28 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-[shine_2s_infinite]" />
         </motion.div>
       </div>
+
+      {/* Confirm Abandon Modal */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-background/80 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-borderline p-6 rounded-xl shadow-2xl max-w-sm w-full"
+          >
+            <h3 className="text-xl font-bold text-text-main font-display mb-2">Abandon Quiz?</h3>
+            <p className="text-sm text-text-muted mb-6 leading-relaxed">
+              Are you sure you want to exit? Your progress will <strong className="text-red-500">not be saved</strong> and no XP or accuracy stats will be recorded.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => setShowConfirmModal(false)}>Cancel</Button>
+              <Button variant="primary" className="bg-red-500/10 text-red-500 border-red-500/30 hover:bg-red-500 hover:text-white" onClick={handleAbandon}>
+                End Session
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

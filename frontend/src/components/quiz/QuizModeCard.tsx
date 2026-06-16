@@ -11,11 +11,12 @@ interface QuizModeCardProps {
   colorClass: string;
   path: string;
   isPopular?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
-export function QuizModeCard({ title, description, icon: Icon, tags, colorClass, path, isPopular }: QuizModeCardProps) {
+export function QuizModeCard({ title, description, icon: Icon, tags, colorClass, path, isPopular, onClick }: QuizModeCardProps) {
   return (
-    <Link to={path} className="block group h-full">
+    <Link to={path} className="block group h-full" onClick={onClick}>
       <Card className="relative h-full overflow-hidden bg-surface/85 backdrop-blur-sm border border-borderline/60 group-hover:border-primary/40 transition-all duration-300 shadow-sm group-hover:shadow-lg group-hover:-translate-y-1 flex flex-col">
         
         {/* Popular / Recommended Tag */}
