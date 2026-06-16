@@ -1,7 +1,8 @@
 // src/components/quiz/QuizModeCard.tsx
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
 
 interface QuizModeCardProps {
   title: string;
@@ -9,15 +10,24 @@ interface QuizModeCardProps {
   icon: any;
   tags: string[];
   colorClass: string;
-  path: string;
   isPopular?: boolean;
-  onClick?: (e: React.MouseEvent) => void;
+  configType?: 'count' | 'topic' | 'date' | 'none';
+  onStart: (config?: any) => void;
+  actionText?: string;
 }
 
-export function QuizModeCard({ title, description, icon: Icon, tags, colorClass, path, isPopular, onClick }: QuizModeCardProps) {
+export function QuizModeCard({ title, description, icon: Icon, tags, colorClass, isPopular, configType = 'none', onStart, actionText = "Start Quiz" }: QuizModeCardProps) {
+  const [questionCount, setQuestionCount] = useState(30);
+
+  const handleStart = () => {
+    const config: any = {};
+    if (configType === 'count') config.questionCount = questionCount;
+    onStart(config);
+  };
+
   return (
-    <Link to={path} className="block group h-full" onClick={onClick}>
-      <Card className="relative h-full overflow-hidden bg-surface/85 backdrop-blur-sm border border-borderline/60 group-hover:border-primary/40 transition-all duration-300 shadow-sm group-hover:shadow-lg group-hover:-translate-y-1 flex flex-col">
+    <div className="block h-full group">
+      <Card className="relative h-full overflow-hidden bg-surface/85 backdrop-blur-sm border border-borderline/60 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-lg flex flex-col">
         
         {/* Popular / Recommended Tag */}
         {isPopular && (
@@ -47,18 +57,55 @@ export function QuizModeCard({ title, description, icon: Icon, tags, colorClass,
           </p>
           
           {/* Tags */}
-          <div className="flex flex-wrap gap-2 mt-auto">
+          <div className="flex flex-wrap gap-2 mt-auto mb-5">
             {tags.map((tag) => (
               <Badge key={tag} className="bg-surface-2/80 text-text-muted border-borderline/50 font-orbitron text-[9px] tracking-wider uppercase">
                 {tag}
               </Badge>
             ))}
           </div>
+
+          {/* Inline Controls */}
+          <div className="flex flex-col gap-3">
+            {configType === 'count' && (
+              <div className="flex bg-surface-2 p-1 rounded-lg border border-borderline/50">
+                {[10, 20, 30].map(num => (
+                  <button 
+                    key={num}
+                    onClick={() => setQuestionCount(num)}
+                    className={`flex-1 py-1.5 text-xs font-orbitron font-bold rounded-md transition-all ${questionCount === num ? 'bg-primary text-surface shadow-sm' : 'text-text-muted hover:text-text-main hover:bg-surface'}`}
+                  >
+                    {num} Qs
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {configType === 'topic' && (
+              <Button variant="outline" className="w-full text-xs py-2 h-auto font-orbitron border-dashed text-text-muted hover:text-text-main" onClick={() => {}}>
+                Configure Topics...
+              </Button>
+            )}
+            
+            {configType === 'date' && (
+              <Button variant="outline" className="w-full text-xs py-2 h-auto font-orbitron border-dashed text-text-muted hover:text-text-main" onClick={() => {}}>
+                Select Exam Dates...
+              </Button>
+            )}
+
+            <Button 
+              variant="outline" 
+              className={`w-full font-orbitron uppercase tracking-widest text-xs py-4 transition-all duration-300 ${colorClass.split(' ')[0]} border-borderline hover:bg-primary hover:text-surface hover:border-primary hover:shadow-[0_0_15px_rgba(var(--color-primary),0.3)]`}
+              onClick={handleStart}
+            >
+              {actionText}
+            </Button>
+          </div>
         </CardContent>
 
         {/* Subtle Ambient Glow on Hover */}
         <div className={`absolute -right-8 -bottom-8 w-40 h-40 ${colorClass.split(' ')[0]} opacity-[0.02] blur-3xl rounded-full pointer-events-none group-hover:opacity-10 transition-opacity duration-500`} />
       </Card>
-    </Link>
+    </div>
   );
 }
