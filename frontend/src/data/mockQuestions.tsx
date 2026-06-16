@@ -11,7 +11,7 @@ export type QuestionCategory =
   | 'Software Engineering & Development';
 
 export interface Question {
-  source(source: any): unknown;
+  source?: string;
   id: string;
   text: string;
   options: { A: string; B: string; C: string; D: string; };
@@ -37,9 +37,7 @@ export const mockQuestions: Question[] = [
     },
     correct_answer: 'B',
     explanation: 'A stack operates on a Last-In, First-Out (LIFO) principle. The last element added to the stack is the first one to be removed, much like a stack of plates.',
-    source: function (): unknown {
-      throw new Error("Function not implemented.");
-    }
+    source: 'Spring 2024'
   },
   {
     id: 'FE-NET-001',
@@ -54,9 +52,7 @@ export const mockQuestions: Question[] = [
     },
     correct_answer: 'C',
     explanation: 'The Network Layer (Layer 3) handles logical addressing (IP addresses) and routing, determining the best path for data packets to travel across networks.',
-    source: function (): unknown {
-      throw new Error("Function not implemented.");
-    }
+    source: 'Fall 2023'
   },
   {
     id: 'FE-SEC-001',
@@ -71,8 +67,6 @@ export const mockQuestions: Question[] = [
     },
     correct_answer: 'B',
     explanation: 'Salting involves appending random data (a salt) to a password before running it through a hash function. This ensures that two users with the same password will have different hashes, thwarting rainbow table and dictionary attacks.',
-    source: function (): unknown {
-      throw new Error("Function not implemented.");
-    }
+    source: 'Spring 2023'
   }
 ];
