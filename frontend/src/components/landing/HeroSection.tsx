@@ -23,7 +23,7 @@ const HackerText = ({ text }: { text: string }) => {
     const letters = "abcdefghijklmnopqrstuvwxyz0123456789";
 
     // Dynamically calculate speed so it always finishes in ~600ms (20 steps @ 30ms)
-    const stepSize = Math.max(1, text.length / 100);
+    const stepSize = Math.max(1, text.length / 50);
 
     const interval = setInterval(() => {
       setDisplayText(

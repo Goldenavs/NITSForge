@@ -1,11 +1,11 @@
 // src/components/landing/FeaturesSection.tsx
 import { motion, type Variants } from 'framer-motion';
 import { Target, Zap, Trophy, Sparkles } from 'lucide-react';
-import { 
-  MockExamSimulation, 
-  DeepAnalyticsSimulation, 
-  ForgeAISimulation, 
-  GamifiedLearningSimulation 
+import {
+  MockExamSimulation,
+  DeepAnalyticsSimulation,
+  ForgeAISimulation,
+  GamifiedLearningSimulation
 } from './FeatureSimulations';
 
 const features = [
@@ -17,7 +17,7 @@ const features = [
   {
     icon: <Zap className="w-6 h-6 text-accent" />,
     title: "Deep Analytics",
-    desc: "Radar charts map out your strengths and weaknesses across all 8 major domains."
+    desc: "Radar charts map out your strengths and weaknesses across all major domains."
   },
   {
     icon: <Sparkles className="w-6 h-6 text-amber-500" />,
@@ -45,7 +45,7 @@ export function FeaturesSection() {
   return (
     <section id="features" className="py-24 px-6 lg:px-16 border-t border-borderline/30 relative">
       <div className="max-w-5xl mx-auto">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-100px" }}
@@ -58,7 +58,7 @@ export function FeaturesSection() {
           <div className="w-20 h-1 bg-primary rounded-full" />
         </motion.div>
 
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -66,7 +66,7 @@ export function FeaturesSection() {
           className="grid grid-cols-1 md:grid-cols-2 gap-8"
         >
           {features.map((feat, i) => (
-            <motion.div 
+            <motion.div
               key={i}
               variants={cardVariants}
               className="group flex flex-col bg-surface-2/40 hover:bg-surface border border-borderline hover:border-primary/50 rounded-2xl p-6 transition-all duration-300 shadow-sm hover:shadow-xl"
@@ -84,7 +84,7 @@ export function FeaturesSection() {
                   </p>
                 </div>
               </div>
-              
+
               {/* Interactive Simulation Area */}
               <div className="w-full min-h-[280px] flex-1 flex flex-col mt-auto relative">
                 {i === 0 && <MockExamSimulation />}
