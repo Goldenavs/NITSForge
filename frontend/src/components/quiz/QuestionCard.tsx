@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bookmark, Sparkles, CheckCircle2, XCircle, Calendar, Loader2, Tag } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -40,7 +41,7 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
       const token = session?.access_token;
 
       // Construct dynamic API URL (handle dev vs prod proxy)
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       const response = await fetch(`${apiUrl}/api/ai/explain`, {
         method: 'POST',
         headers: {
@@ -55,12 +56,18 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
         })
       });
 
-      if (!response.ok) throw new Error('Failed to fetch explanation');
+      if (!response.ok) {
+        if (response.status === 503 || response.status === 500) {
+          throw new Error('503 Service Unavailable');
+        }
+        throw new Error('Failed to fetch explanation');
+      }
       const data = await response.json();
       setAiExplanation(data.explanation);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setAiExplanation(`**Failed to generate AI breakdown.**\n\n**Standard Answer Key:**\n${question.explanation}`);
+      const isUnavailable = err.message?.includes('503') || err.message?.includes('Unavailable');
+      setAiExplanation(`⚠️ **Forge AI is currently unreachable${isUnavailable ? ' due to high demand' : ''}.**\n\nPlease try again later, or review the standard answer key above.`);
     } finally {
       setIsAiLoading(false);
     }
@@ -142,7 +149,20 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
           ))}
         </div>
 
-        {/* Explain This Section (Only visible after submission, unless hidden by mode) */}
+        {/* Standard Explanation (Automatically Visible after submission) */}
+        {isSubmitted && !hideExplanation && question.explanation && (
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-4 rounded-xl bg-surface-2/30 border border-borderline flex flex-col items-start"
+          >
+            <h3 className="text-xs font-bold font-orbitron tracking-widest text-text-muted uppercase mb-2">Answer Key Explanation</h3>
+            <div className="text-sm text-text-main leading-relaxed prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-pre:bg-surface-3 max-w-none">
+              <ReactMarkdown>{question.explanation}</ReactMarkdown>
+            </div>
+          </motion.div>
+        )}
+
+        {/* AI Explain This Section */}
         {isSubmitted && !hideExplanation && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -180,13 +200,15 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden w-full"
                 >
-                  <div className="pt-4 border-t border-borderline/50 mt-2 text-sm text-text-main leading-relaxed whitespace-pre-wrap">
+                  <div className="pt-4 border-t border-borderline/50 mt-2 text-sm text-text-main leading-relaxed">
                     {isAiLoading ? (
                       <div className="flex items-center gap-2 text-accent animate-pulse">
                         <Sparkles className="w-4 h-4" /> Generating AI breakdown...
                       </div>
                     ) : (
-                      aiExplanation
+                      <div className="prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-pre:bg-surface-3 max-w-none prose-a:text-accent">
+                        <ReactMarkdown>{aiExplanation || "No explanation generated."}</ReactMarkdown>
+                      </div>
                     )}
                   </div>
                 </motion.div>
