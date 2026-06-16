@@ -1,16 +1,17 @@
 // src/data/mockQuestions.ts
 
-export type QuestionCategory = 
-  | 'Basic Theory of Information' 
-  | 'Computer Architecture' 
-  | 'Operating Systems' 
-  | 'Data Structures & Algorithms' 
-  | 'Databases' 
-  | 'Networking & Communication' 
-  | 'Information Security' 
+export type QuestionCategory =
+  | 'Basic Theory of Information'
+  | 'Computer Architecture'
+  | 'Operating Systems'
+  | 'Data Structures & Algorithms'
+  | 'Databases'
+  | 'Networking & Communication'
+  | 'Information Security'
   | 'Software Engineering & Development';
 
 export interface Question {
+  source(source: any): unknown;
   id: string;
   text: string;
   options: { A: string; B: string; C: string; D: string; };
@@ -34,7 +35,10 @@ export const mockQuestions: Question[] = [
       D: 'Binary Tree'
     },
     correct_answer: 'B',
-    explanation: 'A stack operates on a Last-In, First-Out (LIFO) principle. The last element added to the stack is the first one to be removed, much like a stack of plates.'
+    explanation: 'A stack operates on a Last-In, First-Out (LIFO) principle. The last element added to the stack is the first one to be removed, much like a stack of plates.',
+    source: function (): unknown {
+      throw new Error("Function not implemented.");
+    }
   },
   {
     id: 'FE-NET-001',
@@ -48,7 +52,10 @@ export const mockQuestions: Question[] = [
       D: 'Session Layer'
     },
     correct_answer: 'C',
-    explanation: 'The Network Layer (Layer 3) handles logical addressing (IP addresses) and routing, determining the best path for data packets to travel across networks.'
+    explanation: 'The Network Layer (Layer 3) handles logical addressing (IP addresses) and routing, determining the best path for data packets to travel across networks.',
+    source: function (): unknown {
+      throw new Error("Function not implemented.");
+    }
   },
   {
     id: 'FE-SEC-001',
@@ -62,6 +69,9 @@ export const mockQuestions: Question[] = [
       D: 'Storing cryptographic keys on a physically separate hardware device.'
     },
     correct_answer: 'B',
-    explanation: 'Salting involves appending random data (a salt) to a password before running it through a hash function. This ensures that two users with the same password will have different hashes, thwarting rainbow table and dictionary attacks.'
+    explanation: 'Salting involves appending random data (a salt) to a password before running it through a hash function. This ensures that two users with the same password will have different hashes, thwarting rainbow table and dictionary attacks.',
+    source: function (): unknown {
+      throw new Error("Function not implemented.");
+    }
   }
 ];

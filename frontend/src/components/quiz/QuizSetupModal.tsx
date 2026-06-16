@@ -135,27 +135,61 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
             {configType === 'sandbox' && (
               <div className="mb-8 space-y-6">
                 <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-sm font-bold text-text-main font-orbitron">Question Amount</label>
-                    <span className="text-sm text-primary font-bold">{sandboxAmount} Qs</span>
+                  <label className="text-sm font-bold text-text-main font-orbitron block mb-2">Question Amount</label>
+                  <div className="relative flex items-center w-full bg-surface-2/40 border border-borderline/50 rounded-2xl p-1 overflow-hidden">
+                    {[10, 30, 50, 80, 100].map((amount) => {
+                      const isActive = sandboxAmount === amount;
+                      return (
+                        <button
+                          key={amount}
+                          type="button"
+                          onClick={() => setSandboxAmount(amount)}
+                          className={`relative flex-1 py-2 text-xs font-bold tracking-wide rounded-xl transition-colors z-10 flex items-center justify-center text-center ${isActive ? 'text-surface' : 'text-text-muted hover:text-text-main'}`}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="sandboxAmountActiveIndicator"
+                              className="absolute inset-0 bg-primary rounded-xl shadow-md -z-10"
+                              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            />
+                          )}
+                          {amount} Qs
+                        </button>
+                      );
+                    })}
                   </div>
-                  <input 
-                    type="range" min="10" max="100" step="10" 
-                    value={sandboxAmount} onChange={(e) => setSandboxAmount(Number(e.target.value))}
-                    className="w-full accent-primary"
-                  />
                 </div>
                 
                 <div>
-                  <div className="flex justify-between mb-2">
-                    <label className="text-sm font-bold text-text-main font-orbitron">Time Limit</label>
-                    <span className="text-sm text-primary font-bold">{sandboxTime === 0 ? 'None (Untimed)' : `${sandboxTime} Mins`}</span>
+                  <label className="text-sm font-bold text-text-main font-orbitron block mb-2">Time Limit</label>
+                  <div className="relative flex items-center w-full bg-surface-2/40 border border-borderline/50 rounded-2xl p-1 overflow-hidden">
+                    {[
+                      { val: 0, label: 'Untimed' },
+                      { val: 15, label: '15 Min' },
+                      { val: 30, label: '30 Min' },
+                      { val: 60, label: '60 Min' },
+                      { val: 90, label: '90 Min' }
+                    ].map((timeOption) => {
+                      const isActive = sandboxTime === timeOption.val;
+                      return (
+                        <button
+                          key={timeOption.val}
+                          type="button"
+                          onClick={() => setSandboxTime(timeOption.val)}
+                          className={`relative flex-1 py-2 text-[10px] sm:text-xs font-bold tracking-wide rounded-xl transition-colors z-10 flex items-center justify-center text-center ${isActive ? 'text-surface' : 'text-text-muted hover:text-text-main'}`}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="sandboxTimeActiveIndicator"
+                              className="absolute inset-0 bg-primary rounded-xl shadow-md -z-10"
+                              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            />
+                          )}
+                          {timeOption.label}
+                        </button>
+                      );
+                    })}
                   </div>
-                  <input 
-                    type="range" min="0" max="180" step="10" 
-                    value={sandboxTime} onChange={(e) => setSandboxTime(Number(e.target.value))}
-                    className="w-full accent-primary"
-                  />
                 </div>
 
                 <div className="flex items-center justify-between p-4 rounded-xl border border-borderline/50 bg-surface-2/30">

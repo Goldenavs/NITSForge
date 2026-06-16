@@ -210,6 +210,7 @@ export default function QuizHub() {
               icon={Timer}
               tags={['150 Mins', '100 Items', 'Strict']}
               colorClass="text-red-600 border-red-600/40"
+              isIntimidating={true}
               configType="none"
               onStart={() => handleStartQuiz('simulation')}
               actionText="Begin Exam"

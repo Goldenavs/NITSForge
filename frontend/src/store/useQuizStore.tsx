@@ -14,7 +14,7 @@ interface QuizState {
   timeRemaining: number | null;
   endTime: number | null;
   lives: number | null;
-  
+
   // Actions
   startQuiz: (mode?: string, options?: any) => Promise<void>;
   answerQuestion: (questionId: string, answer: 'A' | 'B' | 'C' | 'D') => void;
@@ -47,7 +47,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     if (mode === 'daily-challenge') {
       const { data: { session } } = await supabase.auth.getSession();
       const userId = session?.user?.id;
-      
+
       if (!userId) {
         console.error("Must be logged in for daily challenge");
         set({ status: 'idle' });
@@ -55,14 +55,14 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       }
 
       const { data, error } = await supabase.rpc('get_adaptive_daily_challenge', { p_user_id: userId });
-      
+
       if (error) {
         console.error('Error fetching daily challenge:', error);
         alert(error.message); // e.g. "Daily challenge already completed today."
         set({ status: 'idle' });
         return;
       }
-      
+
       finalQuestions = data as Question[] || [];
     } else {
       // Fetch questions from Supabase
@@ -70,12 +70,12 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         .from('questions')
         .select('*')
         .eq('is_active', true);
-        
+
       // Future filtering e.g. options.category or options.source_exam
-      if (options.category) {
+      if (options?.category) {
         query = query.eq('category', options.category);
       }
-      if (options.source) {
+      if (options?.source) {
         query = query.eq('source', options.source);
       }
 
@@ -89,17 +89,56 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
       // Local Shuffle
       const fetchedQuestions = data as Question[] || [];
-      const shuffled = fetchedQuestions.sort(() => 0.5 - Math.random());
+      let filteredQuestions = [...fetchedQuestions];
 
+      // topic/date filtering logic
+      if (options?.topics && options.topics.length > 0) {
+        // Map from topic ID to category string
+        const topicMap: Record<string, string> = {
+          'math': 'Basic Theory of Information',
+          'arch': 'Computer Architecture',
+          'os': 'Operating Systems',
+          'ds': 'Data Structures & Algorithms',
+          'db': 'Databases',
+          'net': 'Networking & Communication',
+          'sec': 'Information Security',
+          'se': 'Software Engineering',
+          'pm': 'Project Management',
+          'strat': 'System Strategy',
+          'legal': 'Corporate & Legal Affairs'
+        };
+        const selectedIds = options.topics;
+        const selectedTitles = options.topics.map((id: string) => topicMap[id]);
+
+        // Handle variations in mock question categories (e.g. Software Engineering & Development)
+        if (selectedTitles.includes('Software Engineering')) {
+          selectedTitles.push('Software Engineering & Development');
+        }
+
+        filteredQuestions = filteredQuestions.filter(q => 
+          selectedIds.includes(q.category) || 
+          selectedTitles.includes(q.category)
+        );
+      }
+
+      if (options?.dates && options.dates.length > 0) {
+        const selectedDates = options.dates.map((d: string) => d.replace(" (latest)", ""));
+        filteredQuestions = filteredQuestions.filter(q =>
+          (q.exam_period && selectedDates.includes(q.exam_period)) ||
+          (q.source && selectedDates.includes(q.source))
+        );
+      }
+
+      const shuffled = filteredQuestions.sort(() => 0.5 - Math.random());
       finalQuestions = shuffled;
 
       // Determine counts and timer based on mode
       if (mode === 'review') {
         finalQuestions = shuffled; // infinite/all
       } else if (mode === 'practice') {
-        finalQuestions = shuffled.slice(0, options.questionCount || 30);
+        finalQuestions = shuffled.slice(0, options?.questionCount || 30);
       } else if (mode === 'quick') {
-        finalQuestions = shuffled.slice(0, options.questionCount || 10);
+        finalQuestions = shuffled.slice(0, options?.questionCount || 10);
         timer = finalQuestions.length * 60; // 1 min per question
       } else if (mode === 'topic' || mode === 'date') {
         finalQuestions = shuffled.slice(0, 30);
@@ -111,14 +150,14 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         timer = 150 * 60; // 150 minutes in seconds
         endTime = Date.now() + timer * 1000;
       } else if (mode === 'speed') {
-        finalQuestions = shuffled.slice(0, options.questionCount || 30);
+        finalQuestions = shuffled.slice(0, options?.questionCount || 30);
         timer = finalQuestions.length * 30; // tight: 30 secs per question
       } else if (mode === 'survival') {
         finalQuestions = shuffled.slice(0, 30);
         set({ lives: 3 });
       } else if (mode === 'sandbox') {
-        finalQuestions = shuffled.slice(0, options.questionCount || 30);
-        timer = options.timerMinutes ? options.timerMinutes * 60 : null;
+        finalQuestions = shuffled.slice(0, options?.questionCount || 30);
+        timer = options?.timerMinutes ? options.timerMinutes * 60 : null;
       } else if (mode === 'ai') {
         finalQuestions = shuffled.slice(0, 10); // placeholder for AI
       } else {
@@ -143,7 +182,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   tick: () => {
     const { timeRemaining, status, finishQuiz, mode, endTime } = get();
     if (status !== 'in-progress' || timeRemaining === null) return;
-    
+
     let newTimeRemaining = timeRemaining;
 
     if (mode === 'simulation' && endTime !== null) {
@@ -190,7 +229,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   finishQuiz: async () => {
     const { questions, selectedAnswers } = get();
     let finalScore = 0;
-    
+
     // Calculate final score
     questions.forEach((q) => {
       if (selectedAnswers[q.id] === q.correct_answer) {
@@ -206,17 +245,17 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
     if (!userId) {
       console.log('Guest user finished the quiz. Saving session to localStorage.');
-      
+
       try {
         const guestSessions = JSON.parse(localStorage.getItem('nitsforge_guest_sessions') || '[]');
-        
+
         guestSessions.push({
           questions,
           selectedAnswers,
           finalScore,
           completedAt: new Date().toISOString()
         });
-        
+
         localStorage.setItem('nitsforge_guest_sessions', JSON.stringify(guestSessions));
       } catch (err) {
         console.error('Failed to save guest session to localStorage', err);
@@ -228,7 +267,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     const accuracyRate = questions.length > 0 ? (finalScore / questions.length) * 100 : 0;
     const { mode } = get();
     const xpMultiplier = mode === 'daily-challenge' ? 2 : 1;
-    
+
     const { data: sessionData, error: sessionError } = await supabase
       .from('quiz_sessions')
       .insert({
@@ -254,7 +293,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         .from('profiles')
         .update({ last_daily_challenge_date: new Date().toISOString().split('T')[0] })
         .eq('id', userId);
-        
+
       if (profileError) {
         console.error('Error updating daily challenge date:', profileError);
       }
@@ -282,9 +321,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
     // Call the Postgres RPC Gamification & Streak Engine
     const { data: gamificationResult, error: rpcError } = await supabase
-      .rpc('process_quiz_completion', { 
-        p_session_id: sessionId, 
-        p_user_id: userId 
+      .rpc('process_quiz_completion', {
+        p_session_id: sessionId,
+        p_user_id: userId
       });
 
     if (rpcError) {

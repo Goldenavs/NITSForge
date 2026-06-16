@@ -54,7 +54,23 @@ export default function QuizSession() {
   }, [status, tick]);
 
   // Safeguard while loading
-  if (status !== 'in-progress' || questions.length === 0) return null;
+  if (status === 'loading' || status === 'idle') {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center pt-8 pb-24 px-4">
+        <p className="text-xl text-primary font-orbitron tracking-widest animate-pulse">Initializing Neural Link...</p>
+      </div>
+    );
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center pt-8 pb-24 px-4 text-center">
+        <h2 className="text-2xl text-red-500 font-display font-bold mb-4">No Questions Found</h2>
+        <p className="text-text-muted mb-8 max-w-md">The selected mode or topic configuration yielded no questions. Please try different settings or check your database.</p>
+        <Button variant="primary" onClick={() => navigate('/quiz/hub')}>Return to Hub</Button>
+      </div>
+    );
+  }
 
   const currentQ = questions[currentIndex];
 
