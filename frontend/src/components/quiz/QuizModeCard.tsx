@@ -1,5 +1,6 @@
 // src/components/quiz/QuizModeCard.tsx
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -13,10 +14,11 @@ interface QuizModeCardProps {
   isPopular?: boolean;
   configType?: 'count' | 'topic' | 'date' | 'none';
   onStart: (config?: any) => void;
+  onConfigure?: (type: 'topic' | 'date') => void;
   actionText?: string;
 }
 
-export function QuizModeCard({ title, description, icon: Icon, tags, colorClass, isPopular, configType = 'none', onStart, actionText = "Start Quiz" }: QuizModeCardProps) {
+export function QuizModeCard({ title, description, icon: Icon, tags, colorClass, isPopular, configType = 'none', onStart, onConfigure, actionText = "Start Quiz" }: QuizModeCardProps) {
   const [questionCount, setQuestionCount] = useState(30);
 
   const handleStart = () => {
@@ -27,7 +29,10 @@ export function QuizModeCard({ title, description, icon: Icon, tags, colorClass,
 
   return (
     <div className="block h-full group">
-      <Card className="relative h-full overflow-hidden bg-surface/85 backdrop-blur-sm border border-borderline/60 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-lg flex flex-col">
+      <Card className="relative h-full overflow-hidden bg-surface/85 backdrop-blur-sm border border-borderline/60 hover:border-primary/40 transition-all duration-300 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 flex flex-col">
+        
+        {/* Shine Effect */}
+        <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg] z-20 transition-all duration-[1200ms] ease-out group-hover:left-[200%] pointer-events-none" />
         
         {/* Popular / Recommended Tag */}
         {isPopular && (
@@ -66,15 +71,22 @@ export function QuizModeCard({ title, description, icon: Icon, tags, colorClass,
           </div>
 
           {/* Inline Controls */}
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 relative z-30">
             {configType === 'count' && (
-              <div className="flex bg-surface-2 p-1 rounded-lg border border-borderline/50">
+              <div className="flex bg-surface-2 p-1 rounded-lg border border-borderline/50 relative">
                 {[10, 20, 30].map(num => (
                   <button 
                     key={num}
                     onClick={() => setQuestionCount(num)}
-                    className={`flex-1 py-1.5 text-xs font-orbitron font-bold rounded-md transition-all ${questionCount === num ? 'bg-primary text-surface shadow-sm' : 'text-text-muted hover:text-text-main hover:bg-surface'}`}
+                    className={`flex-1 py-1.5 text-xs font-orbitron font-bold rounded-md transition-colors relative z-10 ${questionCount === num ? 'text-surface' : 'text-text-muted hover:text-text-main'}`}
                   >
+                    {questionCount === num && (
+                      <motion.div
+                        layoutId={`activePill-${title.replace(/\s+/g, '')}`}
+                        className="absolute inset-0 bg-primary rounded-md shadow-sm -z-10"
+                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                      />
+                    )}
                     {num} Qs
                   </button>
                 ))}
@@ -82,13 +94,13 @@ export function QuizModeCard({ title, description, icon: Icon, tags, colorClass,
             )}
 
             {configType === 'topic' && (
-              <Button variant="outline" className="w-full text-xs py-2 h-auto font-orbitron border-dashed text-text-muted hover:text-text-main" onClick={() => {}}>
+              <Button variant="outline" className="w-full text-xs py-2 h-auto font-orbitron border-dashed text-text-muted hover:text-text-main" onClick={() => onConfigure?.('topic')}>
                 Configure Topics...
               </Button>
             )}
             
             {configType === 'date' && (
-              <Button variant="outline" className="w-full text-xs py-2 h-auto font-orbitron border-dashed text-text-muted hover:text-text-main" onClick={() => {}}>
+              <Button variant="outline" className="w-full text-xs py-2 h-auto font-orbitron border-dashed text-text-muted hover:text-text-main" onClick={() => onConfigure?.('date')}>
                 Select Exam Dates...
               </Button>
             )}

@@ -1,7 +1,7 @@
 // src/pages/QuizHub.tsx
 import { motion } from 'framer-motion';
-import { 
-  Target, Timer, Zap, BookOpen, RotateCcw, Sparkles, ChevronRight,
+import {
+  Target, Timer, Zap, RotateCcw, Sparkles, ChevronRight,
   Book, Layers, Calendar, Flame, Shield, Box
 } from 'lucide-react';
 import { QuizModeCard } from '../components/quiz/QuizModeCard';
@@ -11,6 +11,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuizStore } from '../store/useQuizStore';
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
+import { QuizSetupModal } from '../components/quiz/QuizSetupModal';
 
 // 1. Group Stagger Orchestrator
 const staggerContainer = {
@@ -24,10 +25,10 @@ const staggerContainer = {
 // 2. Individual Item Animation (Spring Physics)
 const fadeUpVariant = {
   hidden: { opacity: 0, y: 40 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { type: "spring" as const, stiffness: 250, damping: 24 } 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring" as const, stiffness: 250, damping: 24 }
   }
 };
 
@@ -46,11 +47,14 @@ export default function QuizHub() {
   const [showActiveModal, setShowActiveModal] = useState(false);
   const [pendingQuiz, setPendingQuiz] = useState<{ mode: string, config?: any } | null>(null);
 
+  // Setup Modal State
+  const [setupModalConfig, setSetupModalConfig] = useState<{ mode: string, type: 'topic' | 'date' | 'sandbox' } | null>(null);
+
   const handleStartQuiz = (targetMode: string, config?: any) => {
     // If the mode is 'ai', we might want to navigate to the specialized /quiz/ai page
     // but the user wants to polish modes later. We will just use the standard session page 
     // for all standard modes, except the AI Sandbox link which has its own custom banner.
-    
+
     if (status === 'in-progress') {
       // Auto-resume if clicking the same mode card
       if (targetMode === mode) {
@@ -83,9 +87,9 @@ export default function QuizHub() {
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 pt-4">
-      
+
       {/* HEADER SECTION */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         animate="visible"
         variants={fadeUpVariant}
@@ -103,15 +107,15 @@ export default function QuizHub() {
       </motion.div>
 
       <motion.div variants={staggerContainer} initial="hidden" animate="visible" viewport={viewportConfig}>
-        
+
         {/* CATEGORY 1: LEARNING */}
-        <SectionHeader 
-          title="Learning Area" 
-          subtitle="Explore questions at your own pace without the pressure of timers or stats." 
+        <SectionHeader
+          title="Learning Area"
+          subtitle="Explore questions at your own pace without the pressure of timers or stats."
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Review Mode"
               description="A zen-like sandbox with infinite questions. No progress bar, no stats, just pure learning. Exit anytime."
               icon={Book}
@@ -123,7 +127,7 @@ export default function QuizHub() {
             />
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Practice Mode"
               description="Master the facts. Explanations are revealed instantly, and the Forge AI is available for guidance."
               icon={Target}
@@ -137,13 +141,13 @@ export default function QuizHub() {
         </div>
 
         {/* CATEGORY 2: ASSESSMENT */}
-        <SectionHeader 
-          title="Assessment Center" 
-          subtitle="Evaluate your knowledge with focused constraints and analytics." 
+        <SectionHeader
+          title="Assessment Center"
+          subtitle="Evaluate your knowledge with focused constraints and analytics."
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Quick Quiz"
               description="Short on time? Run a rapid-fire sequence of randomized questions across all 11 topics."
               icon={Zap}
@@ -154,31 +158,33 @@ export default function QuizHub() {
             />
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Topic Drill"
               description="Focus your training on specific syllabus categories. Target your weakest areas identified in the Dashboard."
               icon={Layers}
               tags={['Targeted', '30 Items']}
               colorClass="text-amber-500 border-amber-500/30"
               configType="topic"
+              onConfigure={() => setSetupModalConfig({ mode: 'topic', type: 'topic' })}
               onStart={(config) => handleStartQuiz('topic', config)}
-              actionText="Select Topics & Start"
+              actionText="Quick Start (All Topics)"
             />
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Date Mode"
               description="Filter the assessment by specific past PhilNITS exam dates."
               icon={Calendar}
               tags={['Historical', '30 Items']}
               colorClass="text-indigo-500 border-indigo-500/30"
               configType="date"
+              onConfigure={() => setSetupModalConfig({ mode: 'date', type: 'date' })}
               onStart={(config) => handleStartQuiz('date', config)}
-              actionText="Select Dates & Start"
+              actionText="Quick Start (All Dates)"
             />
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Missed Questions"
               description="Redeem your past mistakes. A spaced repetition session built entirely from questions you previously answered incorrectly."
               icon={RotateCcw}
@@ -192,13 +198,13 @@ export default function QuizHub() {
         </div>
 
         {/* CATEGORY 3: CHALLENGE */}
-        <SectionHeader 
-          title="Challenge Arena" 
-          subtitle="High pressure, high stakes. Push your limits." 
+        <SectionHeader
+          title="Challenge Arena"
+          subtitle="High pressure, high stakes. Push your limits."
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Exam Simulation"
               description="The ultimate test. 100 questions, 150 minutes. No AI, no abandon option. Mirrors the actual PhilNITS FE AM section."
               icon={Timer}
@@ -210,7 +216,7 @@ export default function QuizHub() {
             />
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Speed Mode"
               description="Time is tight. 30 seconds per question. Think fast, act faster."
               icon={Flame}
@@ -221,7 +227,7 @@ export default function QuizHub() {
             />
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Survival Mode"
               description="You have exactly 3 lives. One wrong answer costs a life. How far can you go?"
               icon={Shield}
@@ -235,27 +241,27 @@ export default function QuizHub() {
         </div>
 
         {/* CATEGORY 4: SANDBOX */}
-        <SectionHeader 
-          title="Sandbox" 
-          subtitle="Customize every parameter or let the AI take the wheel." 
+        <SectionHeader
+          title="Sandbox"
+          subtitle="Customize every parameter or let the AI take the wheel."
         />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard 
+            <QuizModeCard
               title="Sandbox Mode"
               description="Create your own custom quiz rules. Adjust length, timers, and topics. Does not affect stats."
               icon={Box}
               tags={['Customizable', 'No Stats']}
               colorClass="text-cyan-500 border-cyan-500/30"
-              configType="count"
-              onStart={(config) => handleStartQuiz('sandbox', config)}
-              actionText="Launch Sandbox"
+              configType="none"
+              onStart={() => setSetupModalConfig({ mode: 'sandbox', type: 'sandbox' })}
+              actionText="Configure Sandbox"
             />
           </motion.div>
-          
+
           <motion.div variants={fadeUpVariant} className="h-full lg:col-span-2">
-            <Link 
-              to="/quiz/ai" 
+            <Link
+              to="/quiz/ai"
               className="block group h-full"
               onClick={(e) => {
                 if (status === 'in-progress') {
@@ -267,7 +273,7 @@ export default function QuizHub() {
             >
               <Card className="relative h-full overflow-hidden bg-surface/85 backdrop-blur-md border border-accent/40 group-hover:border-accent transition-colors duration-500 shadow-lg flex flex-col justify-center">
                 <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-primary via-accent to-primary background-animate" />
-                
+
                 <CardContent className="p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center relative z-10">
                   <div className="w-14 h-14 rounded-full bg-accent/10 border border-accent/30 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 group-hover:rotate-12">
                     <Sparkles className="w-7 h-7 text-accent" />
@@ -281,7 +287,7 @@ export default function QuizHub() {
                       <Badge className="bg-accent/20 text-accent border-accent/30 font-orbitron tracking-widest text-[9px] uppercase">Experimental</Badge>
                     </div>
                     <p className="text-sm sm:text-base text-text-muted leading-relaxed max-w-3xl">
-                      Deploy Gemini 1.5 Flash to synthesize novel practice scenarios on demand. Select any topic and difficulty. 
+                      Deploy Gemini 1.5 Flash to synthesize novel practice scenarios on demand. Select any topic and difficulty.
                       <span className="block mt-1 text-xs opacity-70 italic">Note: These are AI-generated supplemental questions and do not affect your official accuracy stats.</span>
                     </p>
                   </div>
@@ -292,7 +298,7 @@ export default function QuizHub() {
                     </div>
                   </div>
                 </CardContent>
-                
+
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 bg-accent opacity-[0.04] blur-2xl pointer-events-none group-hover:opacity-[0.08] transition-opacity duration-700" />
               </Card>
             </Link>
@@ -304,7 +310,7 @@ export default function QuizHub() {
       {/* Active Session Modal */}
       {showActiveModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-background/80 backdrop-blur-sm">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             className="bg-surface border border-borderline p-6 rounded-xl shadow-2xl max-w-sm w-full"
@@ -329,6 +335,14 @@ export default function QuizHub() {
           </motion.div>
         </div>
       )}
+
+      {/* Configuration Modal */}
+      <QuizSetupModal
+        isOpen={setupModalConfig !== null}
+        onClose={() => setSetupModalConfig(null)}
+        configType={setupModalConfig?.type || null}
+        onStart={(config) => handleStartQuiz(setupModalConfig!.mode, config)}
+      />
 
     </div>
   );
