@@ -1,5 +1,5 @@
 // src/pages/QuizSession.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
@@ -30,10 +30,12 @@ export default function QuizSession() {
   // Local state for the current question's UI flow
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const hasInitialized = useRef(status !== 'idle');
 
   // Auto-start or redirect
   useEffect(() => {
-    if (status === 'idle') {
+    if (status === 'idle' && !hasInitialized.current) {
+      hasInitialized.current = true;
       startQuiz(modeParam);
     } else if (status === 'finished') {
       navigate('/quiz/results/mock-session-123'); 

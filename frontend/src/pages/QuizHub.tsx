@@ -40,6 +40,16 @@ export default function QuizHub() {
   const handleCardClick = (e: React.MouseEvent, path: string) => {
     if (status === 'in-progress') {
       e.preventDefault();
+
+      // Auto-resume if clicking the same mode card
+      if (
+        path.includes(`mode=${mode}`) || 
+        (mode === 'ai-generated' && path.includes('/ai'))
+      ) {
+        navigate(`/quiz/session?mode=${mode}`);
+        return;
+      }
+
       setPendingPath(path);
       setShowActiveModal(true);
     }
