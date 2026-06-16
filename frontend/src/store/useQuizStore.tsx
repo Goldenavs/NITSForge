@@ -6,13 +6,14 @@ import { supabase } from '../services/supabase';
 interface QuizState {
   // State
   status: 'idle' | 'loading' | 'in-progress' | 'finished';
-  mode: 'practice' | 'simulation' | 'drill' | 'quick' | 'missed' | 'ai-generated' | 'daily-challenge';
+  mode: 'review' | 'practice' | 'quick' | 'topic' | 'date' | 'missed' | 'simulation' | 'speed' | 'survival' | 'sandbox' | 'ai' | 'daily-challenge';
   questions: Question[];
   currentIndex: number;
   selectedAnswers: Record<string, 'A' | 'B' | 'C' | 'D'>;
   score: number;
   timeRemaining: number | null;
   endTime: number | null;
+  lives: number | null;
   
   // Actions
   startQuiz: (mode?: string, options?: any) => Promise<void>;
@@ -22,6 +23,7 @@ interface QuizState {
   resetQuiz: () => void;
   abandonQuiz: () => void;
   tick: () => void;
+  deductLife: () => void;
 }
 
 export const useQuizStore = create<QuizState>((set, get) => ({
@@ -33,6 +35,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   score: 0,
   timeRemaining: null,
   endTime: null,
+  lives: null,
 
   startQuiz: async (mode = 'practice', options: any = {}) => {
     set({ status: 'loading', mode: mode as any });
@@ -91,14 +94,36 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       finalQuestions = shuffled;
 
       // Determine counts and timer based on mode
-      if (mode === 'simulation') {
-        finalQuestions = shuffled.slice(0, 80);
+      if (mode === 'review') {
+        finalQuestions = shuffled; // infinite/all
+      } else if (mode === 'practice') {
+        finalQuestions = shuffled.slice(0, options.questionCount || 30);
+      } else if (mode === 'quick') {
+        finalQuestions = shuffled.slice(0, options.questionCount || 10);
+        timer = finalQuestions.length * 60; // 1 min per question
+      } else if (mode === 'topic' || mode === 'date') {
+        finalQuestions = shuffled.slice(0, 30);
+        timer = 30 * 60; // e.g., 30 mins
+      } else if (mode === 'missed') {
+        finalQuestions = shuffled.slice(0, 10); // placeholder
+      } else if (mode === 'simulation') {
+        finalQuestions = shuffled.slice(0, 100);
         timer = 150 * 60; // 150 minutes in seconds
         endTime = Date.now() + timer * 1000;
-      } else if (mode === 'quick') {
-        finalQuestions = shuffled.slice(0, 10);
-      } else if (mode === 'practice') {
-        finalQuestions = shuffled.slice(0, 20); // Practice can be infinite, but limit to 20 for now
+      } else if (mode === 'speed') {
+        finalQuestions = shuffled.slice(0, options.questionCount || 30);
+        timer = finalQuestions.length * 30; // tight: 30 secs per question
+      } else if (mode === 'survival') {
+        finalQuestions = shuffled.slice(0, 30);
+        set({ lives: 3 });
+      } else if (mode === 'sandbox') {
+        finalQuestions = shuffled.slice(0, options.questionCount || 30);
+        timer = options.timerMinutes ? options.timerMinutes * 60 : null;
+      } else if (mode === 'ai') {
+        finalQuestions = shuffled.slice(0, 10); // placeholder for AI
+      } else {
+        // Fallback
+        finalQuestions = shuffled.slice(0, 20);
       }
     }
 
@@ -110,6 +135,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       score: 0,
       timeRemaining: timer,
       endTime: endTime,
+      // lives is only set for survival mode above, otherwise it stays null or current value (which should be null)
+      lives: mode === 'survival' ? 3 : null,
     });
   },
 
@@ -146,6 +173,17 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       set({ currentIndex: currentIndex + 1 });
     } else {
       get().finishQuiz();
+    }
+  },
+
+  deductLife: () => {
+    const { lives, finishQuiz } = get();
+    if (lives !== null && lives > 0) {
+      const newLives = lives - 1;
+      set({ lives: newLives });
+      if (newLives === 0) {
+        finishQuiz();
+      }
     }
   },
 
@@ -266,6 +304,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       score: 0,
       timeRemaining: null,
       endTime: null,
+      lives: null,
     });
   },
 
@@ -279,6 +318,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       score: 0,
       timeRemaining: null,
       endTime: null,
+      lives: null,
     });
   }
 }));
