@@ -83,6 +83,30 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         query = query.eq('source', options.source);
       }
 
+      // Push Topic filter to database to bypass 1000-row pagination limit
+      if (options?.topics && options.topics.length > 0) {
+        const topicMap: Record<string, string> = {
+          'math': 'Basic Theory of Information',
+          'arch': 'Computer Architecture',
+          'os': 'Operating Systems',
+          'ds': 'Data Structures & Algorithms',
+          'db': 'Databases',
+          'net': 'Networking & Communication',
+          'sec': 'Information Security',
+          'se': 'Software Engineering & Development'
+        };
+        const selectedTitles = options.topics.map((id: string) => topicMap[id]);
+        query = query.in('category', selectedTitles);
+      }
+
+      // Push Date filter to database
+      if (options?.dates && options.dates.length > 0) {
+        const selectedDates = options.dates.map((d: string) => d.replace(" (latest)", "").trim());
+        // Use ilike to handle case-insensitivity and potential leading/trailing whitespace in DB
+        const orQuery = selectedDates.map(d => `exam_period.ilike.%${d}%,source.ilike.%${d}%`).join(',');
+        query = query.or(orQuery);
+      }
+
       const { data, error } = await query;
 
       if (error) {
@@ -95,32 +119,12 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       const fetchedQuestions = data as Question[] || [];
       let filteredQuestions = [...fetchedQuestions];
 
-      // topic/date filtering logic
-      if (options?.topics && options.topics.length > 0) {
-        const topicMap: Record<string, string> = {
-          'math': 'Basic Theory of Information',
-          'arch': 'Computer Architecture',
-          'os': 'Operating Systems',
-          'ds': 'Data Structures & Algorithms',
-          'db': 'Databases',
-          'net': 'Networking & Communication',
-          'sec': 'Information Security',
-          'se': 'Software Engineering & Development'
-        };
-        const selectedIds = options.topics;
-        const selectedTitles = options.topics.map((id: string) => topicMap[id]);
-
-        filteredQuestions = filteredQuestions.filter(q => 
-          selectedIds.includes(q.category) || 
-          selectedTitles.includes(q.category)
-        );
-      }
-
+      // Perform a secondary robust local filter just in case
       if (options?.dates && options.dates.length > 0) {
-        const selectedDates = options.dates.map((d: string) => d.replace(" (latest)", ""));
+        const selectedDates = options.dates.map((d: string) => d.replace(" (latest)", "").trim().toLowerCase());
         filteredQuestions = filteredQuestions.filter(q =>
-          (q.exam_period && selectedDates.includes(q.exam_period)) ||
-          (q.source && selectedDates.includes(q.source))
+          (q.exam_period && selectedDates.some((d: string) => q.exam_period.trim().toLowerCase().includes(d))) ||
+          (q.source && selectedDates.some((d: string) => q.source.trim().toLowerCase().includes(d)))
         );
       }
 
