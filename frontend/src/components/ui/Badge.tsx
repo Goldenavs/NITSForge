@@ -2,7 +2,7 @@
 import { type HTMLAttributes, forwardRef } from 'react';
 
 export interface BadgeProps extends HTMLAttributes<HTMLDivElement> {
-  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'outline';
+  variant?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger' | 'outline' | 'custom';
 }
 
 export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
@@ -18,6 +18,7 @@ export const Badge = forwardRef<HTMLDivElement, BadgeProps>(
       warning: "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/20", // Great for XP/Streaks
       danger: "bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/20",
       outline: "text-text-muted border border-borderline",
+      custom: "", // No default colors, rely entirely on className
     };
 
     return (

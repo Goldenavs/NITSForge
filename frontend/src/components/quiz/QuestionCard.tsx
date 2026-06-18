@@ -8,6 +8,27 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { supabase } from '../../services/supabase';
 
+const TAG_COLORS = [
+  'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+  'bg-blue-500/10 text-blue-400 border-blue-500/20',
+  'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  'bg-pink-500/10 text-pink-400 border-pink-500/20',
+  'bg-orange-500/10 text-orange-400 border-orange-500/20',
+  'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
+  'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+  'bg-rose-500/10 text-rose-400 border-rose-500/20',
+  'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+  'bg-teal-500/10 text-teal-400 border-teal-500/20'
+];
+
+const getTagStyle = (tag: string) => {
+  let hash = 0;
+  for (let i = 0; i < tag.length; i++) {
+    hash = tag.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
+};
+
 interface QuestionCardProps {
   question: {
     text: string;
@@ -97,26 +118,40 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
       <CardContent className="p-6 md:p-8 flex flex-col">
         
         {/* Top Actions */}
-        <div className="flex items-start sm:items-center justify-between mb-6 gap-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge className="bg-primary/10 text-primary border-primary/20 font-orbitron tracking-widest uppercase text-[10px] sm:text-xs font-bold">
+        <div className="flex flex-col mb-8 gap-3">
+          
+          {/* Row 1: Category & Difficulty (+ Bookmark) */}
+          <div className="flex items-start sm:items-center justify-between w-full">
+            <Badge variant="custom" className="bg-primary/10 text-primary border border-primary/20 font-orbitron tracking-widest uppercase text-[10px] sm:text-xs font-bold">
               {question.category || 'Uncategorized'}
             </Badge>
-            <Badge className="bg-surface-2/60 text-text-muted border-borderline font-orbitron tracking-widest uppercase text-[9px] sm:text-[10px] flex items-center gap-1">
+            <div className="flex items-center gap-3">
+              <Badge variant="custom" className={`border font-orbitron tracking-widest uppercase text-[10px] sm:text-xs font-bold ${question.difficulty === 'hard' ? 'bg-red-500/10 text-red-500 border-red-500/20' : question.difficulty === 'easy' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-orange-500/10 text-orange-500 border-orange-500/20'}`}>
+                {question.difficulty || 'Medium'}
+              </Badge>
+              <button className="text-text-muted hover:text-accent transition-colors shrink-0">
+                <Bookmark className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Row 2: Date */}
+          <div className="flex w-full">
+            <Badge variant="custom" className="bg-surface-2/60 text-text-muted border border-borderline font-orbitron tracking-widest uppercase text-[9px] sm:text-[10px] flex items-center gap-1">
               <Calendar className="w-3 h-3" /> {question.exam_period || 'Mock Data'}
             </Badge>
-            <Badge className={`font-orbitron tracking-widest uppercase text-[9px] sm:text-[10px] ${question.difficulty === 'hard' ? 'bg-red-500/10 text-red-500 border-red-500/20' : question.difficulty === 'easy' ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-orange-500/10 text-orange-500 border-orange-500/20'}`}>
-              {question.difficulty || 'Medium'}
-            </Badge>
-            {question.tags && question.tags.length > 0 && question.tags.map((tag, idx) => (
-              <Badge key={idx} className="bg-accent/10 text-accent border-accent/20 font-orbitron tracking-widest uppercase text-[9px] sm:text-[10px] flex items-center gap-1">
-                <Tag className="w-3 h-3" /> {tag}
-              </Badge>
-            ))}
           </div>
-          <button className="text-text-muted hover:text-accent transition-colors shrink-0">
-            <Bookmark className="w-5 h-5" />
-          </button>
+
+          {/* Row 3: Tags */}
+          {question.tags && question.tags.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              {question.tags.map((tag, idx) => (
+                <Badge variant="custom" key={idx} className={`${getTagStyle(tag)} border font-orbitron tracking-widest uppercase text-[9px] sm:text-[10px] flex items-center gap-1`}>
+                  <Tag className="w-3 h-3" /> {tag}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Question Text */}
