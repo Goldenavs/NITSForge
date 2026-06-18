@@ -85,6 +85,7 @@ export default function QuizSession() {
     setIsSubmitted(false);
     setSelectedOption(null);
     nextQuestion(); // Move the Zustand store forward
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (

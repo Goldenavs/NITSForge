@@ -1,5 +1,5 @@
 // src/components/quiz/QuestionCard.tsx
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bookmark, Sparkles, CheckCircle2, XCircle, Calendar, Loader2, Tag } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -51,6 +51,27 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
+
+  const explanationRef = useRef<HTMLDivElement>(null);
+  const aiExplanationRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to standard explanation on submit
+  useEffect(() => {
+    if (isSubmitted && !hideExplanation && question.explanation) {
+      setTimeout(() => {
+        explanationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
+  }, [isSubmitted, hideExplanation, question.explanation]);
+
+  // Auto-scroll to AI explanation when it finishes loading
+  useEffect(() => {
+    if (aiExplanation && !isAiLoading && isExplanationOpen) {
+      setTimeout(() => {
+        aiExplanationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+    }
+  }, [aiExplanation, isAiLoading, isExplanationOpen]);
 
   const handleExplainThis = async () => {
     setIsExplanationOpen(true);
@@ -187,6 +208,7 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
         {/* Standard Explanation (Automatically Visible after submission) */}
         {isSubmitted && !hideExplanation && question.explanation && (
           <motion.div 
+            ref={explanationRef}
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="mb-8 p-4 rounded-xl bg-surface-2/30 border border-borderline flex flex-col items-start"
           >
@@ -230,6 +252,7 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
             <AnimatePresence>
               {isExplanationOpen && (
                 <motion.div
+                  ref={aiExplanationRef}
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
