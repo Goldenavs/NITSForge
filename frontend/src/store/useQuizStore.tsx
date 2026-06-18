@@ -103,7 +103,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       if (options?.dates && options.dates.length > 0) {
         const selectedDates = options.dates.map((d: string) => d.replace(" (latest)", "").trim());
         // Use ilike to handle case-insensitivity and potential leading/trailing whitespace in DB
-        const orQuery = selectedDates.map(d => `exam_period.ilike.%${d}%,source.ilike.%${d}%`).join(',');
+        const orQuery = selectedDates.map((d: any) => `exam_period.ilike.%${d}%,source.ilike.%${d}%`).join(',');
         query = query.or(orQuery);
       }
 
@@ -182,7 +182,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   tick: () => {
     const state = get();
     const { timeRemaining, status, finishQuiz, mode, endTime, timeSpent } = state;
-    
+
     if (status !== 'in-progress') return;
 
     // Always increment timeSpent if in progress
@@ -256,7 +256,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     if (mode === 'topic') fallbackXp += 30;
     if (mode === 'daily-challenge') fallbackXp += 50;
     if (questions.length > 0 && finalScore === questions.length) fallbackXp += 25;
-    
+
     // Do not save Practice or Zen runs to the database or local history
     if (mode === 'practice' || mode === 'zen') {
       set({ xpEarned: 0 }); // No XP for practice/zen
@@ -266,7 +266,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     if (!userId) {
       console.log('Guest user finished the quiz. Saving session to localStorage.');
       set({ xpEarned: fallbackXp });
-      
+
 
       try {
         const guestSessions = JSON.parse(localStorage.getItem('nitsforge_guest_sessions') || '[]');
