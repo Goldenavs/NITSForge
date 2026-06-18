@@ -122,10 +122,12 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       // Perform a secondary robust local filter just in case
       if (options?.dates && options.dates.length > 0) {
         const selectedDates = options.dates.map((d: string) => d.replace(" (latest)", "").trim().toLowerCase());
-        filteredQuestions = filteredQuestions.filter(q =>
-          (q.exam_period && selectedDates.some((d: string) => q.exam_period.trim().toLowerCase().includes(d))) ||
-          (q.source && selectedDates.some((d: string) => q.source.trim().toLowerCase().includes(d)))
-        );
+        filteredQuestions = filteredQuestions.filter(q => {
+          const ep = (q.exam_period || "").trim().toLowerCase();
+          const src = (q.source || "").trim().toLowerCase();
+          return (ep && selectedDates.some((d: string) => ep.includes(d))) ||
+                 (src && selectedDates.some((d: string) => src.includes(d)));
+        });
       }
 
       const shuffled = filteredQuestions.sort(() => 0.5 - Math.random());
