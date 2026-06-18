@@ -97,7 +97,6 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
       // topic/date filtering logic
       if (options?.topics && options.topics.length > 0) {
-        // Map from topic ID to category string
         const topicMap: Record<string, string> = {
           'math': 'Basic Theory of Information',
           'arch': 'Computer Architecture',
@@ -106,18 +105,10 @@ export const useQuizStore = create<QuizState>((set, get) => ({
           'db': 'Databases',
           'net': 'Networking & Communication',
           'sec': 'Information Security',
-          'se': 'Software Engineering',
-          'pm': 'Project Management',
-          'strat': 'System Strategy',
-          'legal': 'Corporate & Legal Affairs'
+          'se': 'Software Engineering & Development'
         };
         const selectedIds = options.topics;
         const selectedTitles = options.topics.map((id: string) => topicMap[id]);
-
-        // Handle variations in mock question categories (e.g. Software Engineering & Development)
-        if (selectedTitles.includes('Software Engineering')) {
-          selectedTitles.push('Software Engineering & Development');
-        }
 
         filteredQuestions = filteredQuestions.filter(q => 
           selectedIds.includes(q.category) || 
@@ -145,8 +136,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         finalQuestions = shuffled.slice(0, options?.questionCount || 10);
         timer = finalQuestions.length * 60; // 1 min per question
       } else if (mode === 'topic' || mode === 'date') {
-        finalQuestions = shuffled.slice(0, 30);
-        timer = 30 * 60; // e.g., 30 mins
+        const reqCount = options?.questionCount || 30;
+        finalQuestions = shuffled.slice(0, reqCount);
+        timer = finalQuestions.length * 60; // 1 min per actual question
       } else if (mode === 'missed') {
         finalQuestions = shuffled.slice(0, 10); // placeholder
       } else if (mode === 'simulation') {

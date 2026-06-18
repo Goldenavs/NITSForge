@@ -11,12 +11,9 @@ const PHILNITS_CATEGORIES = [
   { id: 'os', title: 'Operating Systems' },
   { id: 'ds', title: 'Data Structures & Algorithms' },
   { id: 'db', title: 'Databases' },
-  { id: 'net', title: 'Networking & Comm.' },
+  { id: 'net', title: 'Networking & Communication' },
   { id: 'sec', title: 'Information Security' },
-  { id: 'se', title: 'Software Engineering' },
-  { id: 'pm', title: 'Project Management' },
-  { id: 'strat', title: 'System Strategy' },
-  { id: 'legal', title: 'Corporate & Legal Affairs' },
+  { id: 'se', title: 'Software Engineering & Development' },
 ];
 
 const PAST_EXAM_DATES = [

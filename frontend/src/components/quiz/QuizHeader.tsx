@@ -10,11 +10,11 @@ import { useNavigate } from 'react-router-dom';
 interface QuizHeaderProps {
   currentQuestion: number;
   totalQuestions: number;
-  mode: string;
+  modeLabel: string;
 }
 
-export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeaderProps) {
-  const { timeRemaining, abandonQuiz } = useQuizStore();
+export function QuizHeader({ currentQuestion, totalQuestions, modeLabel }: QuizHeaderProps) {
+  const { timeRemaining, abandonQuiz, mode } = useQuizStore();
   const progressPercentage = (currentQuestion / totalQuestions) * 100;
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const navigate = useNavigate();
@@ -41,11 +41,11 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
         {/* Mode & Progress Indicator */}
         <div className="flex items-center gap-3">
           <Badge className="bg-surface-2/80 text-text-muted border-borderline font-orbitron uppercase tracking-widest text-[10px]">
-            {mode}
+            {modeLabel}
           </Badge>
           <div className="flex items-baseline gap-1 font-orbitron">
             <span className="text-2xl font-bold text-text-main leading-none">{currentQuestion}</span>
-            {mode !== 'Zen Mode' && (
+            {mode !== 'zen' && (
               <span className="text-sm font-bold text-text-muted leading-none">/ {totalQuestions}</span>
             )}
           </div>
@@ -62,7 +62,7 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
             </div>
           )}
           <button
-            onClick={() => (mode === 'Zen Mode' || mode === 'Practice Mode') ? handleAbandon() : setShowConfirmModal(true)}
+            onClick={() => (mode === 'zen' || mode === 'practice' || mode === 'sandbox') ? handleAbandon() : setShowConfirmModal(true)}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-2/60 backdrop-blur-sm border border-borderline text-text-muted hover:text-red-500 hover:border-red-500/30 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -71,7 +71,7 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
       </div>
 
       {/* Animated Progress Bar (Hidden in Zen Mode) */}
-      {mode !== 'Zen Mode' && (
+      {mode !== 'zen' && (
         <div className="w-full h-2 bg-surface-2 rounded-full overflow-hidden border border-borderline/50">
           <motion.div
             initial={{ width: 0 }}
