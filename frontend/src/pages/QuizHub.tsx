@@ -116,13 +116,13 @@ export default function QuizHub() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
-              title="Review Mode"
+              title="Zen Mode"
               description="A zen-like sandbox with infinite questions. No progress bar, no stats, just pure learning. Exit anytime."
               icon={Book}
               tags={['Infinite', 'Zen Mode', 'AI Assist']}
               colorClass="text-emerald-500 border-emerald-500/30"
               configType="none"
-              onStart={() => handleStartQuiz('review')}
+              onStart={() => handleStartQuiz('zen')}
               actionText="Enter Zen Mode"
             />
           </motion.div>

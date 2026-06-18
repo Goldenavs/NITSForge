@@ -94,7 +94,7 @@ export default function QuizSession() {
       <QuizHeader 
         currentQuestion={currentIndex + 1} 
         totalQuestions={questions.length} 
-        mode={mode === 'simulation' ? "Exam Simulation" : mode === 'quick' ? "Quick Quiz" : mode === 'missed' ? "Missed Questions" : mode === 'daily-challenge' ? "Daily Challenge" : "Practice Mode"} 
+        mode={mode === 'simulation' ? "Exam Simulation" : mode === 'quick' ? "Quick Quiz" : mode === 'missed' ? "Missed Questions" : mode === 'daily-challenge' ? "Daily Challenge" : mode === 'zen' ? "Zen Mode" : "Practice Mode"} 
       />
 
       <AnimatePresence mode="wait">

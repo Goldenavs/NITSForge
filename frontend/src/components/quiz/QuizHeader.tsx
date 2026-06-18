@@ -45,7 +45,9 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
           </Badge>
           <div className="flex items-baseline gap-1 font-orbitron">
             <span className="text-2xl font-bold text-text-main leading-none">{currentQuestion}</span>
-            <span className="text-sm font-bold text-text-muted leading-none">/ {totalQuestions}</span>
+            {mode !== 'Zen Mode' && (
+              <span className="text-sm font-bold text-text-muted leading-none">/ {totalQuestions}</span>
+            )}
           </div>
         </div>
 
@@ -60,7 +62,7 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
             </div>
           )}
           <button
-            onClick={() => setShowConfirmModal(true)}
+            onClick={() => mode === 'Zen Mode' ? handleAbandon() : setShowConfirmModal(true)}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-2/60 backdrop-blur-sm border border-borderline text-text-muted hover:text-red-500 hover:border-red-500/30 transition-colors"
           >
             <X className="w-5 h-5" />
@@ -68,18 +70,20 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
         </div>
       </div>
 
-      {/* Animated Progress Bar */}
-      <div className="w-full h-2 bg-surface-2 rounded-full overflow-hidden border border-borderline/50">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${progressPercentage}%` }}
-          transition={{ type: "spring", stiffness: 100, damping: 20 }}
-          className="h-full bg-primary rounded-full relative"
-        >
-          {/* Shine effect on progress bar */}
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-[shine_2s_infinite]" />
-        </motion.div>
-      </div>
+      {/* Animated Progress Bar (Hidden in Zen Mode) */}
+      {mode !== 'Zen Mode' && (
+        <div className="w-full h-2 bg-surface-2 rounded-full overflow-hidden border border-borderline/50">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${progressPercentage}%` }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            className="h-full bg-primary rounded-full relative"
+          >
+            {/* Shine effect on progress bar */}
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-[shine_2s_infinite]" />
+          </motion.div>
+        </div>
+      )}
 
       {/* Confirm Abandon Modal */}
       {showConfirmModal && (

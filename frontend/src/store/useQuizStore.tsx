@@ -6,7 +6,7 @@ import { supabase } from '../services/supabase';
 interface QuizState {
   // State
   status: 'idle' | 'loading' | 'in-progress' | 'finished';
-  mode: 'review' | 'practice' | 'quick' | 'topic' | 'date' | 'missed' | 'simulation' | 'speed' | 'survival' | 'sandbox' | 'ai' | 'daily-challenge';
+  mode: 'zen' | 'practice' | 'quick' | 'topic' | 'date' | 'missed' | 'simulation' | 'speed' | 'survival' | 'sandbox' | 'ai' | 'daily-challenge';
   questions: Question[];
   currentIndex: number;
   selectedAnswers: Record<string, 'A' | 'B' | 'C' | 'D'>;
@@ -133,7 +133,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       finalQuestions = shuffled;
 
       // Determine counts and timer based on mode
-      if (mode === 'review') {
+      if (mode === 'zen') {
         finalQuestions = shuffled; // infinite/all
       } else if (mode === 'practice') {
         finalQuestions = shuffled.slice(0, options?.questionCount || 30);
