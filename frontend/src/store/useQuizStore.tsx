@@ -12,6 +12,7 @@ interface QuizState {
   selectedAnswers: Record<string, 'A' | 'B' | 'C' | 'D'>;
   score: number;
   timeRemaining: number | null;
+  timeSpent: number;
   endTime: number | null;
   lives: number | null;
 
@@ -34,11 +35,12 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   selectedAnswers: {},
   score: 0,
   timeRemaining: null,
+  timeSpent: 0,
   endTime: null,
   lives: null,
 
   startQuiz: async (mode = 'practice', options: any = {}) => {
-    set({ status: 'loading', mode: mode as any });
+    set({ status: 'loading', mode: mode as any, timeSpent: 0 });
 
     let finalQuestions: Question[] = [];
     let timer: number | null = null;
@@ -180,8 +182,15 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   },
 
   tick: () => {
-    const { timeRemaining, status, finishQuiz, mode, endTime } = get();
-    if (status !== 'in-progress' || timeRemaining === null) return;
+    const state = get();
+    const { timeRemaining, status, finishQuiz, mode, endTime, timeSpent } = state;
+    
+    if (status !== 'in-progress') return;
+
+    // Always increment timeSpent if in progress
+    set({ timeSpent: timeSpent + 1 });
+
+    if (timeRemaining === null) return; // Untimed modes
 
     let newTimeRemaining = timeRemaining;
 
@@ -192,7 +201,6 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     }
 
     if (newTimeRemaining <= 0) {
-      // Time's up
       set({ timeRemaining: 0 });
       finishQuiz();
     } else {
@@ -242,6 +250,12 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     // Grab the current user session
     const { data: { session } } = await supabase.auth.getSession();
     const userId = session?.user?.id;
+    const { mode } = get();
+
+    // Do not save Practice or Zen runs to the database or local history
+    if (mode === 'practice' || mode === 'zen') {
+      return;
+    }
 
     if (!userId) {
       console.log('Guest user finished the quiz. Saving session to localStorage.');
@@ -265,7 +279,6 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
     // Insert into quiz_sessions
     const accuracyRate = questions.length > 0 ? (finalScore / questions.length) * 100 : 0;
-    const { mode } = get();
     const xpMultiplier = mode === 'daily-challenge' ? 2 : 1;
 
     const { data: sessionData, error: sessionError } = await supabase
@@ -342,6 +355,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       selectedAnswers: {},
       score: 0,
       timeRemaining: null,
+      timeSpent: 0,
       endTime: null,
       lives: null,
     });
@@ -356,6 +370,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       selectedAnswers: {},
       score: 0,
       timeRemaining: null,
+      timeSpent: 0,
       endTime: null,
       lives: null,
     });

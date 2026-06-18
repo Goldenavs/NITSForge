@@ -1,9 +1,48 @@
 // src/components/quiz/AISummaryCard.tsx
-import { Zap } from 'lucide-react';
+import { useState } from 'react';
+import { Zap, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
+import { useQuizStore } from '../../store/useQuizStore';
+import { supabase } from '../../services/supabase';
 
 export function AISummaryCard() {
+  const { questions, score, selectedAnswers } = useQuizStore();
+  const [debrief, setDebrief] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    setIsLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const res = await fetch('http://localhost:5000/api/ai/debrief', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          score,
+          total: questions.length,
+          questions,
+          selectedAnswers
+        })
+      });
+
+      if (!res.ok) throw new Error("Failed to fetch debrief");
+      const data = await res.json();
+      setDebrief(data.debrief);
+    } catch (error) {
+      console.error(error);
+      setDebrief("Failed to generate debrief. Please try again later.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card className="relative overflow-hidden bg-surface/85 backdrop-blur-md border border-amber-500/30 shadow-lg group">
       {/* Flash Gradient Edge */}
@@ -15,7 +54,7 @@ export function AISummaryCard() {
           <Zap className="w-6 h-6 text-amber-500 fill-amber-500/20" />
         </div>
 
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 w-full">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="font-display font-bold text-lg sm:text-xl text-text-main leading-none pt-1">
               Flash Debrief
@@ -24,9 +63,29 @@ export function AISummaryCard() {
               Gemini AI
             </Badge>
           </div>
-          <p className="text-sm text-text-muted leading-relaxed">
-            "Solid performance. You nailed the Data Structures questions with 100% accuracy. However, you missed 2 questions on IPv4 Subnetting. Review the difference between CIDR notation and default class masks before your next drill."
-          </p>
+          
+          {!debrief && !isLoading ? (
+            <div className="mt-4 flex items-center justify-between gap-4">
+              <p className="text-sm text-text-muted leading-relaxed">
+                Want a personalized breakdown of your performance? Deploy Gemini Flash for an instant debrief.
+              </p>
+              <Button 
+                variant="outline" 
+                onClick={handleGenerate}
+                className="shrink-0 border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+              >
+                Generate Debrief
+              </Button>
+            </div>
+          ) : isLoading ? (
+            <div className="mt-4 flex items-center gap-2 text-amber-500 text-sm animate-pulse">
+              <Loader2 className="w-4 h-4 animate-spin" /> Analyzing performance data...
+            </div>
+          ) : (
+            <div className="mt-2 text-sm text-text-main leading-relaxed prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed">
+              <ReactMarkdown>{debrief || ""}</ReactMarkdown>
+            </div>
+          )}
         </div>
 
       </CardContent>

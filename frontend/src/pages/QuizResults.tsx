@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, type Variants } from 'framer-motion';
-import { Target, Trophy, Clock, ArrowRight, RotateCcw, CheckCircle2, XCircle } from 'lucide-react';
+import { Target, Trophy, Clock, ArrowRight, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { StatCard } from '../components/dashboard/StatCard';
@@ -27,9 +27,10 @@ const viewportConfig = { once: true, margin: "-50px" };
 export default function QuizResults() {
   const navigate = useNavigate();
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  
+  const [showAllLogs, setShowAllLogs] = useState(false);
+
   // Pull our data from the Zustand state machine
-  const { questions, score, selectedAnswers, resetQuiz, status, mode } = useQuizStore();
+  const { questions, score, selectedAnswers, resetQuiz, status, mode, timeSpent } = useQuizStore();
 
   // If a user navigates here directly without taking a quiz, bounce them back to the hub
   useEffect(() => {
@@ -45,9 +46,17 @@ export default function QuizResults() {
   // -------------------------
   const total = questions.length;
   const accuracy = Math.round((score / total) * 100) || 0;
-  
+
   // From your docs: +5 XP per correct answer, +100 for finishing a simulation
-  const xpEarned = (score * 5) + 100; 
+  const xpEarned = (score * 5) + 100;
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const avgTimePerQuestion = total > 0 ? Math.round(timeSpent / total) : 0;
 
   const handleReturnToHub = () => {
     resetQuiz(); // Clear the store so it's fresh for the next session
@@ -56,9 +65,9 @@ export default function QuizResults() {
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-4xl mx-auto pb-24 px-4 sm:px-0 pt-4">
-      
+
       {/* 1. HEADER SECTION */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         animate="visible"
         variants={fadeUpVariant}
@@ -80,43 +89,45 @@ export default function QuizResults() {
       </motion.div>
 
       {/* 2. CORE METRICS ROW */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+        className={`grid grid-cols-1 ${mode === 'practice' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-4`}
       >
         <motion.div variants={fadeUpVariant} className="h-full">
-          <StatCard 
-            title="Accuracy" 
-            value={`${accuracy}%`} 
+          <StatCard
+            title="Accuracy"
+            value={`${accuracy}%`}
             subtitle={`${score} / ${total} Correct`}
-            icon={Target} 
-            colorClass="text-primary border-primary/30" 
+            icon={Target}
+            colorClass="text-primary border-primary/30"
           />
         </motion.div>
+        {mode !== 'practice' && (
+          <motion.div variants={fadeUpVariant} className="h-full">
+            <StatCard
+              title="XP Earned"
+              value={`+${xpEarned}`}
+              subtitle="Includes completion bonus"
+              icon={Trophy}
+              colorClass="text-amber-500 border-amber-500/30"
+            />
+          </motion.div>
+        )}
         <motion.div variants={fadeUpVariant} className="h-full">
-          <StatCard 
-            title="XP Earned" 
-            value={`+${xpEarned}`} 
-            subtitle="Includes completion bonus"
-            icon={Trophy} 
-            colorClass="text-amber-500 border-amber-500/30" 
-          />
-        </motion.div>
-        <motion.div variants={fadeUpVariant} className="h-full">
-          <StatCard 
-            title="Time Spent" 
-            value="02:15" // Mocked for now until we build the interval timer
-            subtitle="Avg. 45s per question"
-            icon={Clock} 
-            colorClass="text-blue-500 border-blue-500/30" 
+          <StatCard
+            title="Time Spent"
+            value={formatTime(timeSpent)}
+            subtitle={`Avg. ${avgTimePerQuestion}s per question`}
+            icon={Clock}
+            colorClass="text-blue-500 border-blue-500/30"
           />
         </motion.div>
       </motion.div>
 
       {/* 3. AI DEBRIEF (Remains unchanged/mocked for now) */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         whileInView="visible"
         viewport={viewportConfig}
@@ -125,8 +136,25 @@ export default function QuizResults() {
         <AISummaryCard />
       </motion.div>
 
-      {/* 4. DYNAMIC SESSION LOG */}
-      <motion.div 
+      {/* 4. ACTION BUTTONS (Moved up) */}
+      <motion.div
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewportConfig}
+        variants={fadeUpVariant}
+        className="flex pt-4"
+      >
+        <Button
+          variant="primary"
+          onClick={handleReturnToHub}
+          className="w-full font-orbitron tracking-widest py-4"
+        >
+          Return to Hub <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
+      </motion.div>
+
+      {/* 5. DYNAMIC SESSION LOG */}
+      <motion.div
         initial="hidden"
         whileInView="visible"
         viewport={viewportConfig}
@@ -140,14 +168,14 @@ export default function QuizResults() {
             </Link>
           </div>
           <CardContent className="p-0">
-            {questions.map((q) => {
+            {(showAllLogs ? questions : questions.slice(-3)).map((q) => {
               const userAnswer = selectedAnswers[q.id];
               const isCorrect = userAnswer === q.correct_answer;
               const isExpanded = expandedId === q.id;
 
               return (
-                <div 
-                  key={q.id} 
+                <div
+                  key={q.id}
                   className={`border-b border-borderline/30 last:border-0 transition-colors cursor-pointer ${isExpanded ? 'bg-surface-2/40' : 'hover:bg-surface-2/20'}`}
                   onClick={() => setExpandedId(isExpanded ? null : q.id)}
                 >
@@ -183,7 +211,7 @@ export default function QuizResults() {
                       <p className={`text-sm font-body text-text-main ${!isExpanded && 'line-clamp-2'}`}>{q.text}</p>
                     </div>
                   </div>
-                  
+
                   {/* Expanded View for Reviewing */}
                   {isExpanded && (
                     <div className="px-4 sm:px-6 pb-6 pt-2 pl-14 animate-in slide-in-from-top-2 duration-300">
@@ -191,10 +219,10 @@ export default function QuizResults() {
                         {Object.entries(q.options).map(([key, value]) => {
                           const isUserChoice = key === userAnswer;
                           const isCorrectChoice = key === q.correct_answer;
-                          
+
                           let bgStyle = 'bg-surface border-borderline/50';
                           let textStyle = 'text-text-muted';
-                          
+
                           if (isCorrectChoice) {
                             bgStyle = 'bg-green-500/10 border-green-500/50';
                             textStyle = 'text-green-500 font-medium';
@@ -222,25 +250,20 @@ export default function QuizResults() {
                 </div>
               );
             })}
+
+            {!showAllLogs && questions.length > 3 && (
+              <div className="p-4 flex justify-center bg-surface-2/20">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAllLogs(true)}
+                  className="font-orbitron text-xs tracking-widest text-text-muted hover:text-text-main border-borderline/50"
+                >
+                  Show All {questions.length} Questions
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
-      </motion.div>
-
-      {/* 5. ACTION BUTTONS */}
-      <motion.div 
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewportConfig}
-        variants={fadeUpVariant}
-        className="flex pt-4"
-      >
-        <Button 
-          variant="primary" 
-          onClick={handleReturnToHub}
-          className="w-full font-orbitron tracking-widest py-4"
-        >
-          Return to Hub <ArrowRight className="w-4 h-4 ml-2" />
-        </Button>
       </motion.div>
 
     </div>

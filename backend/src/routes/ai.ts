@@ -56,6 +56,39 @@ router.post('/explain', requireAuth, async (req: Request, res: Response) => {
         res.status(500).json({ error: "Failed to generate explanation from Forge." });
     }
 });
+// POST /api/ai/debrief
+router.post('/debrief', requireAuth, async (req: Request, res: Response) => {
+    try {
+        const { score, total, questions, selectedAnswers } = req.body;
+
+        if (!questions || !selectedAnswers) {
+            return res.status(400).json({ error: "Missing required quiz data." });
+        }
+
+        // Create a summary of performance
+        const correctAnswers = questions.filter((q: any) => selectedAnswers[q.id] === q.correct_answer);
+        const incorrectAnswers = questions.filter((q: any) => selectedAnswers[q.id] !== q.correct_answer);
+
+        const prompt = `
+          The user just completed a quiz.
+          Score: ${score} out of ${total}.
+          
+          Here are some of the questions they got WRONG:
+          ${incorrectAnswers.slice(0, 3).map((q: any) => `- Topic: ${q.category}. Question: ${q.text.substring(0, 50)}...`).join('\n')}
+          
+          Please provide a brief, encouraging 2-3 sentence debrief. Highlight what they did well and point out one specific area (topic) they should review based on their mistakes. Do not be overly verbose.
+        `;
+
+        const result = await flashModel.generateContent(prompt);
+        const responseText = result.response.text();
+
+        res.json({ debrief: responseText });
+    } catch (error) {
+        console.error("AI Debrief Error:", error);
+        res.status(500).json({ error: "Failed to generate debrief from Forge." });
+    }
+});
+
 // POST /api/ai/chat (Streaming)
 router.post('/chat', requireAuth, async (req: Request, res: Response) => {
     try {

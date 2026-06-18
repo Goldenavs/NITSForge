@@ -11,14 +11,14 @@ import { useQuizStore } from '../store/useQuizStore';
 
 export default function QuizSession() {
   const navigate = useNavigate();
-  
+
   // Pull in our state machine
-  const { 
-    status, 
-    questions, 
-    currentIndex, 
-    startQuiz, 
-    answerQuestion, 
+  const {
+    status,
+    questions,
+    currentIndex,
+    startQuiz,
+    answerQuestion,
     nextQuestion,
     tick,
     mode
@@ -27,10 +27,19 @@ export default function QuizSession() {
   const [searchParams] = useSearchParams();
   const modeParam = searchParams.get('mode') || 'practice';
 
-  // Local state for the current question's UI flow
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const hasInitialized = useRef(status !== 'idle');
+  const submitButtonRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to Submit button when an option is selected
+  useEffect(() => {
+    if (selectedOption && !isSubmitted) {
+      setTimeout(() => {
+        submitButtonRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end', });
+      }, 100);
+    }
+  }, [selectedOption, isSubmitted]);
 
   // Auto-start or redirect
   useEffect(() => {
@@ -38,7 +47,7 @@ export default function QuizSession() {
       hasInitialized.current = true;
       startQuiz(modeParam);
     } else if (status === 'finished') {
-      navigate('/quiz/results/mock-session-123'); 
+      navigate('/quiz/results/mock-session-123');
     }
   }, [status, startQuiz, navigate, modeParam]);
 
@@ -90,12 +99,12 @@ export default function QuizSession() {
 
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-8 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
-      
+
       {/* Dynamic Header */}
-      <QuizHeader 
-        currentQuestion={currentIndex + 1} 
-        totalQuestions={questions.length} 
-        mode={mode === 'simulation' ? "Exam Simulation" : mode === 'quick' ? "Quick Quiz" : mode === 'missed' ? "Missed Questions" : mode === 'daily-challenge' ? "Daily Challenge" : mode === 'zen' ? "Zen Mode" : "Practice Mode"} 
+      <QuizHeader
+        currentQuestion={currentIndex + 1}
+        totalQuestions={questions.length}
+        mode={mode === 'simulation' ? "Exam Simulation" : mode === 'quick' ? "Quick Quiz" : mode === 'missed' ? "Missed Questions" : mode === 'daily-challenge' ? "Daily Challenge" : mode === 'zen' ? "Zen Mode" : "Practice Mode"}
       />
 
       <AnimatePresence mode="wait">
@@ -107,7 +116,7 @@ export default function QuizSession() {
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
           className="w-full"
         >
-          <QuestionCard 
+          <QuestionCard
             question={currentQ}
             selectedOption={selectedOption}
             onSelect={(opt) => !isSubmitted && setSelectedOption(opt)}
@@ -118,8 +127,8 @@ export default function QuizSession() {
           {/* Bottom Action Bar */}
           <div className="mt-8 flex justify-end">
             {!isSubmitted ? (
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 disabled={!selectedOption}
                 onClick={handleSubmit}
                 className="font-orbitron tracking-widest px-8 py-3"
@@ -127,8 +136,8 @@ export default function QuizSession() {
                 Submit Answer
               </Button>
             ) : (
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={handleNext}
                 className="font-orbitron tracking-widest px-8 py-3"
               >
@@ -136,6 +145,9 @@ export default function QuizSession() {
               </Button>
             )}
           </div>
+          
+          {/* Invisible Spacer for Auto-scroll Margin */}
+          <div ref={submitButtonRef} className="h-6 sm:h-10" />
         </motion.div>
       </AnimatePresence>
 
