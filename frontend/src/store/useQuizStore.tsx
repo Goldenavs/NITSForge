@@ -11,6 +11,7 @@ interface QuizState {
   currentIndex: number;
   selectedAnswers: Record<string, 'A' | 'B' | 'C' | 'D'>;
   score: number;
+  xpEarned: number;
   timeRemaining: number | null;
   timeSpent: number;
   endTime: number | null;
@@ -34,13 +35,14 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   currentIndex: 0,
   selectedAnswers: {},
   score: 0,
+  xpEarned: 0,
   timeRemaining: null,
   timeSpent: 0,
   endTime: null,
   lives: null,
 
   startQuiz: async (mode = 'practice', options: any = {}) => {
-    set({ status: 'loading', mode: mode as any, timeSpent: 0 });
+    set({ status: 'loading', mode: mode as any, timeSpent: 0, xpEarned: 0 });
 
     let finalQuestions: Question[] = [];
     let timer: number | null = null;
@@ -252,13 +254,23 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     const userId = session?.user?.id;
     const { mode } = get();
 
+    // Calculate a fallback xpEarned for guests or non-saved modes
+    let fallbackXp = finalScore * 5;
+    if (mode === 'simulation') fallbackXp += 100;
+    if (mode === 'topic') fallbackXp += 30;
+    if (mode === 'daily-challenge') fallbackXp += 50;
+    if (questions.length > 0 && finalScore === questions.length) fallbackXp += 25;
+    
     // Do not save Practice or Zen runs to the database or local history
     if (mode === 'practice' || mode === 'zen') {
+      set({ xpEarned: 0 }); // No XP for practice/zen
       return;
     }
 
     if (!userId) {
       console.log('Guest user finished the quiz. Saving session to localStorage.');
+      set({ xpEarned: fallbackXp });
+      
 
       try {
         const guestSessions = JSON.parse(localStorage.getItem('nitsforge_guest_sessions') || '[]');
@@ -341,8 +353,14 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
     if (rpcError) {
       console.error('Error processing gamification engine:', rpcError);
+      set({ xpEarned: fallbackXp });
     } else {
       console.log('Gamification updated:', gamificationResult);
+      if (gamificationResult && gamificationResult.xp_earned !== undefined) {
+        set({ xpEarned: gamificationResult.xp_earned });
+      } else {
+        set({ xpEarned: fallbackXp });
+      }
     }
   },
 
@@ -354,6 +372,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       currentIndex: 0,
       selectedAnswers: {},
       score: 0,
+      xpEarned: 0,
       timeRemaining: null,
       timeSpent: 0,
       endTime: null,
@@ -369,6 +388,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       currentIndex: 0,
       selectedAnswers: {},
       score: 0,
+      xpEarned: 0,
       timeRemaining: null,
       timeSpent: 0,
       endTime: null,

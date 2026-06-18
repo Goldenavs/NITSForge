@@ -116,6 +116,7 @@ export default function QuizHub() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="zen"
               title="Zen Mode"
               description="A zen-like sandbox with infinite questions. No progress bar, no stats, just pure learning. Exit anytime."
               icon={Book}
@@ -128,6 +129,7 @@ export default function QuizHub() {
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="practice"
               title="Practice Mode"
               description="Master the facts. Explanations are revealed instantly, and the Forge AI is available for guidance."
               icon={Target}
@@ -148,6 +150,7 @@ export default function QuizHub() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="quick"
               title="Quick Quiz"
               description="Short on time? Run a rapid-fire sequence of randomized questions across all 11 topics."
               icon={Zap}
@@ -159,6 +162,7 @@ export default function QuizHub() {
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="topic"
               title="Topic Drill"
               description="Focus your training on specific syllabus categories. Target your weakest areas identified in the Dashboard."
               icon={Layers}
@@ -172,6 +176,7 @@ export default function QuizHub() {
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="date"
               title="Date Mode"
               description="Filter the assessment by specific past PhilNITS exam dates."
               icon={Calendar}
@@ -185,6 +190,7 @@ export default function QuizHub() {
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="missed"
               title="Missed Questions"
               description="Redeem your past mistakes. A spaced repetition session built entirely from questions you previously answered incorrectly."
               icon={RotateCcw}
@@ -205,6 +211,7 @@ export default function QuizHub() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="simulation"
               title="Exam Simulation"
               description="The ultimate test. 100 questions, 150 minutes. No AI, no abandon option. Mirrors the actual PhilNITS FE AM section."
               icon={Timer}
@@ -218,6 +225,7 @@ export default function QuizHub() {
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="speed"
               title="Speed Mode"
               description="Time is tight. 30 seconds per question. Think fast, act faster."
               icon={Flame}
@@ -229,6 +237,7 @@ export default function QuizHub() {
           </motion.div>
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="survival"
               title="Survival Mode"
               description="You have exactly 3 lives. One wrong answer costs a life. How far can you go?"
               icon={Shield}
@@ -249,6 +258,7 @@ export default function QuizHub() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
           <motion.div variants={fadeUpVariant} className="h-full">
             <QuizModeCard
+              modeId="sandbox"
               title="Sandbox Mode"
               description="Create your own custom quiz rules. Adjust length, timers, and topics. Does not affect stats."
               icon={Box}

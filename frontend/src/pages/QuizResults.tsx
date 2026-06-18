@@ -30,10 +30,13 @@ export default function QuizResults() {
   const [showAllLogs, setShowAllLogs] = useState(false);
 
   // Pull our data from the Zustand state machine
-  const { questions, score, selectedAnswers, resetQuiz, status, mode, timeSpent } = useQuizStore();
+  const { questions, score, xpEarned, selectedAnswers, resetQuiz, status, mode, timeSpent } = useQuizStore();
 
   // If a user navigates here directly without taking a quiz, bounce them back to the hub
   useEffect(() => {
+    // Snap to the top of the screen when entering results
+    window.scrollTo(0, 0);
+
     if (questions.length === 0 || status !== 'finished') {
       navigate('/quiz');
     }
@@ -46,9 +49,6 @@ export default function QuizResults() {
   // -------------------------
   const total = questions.length;
   const accuracy = Math.round((score / total) * 100) || 0;
-
-  // From your docs: +5 XP per correct answer, +100 for finishing a simulation
-  const xpEarned = (score * 5) + 100;
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

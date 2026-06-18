@@ -32,6 +32,11 @@ export default function QuizSession() {
   const hasInitialized = useRef(status !== 'idle');
   const submitButtonRef = useRef<HTMLDivElement>(null);
 
+  // Snap to top when resuming or starting a quiz
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Auto-scroll to Submit button when an option is selected
   useEffect(() => {
     if (selectedOption && !isSubmitted) {

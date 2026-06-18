@@ -1,11 +1,13 @@
 // src/components/quiz/QuizModeCard.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
+import { useQuizStore } from '../../store/useQuizStore';
 
 interface QuizModeCardProps {
+  modeId: string;
   title: string;
   description: string;
   icon: any;
@@ -19,8 +21,18 @@ interface QuizModeCardProps {
   actionText?: string;
 }
 
-export function QuizModeCard({ title, description, icon: Icon, tags, colorClass, isPopular, isIntimidating, configType = 'none', onStart, onConfigure, actionText = "Start Quiz" }: QuizModeCardProps) {
+export function QuizModeCard({ modeId, title, description, icon: Icon, tags, colorClass, isPopular, isIntimidating, configType = 'none', onStart, onConfigure, actionText = "Start Quiz" }: QuizModeCardProps) {
+  const { status, mode: activeMode, questions } = useQuizStore();
+  const isActive = status === 'in-progress' && activeMode === modeId;
+  
   const [questionCount, setQuestionCount] = useState(30);
+
+  // Sync the local state with the active session if this card represents the active mode
+  useEffect(() => {
+    if (isActive && questions.length > 0) {
+      setQuestionCount(questions.length);
+    }
+  }, [isActive, questions.length]);
 
   const handleStart = () => {
     const config: any = {};
@@ -111,8 +123,9 @@ export function QuizModeCard({ title, description, icon: Icon, tags, colorClass,
                 {[10, 20, 30].map(num => (
                   <button
                     key={num}
-                    onClick={() => setQuestionCount(num)}
-                    className={`flex-1 py-1.5 text-xs font-orbitron font-bold rounded-md transition-colors relative z-10 ${questionCount === num ? 'text-surface' : 'text-text-muted hover:text-text-main'}`}
+                    onClick={() => !isActive && setQuestionCount(num)}
+                    disabled={isActive}
+                    className={`flex-1 py-1.5 text-xs font-orbitron font-bold rounded-md transition-colors relative z-10 ${isActive ? 'opacity-50 cursor-not-allowed' : ''} ${questionCount === num ? 'text-surface' : 'text-text-muted hover:text-text-main'}`}
                   >
                     {questionCount === num && (
                       <motion.div
@@ -128,23 +141,34 @@ export function QuizModeCard({ title, description, icon: Icon, tags, colorClass,
             )}
 
             {configType === 'topic' && (
-              <Button variant="outline" className="w-full text-xs py-2 h-auto font-orbitron border-dashed text-text-muted hover:text-text-main" onClick={() => onConfigure?.('topic')}>
+              <Button 
+                variant="outline" 
+                className={`w-full text-xs py-2 h-auto font-orbitron border-dashed ${isActive ? 'opacity-50 cursor-not-allowed' : 'text-text-muted hover:text-text-main'}`} 
+                onClick={() => !isActive && onConfigure?.('topic')}
+                disabled={isActive}
+              >
                 Configure Topics...
               </Button>
             )}
 
             {configType === 'date' && (
-              <Button variant="outline" className="w-full text-xs py-2 h-auto font-orbitron border-dashed text-text-muted hover:text-text-main" onClick={() => onConfigure?.('date')}>
+              <Button 
+                variant="outline" 
+                className={`w-full text-xs py-2 h-auto font-orbitron border-dashed ${isActive ? 'opacity-50 cursor-not-allowed' : 'text-text-muted hover:text-text-main'}`} 
+                onClick={() => !isActive && onConfigure?.('date')}
+                disabled={isActive}
+              >
                 Select Exam Dates...
               </Button>
             )}
 
+            {/* Start / Configure Button */}
             <Button
-              variant="outline"
-              className={`w-full font-orbitron uppercase tracking-widest text-xs py-4 transition-all duration-300 ${colorClass.split(' ')[0]} border-borderline hover:bg-primary hover:text-surface hover:border-primary hover:shadow-[0_0_15px_rgba(var(--color-primary),0.3)]`}
+              variant={isActive ? "primary" : "outline"}
               onClick={handleStart}
+              className={`w-full font-orbitron uppercase tracking-widest text-xs py-4 transition-all duration-300 ${isActive ? '' : colorClass.split(' ')[0]} border-borderline ${!isActive && 'hover:bg-primary hover:text-surface hover:border-primary hover:shadow-[0_0_15px_rgba(var(--color-primary),0.3)]'}`}
             >
-              {actionText}
+              {isActive ? "Resume Session" : actionText}
             </Button>
           </div>
         </CardContent>
