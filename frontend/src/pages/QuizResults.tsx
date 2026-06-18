@@ -29,7 +29,7 @@ export default function QuizResults() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   
   // Pull our data from the Zustand state machine
-  const { questions, score, selectedAnswers, resetQuiz, status } = useQuizStore();
+  const { questions, score, selectedAnswers, resetQuiz, status, mode } = useQuizStore();
 
   // If a user navigates here directly without taking a quiz, bounce them back to the hub
   useEffect(() => {
@@ -71,7 +71,11 @@ export default function QuizResults() {
           Simulation <span className="text-primary">Complete.</span>
         </h1>
         <p className="text-sm sm:text-base text-text-muted max-w-lg leading-relaxed">
-          Your performance data has been logged to the Forge servers. XP and streak multipliers have been applied.
+          {mode === 'practice' ? (
+            "Practice session complete. Your performance here is not permanently logged, so feel free to experiment!"
+          ) : (
+            "Your performance data has been logged to the Forge servers. XP and streak multipliers have been applied."
+          )}
         </p>
       </motion.div>
 
@@ -228,19 +232,12 @@ export default function QuizResults() {
         whileInView="visible"
         viewport={viewportConfig}
         variants={fadeUpVariant}
-        className="flex flex-col sm:flex-row gap-4 pt-4"
+        className="flex pt-4"
       >
-        <Button 
-          variant="outline" 
-          onClick={handleReturnToHub} 
-          className="flex-1 font-orbitron tracking-widest py-4 bg-surface/50 backdrop-blur-sm"
-        >
-          <RotateCcw className="w-4 h-4 mr-2" /> Start New Session
-        </Button>
         <Button 
           variant="primary" 
           onClick={handleReturnToHub}
-          className="flex-1 w-full font-orbitron tracking-widest py-4"
+          className="w-full font-orbitron tracking-widest py-4"
         >
           Return to Hub <ArrowRight className="w-4 h-4 ml-2" />
         </Button>

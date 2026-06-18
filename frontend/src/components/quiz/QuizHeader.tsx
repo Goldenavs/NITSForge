@@ -62,7 +62,7 @@ export function QuizHeader({ currentQuestion, totalQuestions, mode }: QuizHeader
             </div>
           )}
           <button
-            onClick={() => mode === 'Zen Mode' ? handleAbandon() : setShowConfirmModal(true)}
+            onClick={() => (mode === 'Zen Mode' || mode === 'Practice Mode') ? handleAbandon() : setShowConfirmModal(true)}
             className="w-10 h-10 flex items-center justify-center rounded-full bg-surface-2/60 backdrop-blur-sm border border-borderline text-text-muted hover:text-red-500 hover:border-red-500/30 transition-colors"
           >
             <X className="w-5 h-5" />
