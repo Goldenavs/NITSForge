@@ -50,7 +50,7 @@ Please follow this strict JSON schema for EACH question:
   },
   "correct_answer": "A, B, C, or D (MUST come from the Answers text provided)",
   "explanation": "A brief explanation of why the correct answer is correct based on your knowledge.",
-  "category": "Must be one of: 'Basic Theory of Information', 'Computer Architecture', 'Operating Systems', 'Data Structures & Algorithms', 'Databases', 'Networking & Communication', 'Information Security', 'Software Engineering & Development'. Pick the most relevant one.",
+  "category": "Must be one of: 'Basic Theory of Information', 'Computer Architecture', 'Operating Systems', 'Data Structures & Algorithms', 'Databases', 'Networking & Communication', 'Information Security', 'Software Engineering & Development', 'Strategy', 'Management'. Pick the most relevant one.",
   "difficulty": "Assign 'easy', 'medium', or 'hard'",
   "exam_period": "${EXAM_PERIOD}",
   "source": "ITPEC",

@@ -47,7 +47,9 @@ const CATEGORIES = [
   'Databases',
   'Networking & Communication',
   'Information Security',
-  'Software Engineering & Development'
+  'Software Engineering & Development',
+  'Strategy',
+  'Management'
 ];
 
 export function CategoryRadar({ data }: { data: RadarData[] }) {

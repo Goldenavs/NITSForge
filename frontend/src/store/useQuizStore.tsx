@@ -122,7 +122,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
           'db': 'Databases',
           'net': 'Networking & Communication',
           'sec': 'Information Security',
-          'se': 'Software Engineering & Development'
+          'se': 'Software Engineering & Development',
+          'strat': 'Strategy',
+          'mgmt': 'Management'
         };
         const selectedTitles = options.topics.map((id: string) => topicMap[id]);
         query = query.in('category', selectedTitles);

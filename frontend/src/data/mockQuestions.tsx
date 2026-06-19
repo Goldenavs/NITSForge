@@ -8,7 +8,9 @@ export type QuestionCategory =
   | 'Databases'
   | 'Networking & Communication'
   | 'Information Security'
-  | 'Software Engineering & Development';
+  | 'Software Engineering & Development'
+  | 'Strategy'
+  | 'Management';
 
 export interface Question {
   source?: string;

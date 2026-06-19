@@ -15,7 +15,9 @@ const TOPICS = [
   'Databases',
   'Networking & Communication',
   'Information Security',
-  'Software Engineering'
+  'Software Engineering & Development',
+  'Strategy',
+  'Management'
 ];
 
 const DIFFICULTIES = [

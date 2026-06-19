@@ -1,6 +1,6 @@
 // src/pages/Topics.tsx
 import { motion, type Variants } from 'framer-motion';
-import { Binary, Cpu, Layers, Code2, Database, Globe, ShieldCheck, TerminalSquare, Briefcase, LineChart, Scale } from 'lucide-react';
+import { Binary, Cpu, Layers, Code2, Database, Globe, ShieldCheck, TerminalSquare, Briefcase, LineChart } from 'lucide-react';
 import { TopicCard } from '../components/topics/TopicCard';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -18,25 +18,24 @@ const fadeUpVariant: Variants = {
 
 const viewportConfig = { once: true, margin: "-50px" };
 
-// The 11 PhilNITS FE Syllabus Categories
+// The 10 PhilNITS FE Syllabus Categories
 const PHILNITS_CATEGORIES = [
   { id: 'math', title: 'Basic Theory of Information', mastery: 92, count: 145, icon: Binary, color: 'text-blue-500 border-blue-500/30' },
   { id: 'arch', title: 'Computer Architecture', mastery: 78, count: 82, icon: Cpu, color: 'text-emerald-500 border-emerald-500/30' },
   { id: 'os', title: 'Operating Systems', mastery: 64, count: 56, icon: Layers, color: 'text-indigo-500 border-indigo-500/30' },
   { id: 'ds', title: 'Data Structures & Algorithms', mastery: 88, count: 210, icon: Code2, color: 'text-amber-500 border-amber-500/30' },
   { id: 'db', title: 'Databases', mastery: 95, count: 120, icon: Database, color: 'text-cyan-500 border-cyan-500/30' },
-  { id: 'net', title: 'Networking & Comm.', mastery: 45, count: 89, icon: Globe, color: 'text-rose-500 border-rose-500/30' },
+  { id: 'net', title: 'Networking & Communication', mastery: 45, count: 89, icon: Globe, color: 'text-rose-500 border-rose-500/30' },
   { id: 'sec', title: 'Information Security', mastery: 71, count: 64, icon: ShieldCheck, color: 'text-purple-500 border-purple-500/30' },
-  { id: 'se', title: 'Software Engineering', mastery: 82, count: 95, icon: TerminalSquare, color: 'text-fuchsia-500 border-fuchsia-500/30' },
-  { id: 'pm', title: 'Project Management', mastery: 58, count: 34, icon: Briefcase, color: 'text-orange-500 border-orange-500/30' },
-  { id: 'strat', title: 'System Strategy', mastery: 40, count: 12, icon: LineChart, color: 'text-teal-500 border-teal-500/30' },
-  { id: 'legal', title: 'Corporate & Legal Affairs', mastery: 30, count: 5, icon: Scale, color: 'text-slate-500 border-slate-500/30' },
+  { id: 'se', title: 'Software Engineering & Development', mastery: 82, count: 95, icon: TerminalSquare, color: 'text-fuchsia-500 border-fuchsia-500/30' },
+  { id: 'strat', title: 'Strategy', mastery: 40, count: 261, icon: LineChart, color: 'text-teal-500 border-teal-500/30' },
+  { id: 'mgmt', title: 'Management', mastery: 58, count: 582, icon: Briefcase, color: 'text-orange-500 border-orange-500/30' },
 ];
 
 export default function Topics() {
   // Calculate global mastery
   const totalQuestions = PHILNITS_CATEGORIES.reduce((acc, cat) => acc + cat.count, 0);
-  const avgMastery = Math.round(PHILNITS_CATEGORIES.reduce((acc, cat) => acc + cat.mastery, 0) / 11);
+  const avgMastery = Math.round(PHILNITS_CATEGORIES.reduce((acc, cat) => acc + cat.mastery, 0) / 10);
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 pt-4">

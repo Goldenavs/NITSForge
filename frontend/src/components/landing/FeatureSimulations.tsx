@@ -104,12 +104,16 @@ export function MockExamSimulation() {
 
 // --- 2. Deep Analytics Simulation ---
 const INITIAL_RADAR_FIXED = [
-  { subject: 'Hardware', A: 40, fullMark: 100 },
-  { subject: 'Software', A: 70, fullMark: 100 },
-  { subject: 'Math', A: 50, fullMark: 100 },
+  { subject: 'Theory', A: 40, fullMark: 100 },
+  { subject: 'Arch', A: 70, fullMark: 100 },
+  { subject: 'OS', A: 50, fullMark: 100 },
+  { subject: 'DS & Algo', A: 85, fullMark: 100 },
+  { subject: 'DB', A: 90, fullMark: 100 },
   { subject: 'Network', A: 30, fullMark: 100 },
   { subject: 'Security', A: 85, fullMark: 100 },
-  { subject: 'Strategy', A: 60, fullMark: 100 },
+  { subject: 'Soft Eng', A: 60, fullMark: 100 },
+  { subject: 'Strategy', A: 45, fullMark: 100 },
+  { subject: 'Management', A: 75, fullMark: 100 },
 ];
 
 export function DeepAnalyticsSimulation() {

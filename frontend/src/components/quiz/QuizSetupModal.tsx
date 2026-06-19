@@ -14,6 +14,8 @@ const PHILNITS_CATEGORIES = [
   { id: 'net', title: 'Networking & Communication' },
   { id: 'sec', title: 'Information Security' },
   { id: 'se', title: 'Software Engineering & Development' },
+  { id: 'strat', title: 'Strategy' },
+  { id: 'mgmt', title: 'Management' },
 ];
 
 const PAST_EXAM_DATES = [
