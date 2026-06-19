@@ -68,6 +68,35 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       }
 
       finalQuestions = data as Question[] || [];
+    } else if (mode === 'missed') {
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+
+      if (!userId) {
+        console.error("Must be logged in for missed questions");
+        set({ status: 'idle' });
+        return;
+      }
+
+      const reqCount = options?.questionCount || 30;
+      const { data, error } = await supabase.rpc('get_missed_questions', { p_user_id: userId, p_limit: reqCount });
+
+      if (error) {
+        console.error('Error fetching missed questions:', error);
+        alert("Failed to fetch missed questions. Please try again.");
+        set({ status: 'idle' });
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        alert("Great job! You don't have any missed questions on record.");
+        set({ status: 'idle' });
+        return;
+      }
+
+      // Shuffle locally in case they want a random order (though RPC does random too)
+      const fetched = data as Question[] || [];
+      finalQuestions = fetched.sort(() => 0.5 - Math.random());
     } else {
       // Fetch questions from Supabase
       let query = supabase
@@ -146,7 +175,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         finalQuestions = shuffled.slice(0, reqCount);
         timer = finalQuestions.length * 60; // 1 min per actual question
       } else if (mode === 'missed') {
-        finalQuestions = shuffled.slice(0, 10); // placeholder
+        timer = finalQuestions.length * 60; // 1 min per actual question
       } else if (mode === 'simulation') {
         finalQuestions = shuffled.slice(0, 100);
         timer = 150 * 60; // 150 minutes in seconds
