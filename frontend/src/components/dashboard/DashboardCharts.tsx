@@ -39,7 +39,23 @@ export function AccuracyChart({ data }: { data: AccuracyData[] }) {
   );
 }
 
+const CATEGORIES = [
+  'Basic Theory of Information',
+  'Computer Architecture',
+  'Operating Systems',
+  'Data Structures & Algorithms',
+  'Databases',
+  'Networking & Communication',
+  'Information Security',
+  'Software Engineering & Development'
+];
+
 export function CategoryRadar({ data }: { data: RadarData[] }) {
+  const radarData = CATEGORIES.map(cat => {
+    const existing = data?.find(d => d.subject === cat);
+    return existing ? existing : { subject: cat, A: 0, fullMark: 100 };
+  });
+
   return (
     <Card className="flex flex-col h-[400px]">
       <CardHeader className="pb-0">
@@ -47,7 +63,7 @@ export function CategoryRadar({ data }: { data: RadarData[] }) {
       </CardHeader>
       <CardContent className="flex-1 flex items-center justify-center min-h-0">
         <ResponsiveContainer width="100%" height="100%">
-          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
+          <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
             <PolarGrid stroke="var(--color-borderline)" />
             <PolarAngleAxis dataKey="subject" tick={{ fill: 'var(--color-text-muted)', fontSize: 10 }} />
             <Radar name="Accuracy" dataKey="A" stroke="var(--color-primary)" fill="var(--color-primary)" fillOpacity={0.2} />
