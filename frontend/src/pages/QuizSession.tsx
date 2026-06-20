@@ -166,10 +166,11 @@ export default function QuizSession() {
   const isGameOver = mode === 'survival' && lives === 0;
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col pt-8 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
-
+    <div className="relative min-h-screen w-full flex flex-col lg:flex-row">
+      <QuizSidebar />
+      
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 flex flex-col">
+      <div className="flex-1 min-w-0 flex flex-col pt-8 pb-24 px-4 md:px-8 max-w-4xl mx-auto transition-all duration-500">
         {/* Dynamic Header */}
         <QuizHeader
           currentQuestion={currentIndex + 1}
@@ -244,8 +245,6 @@ export default function QuizSession() {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      <QuizSidebar />
 
       {(mode !== 'simulation' && aiAllowed !== false) && <ForgeFAB context={currentQ} />}
     </div>

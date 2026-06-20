@@ -17,7 +17,7 @@ export default function MainLayout() {
       {/* pt-32 adds padding to the top so content isn't covered by the floating navbar */}
       {/* src/components/layout/MainLayout.tsx */}
       {/* Remove h-screen and overflow-y-auto. Let the window handle the scroll naturally. */}
-      <main className="relative z-10 w-full min-h-screen pt-32 pb-16 px-4 md:px-8">
+      <main className="relative w-full min-h-screen pt-32 pb-16 px-4 md:px-8">
         <Outlet />
       </main>
       
