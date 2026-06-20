@@ -8,6 +8,7 @@ import { Button } from '../ui/Button';
 
 import type { AnswerHistoryRecord } from '../../hooks/useHistory';
 import { explainQuestion } from '../../services/ai';
+import ReactMarkdown from 'react-markdown';
 
 interface HistoryRowProps {
   log: AnswerHistoryRecord;
@@ -64,7 +65,7 @@ export function HistoryRow({ log }: HistoryRowProps) {
               <span className="text-[10px] font-orbitron font-bold text-text-muted tracking-widest uppercase leading-none pt-0.5">
                 {log.question_category}
               </span>
-              <span className="text-[10px] text-text-muted/60 font-body hidden sm:inline-block">• {new Date(log.answered_at).toLocaleString()}</span>
+              <span className="text-[10px] text-text-muted/60 font-body hidden sm:inline-block">• {new Date(log.answered_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
             </div>
             {/* Truncated question text - Hides when expanded */}
             {!isOpen && (
@@ -122,9 +123,9 @@ export function HistoryRow({ log }: HistoryRowProps) {
               <div className="flex flex-col gap-4 p-4 rounded-xl bg-surface-2/40 border border-borderline/50">
                 <div>
                   <span className="text-[10px] font-orbitron text-text-main uppercase tracking-widest font-bold mb-2 block leading-none pt-0.5">Official Explanation</span>
-                  <p className="text-xs sm:text-sm text-text-muted font-body leading-relaxed">
-                    {log.explanation}
-                  </p>
+                  <div className="text-xs sm:text-sm text-text-muted font-body leading-relaxed prose prose-invert max-w-none">
+                    <ReactMarkdown>{log.explanation}</ReactMarkdown>
+                  </div>
                 </div>
                 <div className="pt-3 border-t border-borderline/50 flex justify-end">
                   <Button 
@@ -169,9 +170,7 @@ export function HistoryRow({ log }: HistoryRowProps) {
 
                       {aiExplanation && !isAiLoading && (
                         <div className="text-sm text-text-main font-body leading-relaxed prose prose-invert max-w-none">
-                          {aiExplanation.split('\n\n').map((paragraph, i) => (
-                            <p key={i} className="mb-2 last:mb-0">{paragraph}</p>
-                          ))}
+                          <ReactMarkdown>{aiExplanation}</ReactMarkdown>
                         </div>
                       )}
                     </div>
