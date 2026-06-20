@@ -1,6 +1,6 @@
 // src/components/quiz/QuizHeader.tsx
 import { motion } from 'framer-motion';
-import { X, Clock } from 'lucide-react';
+import { X, Clock, Heart } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { useQuizStore } from '../../store/useQuizStore';
@@ -14,7 +14,7 @@ interface QuizHeaderProps {
 }
 
 export function QuizHeader({ currentQuestion, totalQuestions, modeLabel }: QuizHeaderProps) {
-  const { timeRemaining, abandonQuiz, mode } = useQuizStore();
+  const { timeRemaining, abandonQuiz, mode, lives } = useQuizStore();
   const progressPercentage = (currentQuestion / totalQuestions) * 100;
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const navigate = useNavigate();
@@ -45,14 +45,24 @@ export function QuizHeader({ currentQuestion, totalQuestions, modeLabel }: QuizH
           </Badge>
           <div className="flex items-baseline gap-1 font-orbitron">
             <span className="text-2xl font-bold text-text-main leading-none">{currentQuestion}</span>
-            {mode !== 'zen' && (
+            {mode !== 'zen' && mode !== 'survival' && (
               <span className="text-sm font-bold text-text-muted leading-none">/ {totalQuestions}</span>
             )}
           </div>
         </div>
 
-        {/* Right Controls: Timer & Exit */}
+        {/* Right Controls: Timer, Lives, & Exit */}
         <div className="flex items-center gap-4">
+          {mode === 'survival' && lives !== null && (
+            <div className="flex items-center gap-1.5 bg-surface-2/80 px-3 py-1.5 rounded-lg border border-red-500/30 shadow-[0_0_10px_rgba(239,68,68,0.1)]">
+              {[1, 2, 3].map(i => (
+                <Heart 
+                  key={i} 
+                  className={`w-4 h-4 sm:w-5 sm:h-5 ${i <= lives ? 'fill-red-500 text-red-500 animate-pulse' : 'text-surface-2 fill-background/50'}`} 
+                />
+              ))}
+            </div>
+          )}
           {timeRemaining !== null && (
             <div className="flex items-center gap-2 text-text-main bg-surface-2/80 px-3 py-1.5 rounded-lg border border-primary/50 shadow-[0_0_10px_rgba(var(--color-primary),0.2)]">
               <Clock className={`w-4 h-4 ${timeRemaining < 300 ? 'text-red-500 animate-pulse' : 'text-primary'}`} />
@@ -70,8 +80,8 @@ export function QuizHeader({ currentQuestion, totalQuestions, modeLabel }: QuizH
         </div>
       </div>
 
-      {/* Animated Progress Bar (Hidden in Zen Mode) */}
-      {mode !== 'zen' && (
+      {/* Animated Progress Bar (Hidden in Zen/Survival Mode) */}
+      {mode !== 'zen' && mode !== 'survival' && (
         <div className="w-full h-2 bg-surface-2 rounded-full overflow-hidden border border-borderline/50">
           <motion.div
             initial={{ width: 0 }}

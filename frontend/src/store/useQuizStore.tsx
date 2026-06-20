@@ -186,7 +186,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         finalQuestions = shuffled.slice(0, options?.questionCount || 30);
         timer = finalQuestions.length * 30; // tight: 30 secs per question
       } else if (mode === 'survival') {
-        finalQuestions = shuffled.slice(0, 30);
+        finalQuestions = shuffled;
         set({ lives: 3 });
       } else if (mode === 'sandbox') {
         finalQuestions = shuffled.slice(0, options?.questionCount || 30);
@@ -240,13 +240,30 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   },
 
   answerQuestion: (questionId, answer) => {
-    set((state) => ({
-      selectedAnswers: { ...state.selectedAnswers, [questionId]: answer }
-    }));
+    set((state) => {
+      const question = state.questions.find(q => q.id === questionId);
+      const isCorrect = question?.correct_answer === answer;
+      let newLives = state.lives;
+
+      if (state.mode === 'survival' && !isCorrect && newLives !== null) {
+        newLives = Math.max(0, newLives - 1);
+      }
+
+      return {
+        selectedAnswers: { ...state.selectedAnswers, [questionId]: answer },
+        lives: newLives
+      };
+    });
   },
 
   nextQuestion: () => {
-    const { currentIndex, questions } = get();
+    const { currentIndex, questions, mode, lives } = get();
+    
+    if (mode === 'survival' && lives === 0) {
+      get().finishQuiz();
+      return;
+    }
+
     if (currentIndex < questions.length - 1) {
       set({ currentIndex: currentIndex + 1 });
     } else {

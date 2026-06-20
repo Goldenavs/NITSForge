@@ -1,6 +1,7 @@
 // src/components/quiz/QuizModeCard.tsx
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { Heart } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -22,7 +23,7 @@ interface QuizModeCardProps {
 }
 
 export function QuizModeCard({ modeId, title, description, icon: Icon, tags, colorClass, isPopular, isIntimidating, configType = 'none', onStart, onConfigure, actionText = "Start Quiz" }: QuizModeCardProps) {
-  const { status, mode: activeMode, questions } = useQuizStore();
+  const { status, mode: activeMode, questions, lives } = useQuizStore();
   const isActive = status === 'in-progress' && activeMode === modeId;
   
   const [questionCount, setQuestionCount] = useState(30);
@@ -78,6 +79,21 @@ export function QuizModeCard({ modeId, title, description, icon: Icon, tags, col
         {/* Intimidating Warning Strip */}
         {isIntimidating && (
           <div className="absolute top-0 left-0 w-full h-1.5 warning-border z-20 opacity-70 group-hover:opacity-100 transition-opacity" />
+        )}
+
+        {/* Survival Hearts Display */}
+        {modeId === 'survival' && (
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-1.5 p-1.5 rounded-full bg-surface-2/80 backdrop-blur-sm border border-borderline">
+            {[1, 2, 3].map(i => {
+              const hasLife = !isActive || lives === null || i <= lives;
+              return (
+                <Heart 
+                  key={i} 
+                  className={`w-4 h-4 ${hasLife ? 'text-red-500 fill-red-500 shadow-sm' : 'text-surface-2 fill-background/50'}`} 
+                />
+              );
+            })}
+          </div>
         )}
 
         {/* Popular / Recommended Tag */}

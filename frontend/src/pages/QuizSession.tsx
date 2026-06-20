@@ -21,7 +21,8 @@ export default function QuizSession() {
     answerQuestion,
     nextQuestion,
     tick,
-    mode
+    mode,
+    lives
   } = useQuizStore();
 
   const [searchParams] = useSearchParams();
@@ -102,6 +103,8 @@ export default function QuizSession() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const isGameOver = mode === 'survival' && lives === 0;
+
   return (
     <div className="relative min-h-screen w-full flex flex-col pt-8 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
 
@@ -142,11 +145,13 @@ export default function QuizSession() {
               </Button>
             ) : (
               <Button
-                variant="primary"
+                variant={isGameOver ? "outline" : "primary"}
                 onClick={handleNext}
-                className="font-orbitron tracking-widest px-8 py-3"
+                className={`font-orbitron tracking-widest px-8 py-3 transition-colors ${
+                  isGameOver ? 'border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' : ''
+                }`}
               >
-                {currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'} <ChevronRight className="w-4 h-4 ml-2" />
+                {isGameOver ? 'Exit Arena' : currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'} <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             )}
           </div>
