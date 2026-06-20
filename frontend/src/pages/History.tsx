@@ -33,8 +33,8 @@ export default function History() {
   }, [logs]);
 
   return (
-    <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
-
+    <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 pt-4">
+      
       {/* 1. HEADER & CONTROLS */}
       <motion.div
         initial="hidden"

@@ -14,7 +14,7 @@ export function HistoryTimeline({ groupedData }: HistoryTimelineProps) {
   return (
     <div className="relative w-full py-8">
       {/* Central Line */}
-      <div className="absolute left-[28px] md:left-1/2 top-0 bottom-0 w-px bg-borderline/80 md:-translate-x-1/2"></div>
+      <div className="absolute left-[16px] md:left-1/2 top-0 bottom-0 w-px bg-borderline/80 md:-translate-x-1/2"></div>
 
       <div className="flex flex-col gap-16 relative z-10">
         {groupedData.map((dateGroup) => {
@@ -99,37 +99,41 @@ function AttemptNode({ attempt, isLeft }: { attempt: GroupedAttempt; isLeft: boo
       <div className="hidden md:block md:w-1/2" />
 
       {/* Node Marker on the Line */}
-      <div className="absolute left-[28px] md:left-1/2 w-4 h-4 rounded-full bg-background border-2 border-primary -translate-x-1/2 mt-6 md:mt-0 shadow-[0_0_15px_rgba(var(--color-primary),0.6)] z-10" />
+      <div className="absolute left-[16px] md:left-1/2 w-4 h-4 rounded-full bg-background border-2 border-primary -translate-x-1/2 mt-6 md:mt-0 shadow-[0_0_15px_rgba(var(--color-primary),0.6)] z-10" />
 
       {/* Content Box */}
-      <div className={`w-full md:w-1/2 pl-[60px] pr-4 md:px-12 ${isLeft ? 'md:text-right' : 'md:text-left'}`}>
+      <div className={`w-full md:w-1/2 pl-[40px] pr-0 md:px-12 ${isLeft ? 'md:text-right' : 'md:text-left'}`}>
         <motion.div
           layout
-          className={`bg-surface-2/40 border border-borderline/50 rounded-2xl p-5 hover:border-primary/40 transition-all duration-300 cursor-pointer group shadow-lg ${isExpanded ? 'border-primary/50 bg-surface-2/80 shadow-[0_0_30px_rgba(var(--color-primary),0.1)]' : ''}`}
-          onClick={() => setIsExpanded(!isExpanded)}
+          className={`bg-surface-2/40 border border-borderline/50 rounded-2xl overflow-hidden transition-all duration-300 group shadow-lg ${isExpanded ? 'border-primary/50 bg-surface-2/80 shadow-[0_0_30px_rgba(var(--color-primary),0.1)]' : 'hover:border-primary/40'}`}
         >
-          {/* Header Info */}
-          <div className={`flex flex-col md:flex-row items-start md:items-center gap-3 mb-3 ${isLeft ? 'md:flex-row-reverse' : ''}`}>
-            <span className="font-orbitron font-bold text-lg text-text-main capitalize">
-              {attempt.session_mode} Session
-            </span>
-            <span className="text-xs text-text-muted font-mono bg-background/80 px-2.5 py-1 rounded-md border border-borderline/30">
-              {timeStr}
-            </span>
-          </div>
-
-          <div className={`flex items-center gap-5 text-sm text-text-muted ${isLeft ? 'md:justify-end' : 'md:justify-start'}`}>
-            <div className="flex items-center gap-1.5 bg-background/50 px-3 py-1.5 rounded-lg border border-borderline/30">
-              <Target className="w-3.5 h-3.5 text-primary" />
-              <span className="font-bold text-text-main">{total}</span> items
-            </div>
-            <div className="flex items-center gap-1.5 bg-background/50 px-3 py-1.5 rounded-lg border border-borderline/30">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-              <span className="font-bold text-green-400">{accuracy}%</span> acc
+          {/* Header Info - Clickable Area */}
+          <div 
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="p-4 sm:p-5 cursor-pointer flex flex-col items-center justify-center text-center gap-3"
+          >
+            <div className="flex flex-col md:flex-row items-center gap-3">
+              <span className="font-orbitron font-bold text-lg text-text-main capitalize">
+                {attempt.session_mode.replace('-', ' ')} Mode
+              </span>
+              <span className="text-xs text-text-muted font-mono bg-background/80 px-2.5 py-1 rounded-md border border-borderline/30">
+                {timeStr}
+              </span>
             </div>
 
-            <div className={`ml-auto md:ml-0 flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${isExpanded ? 'bg-primary text-background' : 'bg-background border border-borderline group-hover:border-primary/50 text-text-muted group-hover:text-primary'}`}>
-              <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+            <div className="flex items-center justify-center flex-wrap gap-4 text-sm text-text-muted">
+              <div className="flex items-center gap-1.5 bg-background/50 px-3 py-1.5 rounded-lg border border-borderline/30">
+                <Target className="w-3.5 h-3.5 text-primary" />
+                <span className="font-bold text-text-main">{total}</span> items
+              </div>
+              <div className="flex items-center gap-1.5 bg-background/50 px-3 py-1.5 rounded-lg border border-borderline/30">
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                <span className="font-bold text-green-400">{accuracy}%</span> acc
+              </div>
+
+              <div className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${isExpanded ? 'bg-primary text-background' : 'bg-background border border-borderline group-hover:border-primary/50 text-text-muted group-hover:text-primary'}`}>
+                <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+              </div>
             </div>
           </div>
 
@@ -146,7 +150,7 @@ function AttemptNode({ attempt, isLeft }: { attempt: GroupedAttempt; isLeft: boo
                   Using text-left to override the parent's text alignment (since right-side boxes are text-right on desktop)
                   This ensures HistoryRow always aligns its contents naturally to the left.
                 */}
-                <div className="flex flex-col gap-3 pt-6 mt-4 border-t border-borderline/50 text-left">
+                <div className="flex flex-col gap-3 px-2 pb-4 sm:px-4 sm:pb-5 text-left border-t border-borderline/30 bg-background/30 pt-4">
                   {attempt.questions.map((q, idx) => (
                     <motion.div
                       key={q.answer_id}
