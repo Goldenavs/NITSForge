@@ -49,7 +49,7 @@ export default function QuizHub() {
   const [pendingQuiz, setPendingQuiz] = useState<{ mode: string, config?: any } | null>(null);
 
   // Setup Modal State
-  const [setupModalConfig, setSetupModalConfig] = useState<{ mode: string, type: 'topic' | 'date' | 'sandbox' } | null>(null);
+  const [setupModalConfig, setSetupModalConfig] = useState<{ mode: string, type: 'topic' | 'date' | 'sandbox' | 'ai-sandbox' } | null>(null);
 
   const executeStartQuiz = (targetMode: string, config?: any) => {
     if (status === 'in-progress') {
@@ -281,14 +281,15 @@ export default function QuizHub() {
           </motion.div>
 
           <motion.div variants={fadeUpVariant} className="h-full lg:col-span-2">
-            <Link
-              to="/quiz/ai"
-              className="block group h-full"
+            <button
+              className="block group h-full w-full text-left"
               onClick={(e) => {
                 if (status === 'in-progress') {
                   e.preventDefault();
                   setPendingQuiz({ mode: 'ai-generated' });
                   setShowActiveModal(true);
+                } else {
+                  setSetupModalConfig({ mode: 'ai-generated', type: 'ai-sandbox' });
                 }
               }}
             >
@@ -303,12 +304,12 @@ export default function QuizHub() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <h3 className="font-display font-bold text-xl sm:text-2xl text-text-main group-hover:text-accent transition-colors pt-1 leading-none">
-                        AI-Generated Mode
+                        AI-Sandbox Mode
                       </h3>
                       <Badge className="bg-accent/20 text-accent border-accent/30 font-orbitron tracking-widest text-[9px] uppercase">Experimental</Badge>
                     </div>
                     <p className="text-sm sm:text-base text-text-muted leading-relaxed max-w-3xl">
-                      Deploy Gemini 1.5 Flash to synthesize novel practice scenarios on demand. Select any topic and difficulty.
+                      Deploy Gemini 2.5 Flash to synthesize novel practice scenarios on demand. Select any topic and difficulty.
                       <span className="block mt-1 text-xs opacity-70 italic">Note: These are AI-generated supplemental questions and do not affect your official accuracy stats.</span>
                     </p>
                   </div>
@@ -322,7 +323,7 @@ export default function QuizHub() {
 
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 h-64 bg-accent opacity-[0.04] blur-2xl pointer-events-none group-hover:opacity-[0.08] transition-opacity duration-700" />
               </Card>
-            </Link>
+            </button>
           </motion.div>
         </div>
 

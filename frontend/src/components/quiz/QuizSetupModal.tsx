@@ -32,7 +32,7 @@ const PAST_EXAM_DATES = [
 interface QuizSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
-  configType: 'topic' | 'date' | 'sandbox' | null;
+  configType: 'topic' | 'date' | 'sandbox' | 'ai-sandbox' | null;
   onStart: (config: any) => void;
 }
 
@@ -42,6 +42,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
   const [sandboxAmount, setSandboxAmount] = useState(30);
   const [sandboxTime, setSandboxTime] = useState(30); // 0 = None
   const [sandboxAI, setSandboxAI] = useState(true);
+  const [aiDifficulty, setAiDifficulty] = useState<'easy' | 'medium' | 'hard'>('medium');
 
   // Reset state when modal opens
   useEffect(() => {
@@ -51,6 +52,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
       setSandboxAmount(30);
       setSandboxTime(30);
       setSandboxAI(true);
+      setAiDifficulty('medium');
     }
   }, [isOpen]);
 
@@ -75,6 +77,13 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
         aiAllowed: sandboxAI,
         topics: selectedTopics.length > 0 ? selectedTopics : null,
         dates: selectedDates.length > 0 ? selectedDates : null
+      };
+    } else if (configType === 'ai-sandbox') {
+      config = {
+        mode: 'ai-generated',
+        questionCount: sandboxAmount, // reuse amount
+        aiDifficulty,
+        topics: selectedTopics.length > 0 ? selectedTopics : null
       };
     }
     onStart(config);
@@ -110,12 +119,14 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
                 {configType === 'topic' && <Layers className="w-5 h-5" />}
                 {configType === 'date' && <Calendar className="w-5 h-5" />}
                 {configType === 'sandbox' && <Box className="w-5 h-5" />}
+                {configType === 'ai-sandbox' && <Sparkles className="w-5 h-5" />}
               </div>
               <div>
                 <h2 className="text-xl font-bold font-display text-text-main leading-tight">
                   {configType === 'topic' && 'Select Drill Topics'}
                   {configType === 'date' && 'Select Exam Dates'}
                   {configType === 'sandbox' && 'Configure Sandbox'}
+                  {configType === 'ai-sandbox' && 'AI-Sandbox Mode'}
                 </h2>
                 <p className="text-xs text-text-muted font-orbitron tracking-widest uppercase">
                   Custom Parameter Setup
@@ -213,10 +224,72 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
               </div>
             )}
 
+            {/* AI-SANDBOX EXCLUSIVE CONTROLS */}
+            {configType === 'ai-sandbox' && (
+              <div className="mb-8 space-y-6">
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 flex gap-4 items-start">
+                  <Sparkles className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-sm font-bold text-amber-600 dark:text-amber-400 font-display mb-1">AI-Generated Content</p>
+                    <p className="text-xs text-amber-600/80 dark:text-amber-400/80 leading-relaxed">
+                      Deploy Gemini 2.5 Flash to synthesize novel practice scenarios on demand.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-bold text-text-main font-orbitron block mb-2">Simulation Difficulty</label>
+                  <div className="flex gap-2">
+                    {[
+                      { id: 'easy', label: 'Easy', color: 'bg-green-500/10 text-green-500 border-green-500' },
+                      { id: 'medium', label: 'Medium', color: 'bg-amber-500/10 text-amber-500 border-amber-500' },
+                      { id: 'hard', label: 'Hard', color: 'bg-red-500/10 text-red-500 border-red-500' }
+                    ].map(diff => (
+                      <button
+                        key={diff.id}
+                        onClick={() => setAiDifficulty(diff.id as any)}
+                        className={`flex-1 py-3 px-2 rounded-xl border-2 font-display font-bold text-sm transition-all ${
+                          aiDifficulty === diff.id ? diff.color + ' scale-[1.02]' : 'border-borderline/50 text-text-muted hover:border-borderline bg-surface-2/40'
+                        }`}
+                      >
+                        {diff.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-bold text-text-main font-orbitron block mb-2">Item Count</label>
+                  <div className="relative flex items-center w-full bg-surface-2/40 border border-borderline/50 rounded-2xl p-1 overflow-hidden">
+                    {[5, 10, 15, 20].map((amount) => {
+                      const isActive = sandboxAmount === amount;
+                      return (
+                        <button
+                          key={amount}
+                          type="button"
+                          onClick={() => setSandboxAmount(amount)}
+                          className={`relative flex-1 py-2 text-xs font-bold tracking-wide rounded-xl transition-colors z-10 flex items-center justify-center text-center ${isActive ? 'text-surface' : 'text-text-muted hover:text-text-main'}`}
+                        >
+                          {isActive && (
+                            <motion.div
+                              layoutId="aiAmountActiveIndicator"
+                              className="absolute inset-0 bg-primary rounded-xl shadow-md -z-10"
+                              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                            />
+                          )}
+                          {amount} Qs
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* TOPIC SELECTOR */}
-            {(configType === 'topic' || configType === 'sandbox') && (
+            {(configType === 'topic' || configType === 'sandbox' || configType === 'ai-sandbox') && (
               <div className="mb-8">
-                {configType === 'sandbox' && <h3 className="text-sm font-bold text-text-main font-orbitron mb-3 flex items-center gap-2"><Layers className="w-4 h-4" /> Filter by Topic (Optional)</h3>}
+                {(configType === 'sandbox' || configType === 'ai-sandbox') && <h3 className="text-sm font-bold text-text-main font-orbitron mb-3 flex items-center gap-2"><Layers className="w-4 h-4" /> Filter by Topic (Optional)</h3>}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {PHILNITS_CATEGORIES.map(topic => (
                     <button
@@ -263,6 +336,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
               {configType === 'topic' && `${selectedTopics.length} topics selected`}
               {configType === 'date' && `${selectedDates.length} dates selected`}
               {configType === 'sandbox' && `Sandbox configuration ready`}
+              {configType === 'ai-sandbox' && `AI Sandbox ready`}
             </p>
             <div className="flex gap-3">
               <Button variant="outline" onClick={onClose} className="border-borderline/50 text-text-muted">

@@ -54,7 +54,7 @@ export const PlannerPage: React.FC = () => {
             <h4 className="font-bold text-[var(--color-text-primary)] mb-2 text-sm">How it works</h4>
             <ul className="text-sm text-[var(--color-text-muted)] space-y-2 list-disc list-inside">
               <li>Forge analyzes your weak categories from the dashboard.</li>
-              <li>A custom roadmap is generated using Gemini 1.5 Pro.</li>
+              <li>A custom roadmap is generated using Gemini 2.5 Pro.</li>
               <li>Check off days to earn bonus XP!</li>
             </ul>
           </div>

@@ -15,7 +15,6 @@ import Dashboard from './pages/Dashboard';
 import QuizHub from './pages/QuizHub';
 import QuizSession from './pages/QuizSession';
 import QuizResults from './pages/QuizResults';
-import QuizAI from './pages/QuizAI';
 import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
 import DailyChallenge from './pages/DailyChallenge';
@@ -55,8 +54,6 @@ function App() {
               <Route path="/quiz" element={<QuizHub />} />
               <Route path="/quiz/session" element={<QuizSession />} />
               <Route path="/quiz/results/:sessionId" element={<QuizResults />} />
-              <Route path="/quiz/ai" element={<QuizAI />} />
-              
               {/* Topics & Learning */}
               <Route path="/topics" element={<Topics />} />
               <Route path="/topics/:category" element={<TopicDetail />} />
