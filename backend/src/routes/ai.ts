@@ -28,10 +28,10 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     next();
 };
 
-// Rate limiter for quiz generation (1 request per 2 hours)
+// Rate limiter for quiz generation (1 request per 2 hours) - TEMPORARILY DISABLED FOR TESTING
 const quizGenerationLimiter = rateLimit({
     windowMs: 2 * 60 * 60 * 1000, // 2 hours
-    max: 1, // limit each IP to 1 request per windowMs
+    max: 1000, // limit each IP to 1 request per windowMs (Set to 1000 for testing)
     message: { error: "You have reached the maximum AI Quiz generations. Please try again in a few hours." },
     standardHeaders: true,
     legacyHeaders: false,
@@ -54,11 +54,13 @@ router.post('/generate-quiz', requireAuth, quizGenerationLimiter, async (req: Re
           Each object must follow this exact schema:
           {
             "id": "<generate a random uuid>",
-            "question": "<the question text>",
-            "A": "<option A>",
-            "B": "<option B>",
-            "C": "<option C>",
-            "D": "<option D>",
+            "text": "<the question text>",
+            "options": {
+              "A": "<option A>",
+              "B": "<option B>",
+              "C": "<option C>",
+              "D": "<option D>"
+            },
             "correct_answer": "<either 'A', 'B', 'C', or 'D'>",
             "explanation": "<brief explanation of why the answer is correct>",
             "category": "<the specific sub-topic this question belongs to>",

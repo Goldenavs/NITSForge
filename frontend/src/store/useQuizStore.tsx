@@ -18,9 +18,11 @@ interface QuizState {
   lives: number | null;
   aiAllowed: boolean | null;
   abortController: AbortController | null;
+  aiGenerationError: string | null;
 
   // Actions
   startQuiz: (mode?: string, options?: any) => Promise<void>;
+  clearAiError: () => void;
   answerQuestion: (questionId: string, answer: 'A' | 'B' | 'C' | 'D') => void;
   nextQuestion: () => void;
   finishQuiz: () => Promise<void>;
@@ -44,6 +46,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   lives: null,
   aiAllowed: null,
   abortController: null,
+  aiGenerationError: null,
+
+  clearAiError: () => set({ aiGenerationError: null }),
 
   startQuiz: async (mode = 'practice', options: any = {}) => {
     set({ status: 'loading', mode: mode as any, timeSpent: 0, xpEarned: 0, aiAllowed: options?.aiAllowed ?? true });
@@ -109,8 +114,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         const { data: { session } } = await supabase.auth.getSession();
         const token = session?.access_token;
         if (!token) {
-          alert("You must be logged in to use AI Generation.");
-          set({ status: 'idle', abortController: null });
+          set({ status: 'idle', abortController: null, aiGenerationError: "You must be logged in to use AI Generation." });
           return;
         }
 
@@ -130,24 +134,28 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
         if (!res.ok) {
           const errData = await res.json();
-          if (res.status === 429) {
-             alert(errData.error || "Too many AI generations. Please try again later.");
-          } else {
-             alert(errData.error || "Failed to generate AI quiz.");
-          }
-          set({ status: 'idle', abortController: null });
+          set({ 
+             status: 'idle', 
+             abortController: null, 
+             aiGenerationError: errData.error || "Failed to generate AI quiz." 
+          });
           return;
         }
 
         const data = await res.json();
         finalQuestions = data.questions || [];
+        
+        // Track success in localStorage to power UI countdowns
+        localStorage.setItem('forge_last_ai_generation', Date.now().toString());
+
         set({ abortController: null });
       } catch (err: any) {
         if (err.name === 'AbortError') {
           console.log("AI Generation aborted by user.");
         } else {
           console.error("Failed to fetch AI questions:", err);
-          alert("An error occurred during AI synthesis.");
+          set({ status: 'idle', abortController: null, aiGenerationError: "An error occurred during AI synthesis. Please try again." });
+          return;
         }
         set({ status: 'idle', abortController: null });
         return;

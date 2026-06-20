@@ -1,5 +1,5 @@
 // src/pages/QuizHub.tsx
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   Target, Timer, Zap, RotateCcw, Sparkles, ChevronRight,
   Book, Layers, Calendar, Flame, Shield, Box
@@ -9,7 +9,7 @@ import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { useNavigate } from 'react-router-dom';
 import { useQuizStore } from '../store/useQuizStore';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/Button';
 import { QuizSetupModal } from '../components/quiz/QuizSetupModal';
 
@@ -42,7 +42,7 @@ const SectionHeader = ({ title, subtitle }: { title: string, subtitle: string })
 );
 
 export default function QuizHub() {
-  const { status, abandonQuiz, mode, startQuiz } = useQuizStore();
+  const { status, abandonQuiz, mode, startQuiz, aiGenerationError, clearAiError } = useQuizStore();
   const navigate = useNavigate();
   const [showActiveModal, setShowActiveModal] = useState(false);
   const [showSimulationWarning, setShowSimulationWarning] = useState(false);
@@ -50,6 +50,35 @@ export default function QuizHub() {
 
   // Setup Modal State
   const [setupModalConfig, setSetupModalConfig] = useState<{ mode: string, type: 'topic' | 'date' | 'sandbox' | 'ai-sandbox' } | null>(null);
+
+  const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+
+  useEffect(() => {
+    const checkCooldown = () => {
+      const lastGenStr = localStorage.getItem('forge_last_ai_generation');
+      if (lastGenStr) {
+        const lastGen = parseInt(lastGenStr, 10);
+        const elapsed = Date.now() - lastGen;
+        const cooldownMs = 2 * 60 * 60 * 1000; // 2 hours
+        if (elapsed < cooldownMs) {
+          setCooldownRemaining(cooldownMs - elapsed);
+        } else {
+          setCooldownRemaining(0);
+        }
+      }
+    };
+    checkCooldown();
+    const interval = setInterval(checkCooldown, 60000); // Check every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatCooldown = (ms: number) => {
+    const mins = Math.floor(ms / 60000);
+    const hrs = Math.floor(mins / 60);
+    const remainingMins = mins % 60;
+    if (hrs > 0) return `${hrs}h ${remainingMins}m remaining`;
+    return `${remainingMins}m remaining`;
+  };
 
   const executeStartQuiz = (targetMode: string, config?: any) => {
     if (status === 'in-progress') {
@@ -284,6 +313,9 @@ export default function QuizHub() {
             <button
               className="block group h-full w-full text-left"
               onClick={(e) => {
+                // If it's disabled/cooldown, we can still let them click it or block them.
+                // The prompt says "remove limit temporarily... but just put it in place".
+                // I'll allow clicking but show the cooldown visually.
                 if (status === 'in-progress') {
                   e.preventDefault();
                   setPendingQuiz({ mode: 'ai-generated' });
@@ -302,14 +334,20 @@ export default function QuizHub() {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
                       <h3 className="font-display font-bold text-xl sm:text-2xl text-text-main group-hover:text-accent transition-colors pt-1 leading-none">
                         AI-Sandbox Mode
                       </h3>
                       <Badge className="bg-accent/20 text-accent border-accent/30 font-orbitron tracking-widest text-[9px] uppercase">Experimental</Badge>
+                      {cooldownRemaining > 0 && (
+                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-xs font-medium">
+                          Cooldown: {formatCooldown(cooldownRemaining)}
+                        </Badge>
+                      )}
                     </div>
                     <p className="text-sm sm:text-base text-text-muted leading-relaxed max-w-3xl">
                       Deploy Gemini 2.5 Flash to synthesize novel practice scenarios on demand. Select any topic and difficulty.
+                      <span className="block mt-1 text-xs opacity-70 italic text-accent font-medium">1 generation per 2 hours limit applied.</span>
                       <span className="block mt-1 text-xs opacity-70 italic">Note: These are AI-generated supplemental questions and do not affect your official accuracy stats.</span>
                     </p>
                   </div>
@@ -395,6 +433,37 @@ export default function QuizHub() {
         onStart={(config) => handleStartQuiz(setupModalConfig!.mode, config)}
       />
 
+      {/* AI Generation Error Modal */}
+      <AnimatePresence>
+        {aiGenerationError && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+              onClick={clearAiError}
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative w-full max-w-md bg-surface border border-borderline rounded-2xl p-6 shadow-2xl overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-red-500" />
+              <h3 className="text-xl font-display font-bold text-text-main mb-2">AI Generation Failed</h3>
+              <p className="text-sm text-text-muted mb-6 leading-relaxed">
+                {aiGenerationError}
+              </p>
+              <div className="flex justify-end gap-3">
+                <Button variant="primary" onClick={clearAiError}>
+                  Understood
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
