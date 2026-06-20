@@ -1,5 +1,6 @@
 // backend/src/routes/ai.ts
 import { Router, Request, Response, NextFunction } from 'express';
+import rateLimit from 'express-rate-limit';
 import { flashModel } from '../services/gemini';
 import { createClient } from '@supabase/supabase-js';
 
@@ -26,6 +27,65 @@ const requireAuth = async (req: Request, res: Response, next: NextFunction) => {
     
     next();
 };
+
+// Rate limiter for quiz generation (1 request per 2 hours)
+const quizGenerationLimiter = rateLimit({
+    windowMs: 2 * 60 * 60 * 1000, // 2 hours
+    max: 1, // limit each IP to 1 request per windowMs
+    message: { error: "You have reached the maximum AI Quiz generations. Please try again in a few hours." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+// POST /api/ai/generate-quiz
+router.post('/generate-quiz', requireAuth, quizGenerationLimiter, async (req: Request, res: Response) => {
+    try {
+        const { topics, difficulty, count } = req.body;
+        const numQuestions = count || 10;
+        const diff = difficulty || 'medium';
+        const topicString = topics && topics.length > 0 ? topics.join(', ') : 'general IT concepts';
+
+        const prompt = `
+          You are an expert IT certification examiner (e.g., CompTIA, Cisco).
+          Generate exactly ${numQuestions} multiple-choice questions about the following topics: ${topicString}.
+          The difficulty level should be strictly: ${diff}.
+          
+          Respond ONLY with a raw JSON array of objects. Do not include markdown formatting like \`\`\`json.
+          Each object must follow this exact schema:
+          {
+            "id": "<generate a random uuid>",
+            "question": "<the question text>",
+            "A": "<option A>",
+            "B": "<option B>",
+            "C": "<option C>",
+            "D": "<option D>",
+            "correct_answer": "<either 'A', 'B', 'C', or 'D'>",
+            "explanation": "<brief explanation of why the answer is correct>",
+            "category": "<the specific sub-topic this question belongs to>",
+            "difficulty": "${diff}",
+            "source": "Gemini 2.5 Flash"
+          }
+        `;
+
+        const result = await flashModel.generateContent(prompt);
+        const responseText = result.response.text();
+        
+        let questions = [];
+        try {
+            // Remove markdown formatting if Gemini includes it despite instructions
+            const cleanedText = responseText.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+            questions = JSON.parse(cleanedText);
+        } catch (parseError) {
+            console.error("Failed to parse Gemini JSON output:", responseText);
+            return res.status(500).json({ error: "AI produced invalid format. Please try again." });
+        }
+
+        res.json({ questions });
+    } catch (error) {
+        console.error("AI Generate Quiz Error:", error);
+        res.status(500).json({ error: "Failed to synthesize questions." });
+    }
+});
 
 // POST /api/ai/explain
 router.post('/explain', requireAuth, async (req: Request, res: Response) => {

@@ -6,7 +6,7 @@ import { supabase } from '../services/supabase';
 interface QuizState {
   // State
   status: 'idle' | 'loading' | 'in-progress' | 'finished';
-  mode: 'zen' | 'practice' | 'quick' | 'topic' | 'date' | 'missed' | 'simulation' | 'speed' | 'survival' | 'sandbox' | 'ai' | 'daily-challenge';
+  mode: 'zen' | 'practice' | 'quick' | 'topic' | 'date' | 'missed' | 'simulation' | 'speed' | 'survival' | 'sandbox' | 'ai-generated' | 'daily-challenge';
   questions: Question[];
   currentIndex: number;
   selectedAnswers: Record<string, 'A' | 'B' | 'C' | 'D'>;
@@ -17,6 +17,7 @@ interface QuizState {
   endTime: number | null;
   lives: number | null;
   aiAllowed: boolean | null;
+  abortController: AbortController | null;
 
   // Actions
   startQuiz: (mode?: string, options?: any) => Promise<void>;
@@ -42,6 +43,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   endTime: null,
   lives: null,
   aiAllowed: null,
+  abortController: null,
 
   startQuiz: async (mode = 'practice', options: any = {}) => {
     set({ status: 'loading', mode: mode as any, timeSpent: 0, xpEarned: 0, aiAllowed: options?.aiAllowed ?? true });
@@ -99,6 +101,57 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       // Shuffle locally in case they want a random order (though RPC does random too)
       const fetched = data as Question[] || [];
       finalQuestions = fetched.sort(() => 0.5 - Math.random());
+    } else if (mode === 'ai-generated') {
+      const controller = new AbortController();
+      set({ abortController: controller });
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+        if (!token) {
+          alert("You must be logged in to use AI Generation.");
+          set({ status: 'idle', abortController: null });
+          return;
+        }
+
+        const res = await fetch('http://localhost:5000/api/ai/generate-quiz', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            topics: options?.topics || [],
+            difficulty: options?.aiDifficulty || 'medium',
+            count: options?.questionCount || 10
+          }),
+          signal: controller.signal
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          if (res.status === 429) {
+             alert(errData.error || "Too many AI generations. Please try again later.");
+          } else {
+             alert(errData.error || "Failed to generate AI quiz.");
+          }
+          set({ status: 'idle', abortController: null });
+          return;
+        }
+
+        const data = await res.json();
+        finalQuestions = data.questions || [];
+        set({ abortController: null });
+      } catch (err: any) {
+        if (err.name === 'AbortError') {
+          console.log("AI Generation aborted by user.");
+        } else {
+          console.error("Failed to fetch AI questions:", err);
+          alert("An error occurred during AI synthesis.");
+        }
+        set({ status: 'idle', abortController: null });
+        return;
+      }
     } else {
       // Fetch questions from Supabase
       let query = supabase
@@ -194,8 +247,6 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       } else if (mode === 'sandbox') {
         finalQuestions = shuffled.slice(0, options?.questionCount || 30);
         timer = options?.timerMinutes ? options.timerMinutes * 60 : null;
-      } else if (mode === 'ai') {
-        finalQuestions = shuffled.slice(0, 10); // placeholder for AI
       } else {
         // Fallback
         finalQuestions = shuffled.slice(0, 20);
@@ -318,9 +369,9 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     if (mode === 'daily-challenge') fallbackXp += 50;
     if (attemptedQuestions.length > 0 && finalScore === attemptedQuestions.length) fallbackXp += 25;
 
-    // Do not save Practice or Zen runs to the database or local history
-    if (mode === 'practice' || mode === 'zen') {
-      set({ xpEarned: 0 }); // No XP for practice/zen
+    // Do not save Practice, Zen, Sandbox, or AI runs to the database or local history
+    if (mode === 'practice' || mode === 'zen' || mode === 'sandbox' || mode === 'ai-generated') {
+      set({ xpEarned: 0 }); // No XP for practice/zen/sandbox/ai
       return;
     }
 
@@ -424,6 +475,10 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   },
 
   resetQuiz: () => {
+    const { abortController } = get();
+    if (abortController) {
+      abortController.abort();
+    }
     set({
       status: 'idle',
       mode: 'practice',
@@ -437,23 +492,15 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       endTime: null,
       lives: null,
       aiAllowed: null,
+      abortController: null,
     });
   },
 
   abandonQuiz: () => {
-    set({
-      status: 'idle',
-      mode: 'practice',
-      questions: [],
-      currentIndex: 0,
-      selectedAnswers: {},
-      score: 0,
-      xpEarned: 0,
-      timeRemaining: null,
-      timeSpent: 0,
-      endTime: null,
-      lives: null,
-      aiAllowed: null,
-    });
+    const { abortController } = get();
+    if (abortController) {
+      abortController.abort();
+    }
+    set({ status: 'idle', abortController: null });
   }
 }));

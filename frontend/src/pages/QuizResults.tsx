@@ -84,6 +84,8 @@ export default function QuizResults() {
             "Practice session complete. Your performance here is not permanently logged, so feel free to experiment!"
           ) : mode === 'sandbox' ? (
             "Sandbox configuration terminated. This isolated session has not been permanently logged."
+          ) : mode === 'ai-generated' ? (
+            "AI Sandbox terminated. These AI-generated questions provided an experimental challenge, but your stats here are purely for practice and remain unlogged."
           ) : (
             "Your performance data has been logged to the Forge servers. XP and streak multipliers have been applied."
           )}
@@ -95,7 +97,7 @@ export default function QuizResults() {
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className={`grid grid-cols-1 ${mode === 'practice' || mode === 'sandbox' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-4`}
+        className={`grid grid-cols-1 ${mode === 'practice' || mode === 'sandbox' || mode === 'ai-generated' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-4`}
       >
         <motion.div variants={fadeUpVariant} className="h-full">
           <StatCard
@@ -106,8 +108,8 @@ export default function QuizResults() {
             colorClass="text-primary border-primary/30"
           />
         </motion.div>
-        {/* Only show XP if not in practice/sandbox mode */}
-        {mode !== 'practice' && mode !== 'sandbox' && (
+        {/* Only show XP if not in practice/sandbox/ai mode */}
+        {mode !== 'practice' && mode !== 'sandbox' && mode !== 'ai-generated' && (
           <motion.div variants={fadeUpVariant} className="h-full">
             <StatCard
               title="XP Earned"

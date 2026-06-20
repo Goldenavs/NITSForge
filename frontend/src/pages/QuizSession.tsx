@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { QuizHeader } from '../components/quiz/QuizHeader';
 import { QuestionCard } from '../components/quiz/QuestionCard';
@@ -23,7 +23,8 @@ export default function QuizSession() {
     tick,
     mode,
     lives,
-    aiAllowed
+    aiAllowed,
+    abandonQuiz
   } = useQuizStore();
 
   const [searchParams] = useSearchParams();
@@ -69,11 +70,49 @@ export default function QuizSession() {
     return () => clearInterval(interval);
   }, [status, tick]);
 
+  // Dynamic Loading Messages
+  const loadingMessages = [
+    "Initializing Neural Link...",
+    "Synthesizing Scenarios...",
+    "Calibrating Difficulty...",
+    "Retrieving Context...",
+    "Compiling Sandbox..."
+  ];
+  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (status === 'loading' && mode === 'ai-generated') {
+      interval = setInterval(() => {
+        setLoadingMsgIdx(prev => (prev + 1) % loadingMessages.length);
+      }, 2500);
+    }
+    return () => clearInterval(interval);
+  }, [status, mode]);
+
   // Safeguard while loading
   if (status === 'loading' || status === 'idle') {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center pt-8 pb-24 px-4">
-        <p className="text-xl text-primary font-orbitron tracking-widest animate-pulse">Initializing Neural Link...</p>
+      <div className="min-h-screen w-full flex flex-col items-center justify-center pt-8 pb-24 px-4 text-center">
+        {mode === 'ai-generated' && <Sparkles className="w-12 h-12 text-primary animate-pulse mb-6" />}
+        <p className={`text-xl text-primary font-orbitron tracking-widest animate-pulse ${mode === 'ai-generated' ? 'mb-2' : ''}`}>
+          {mode === 'ai-generated' ? loadingMessages[loadingMsgIdx] : "Initializing Neural Link..."}
+        </p>
+        {mode === 'ai-generated' && (
+          <p className="text-text-muted text-sm max-w-sm mb-8">
+            This usually takes 10-15 seconds depending on server load.
+          </p>
+        )}
+        <Button 
+          variant="outline" 
+          onClick={() => { 
+            abandonQuiz(); 
+            navigate('/quiz'); 
+          }} 
+          className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+        >
+          Cancel Initialization
+        </Button>
       </div>
     );
   }

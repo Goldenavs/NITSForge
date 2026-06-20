@@ -7,7 +7,7 @@ import {
 import { QuizModeCard } from '../components/quiz/QuizModeCard';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useQuizStore } from '../store/useQuizStore';
 import { useState } from 'react';
 import { Button } from '../components/ui/Button';
