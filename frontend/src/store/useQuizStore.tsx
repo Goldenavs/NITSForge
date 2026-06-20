@@ -25,6 +25,8 @@ interface QuizState {
   clearAiError: () => void;
   answerQuestion: (questionId: string, answer: 'A' | 'B' | 'C' | 'D') => void;
   nextQuestion: () => void;
+  previousQuestion: () => void;
+  jumpToQuestion: (index: number) => void;
   finishQuiz: () => Promise<void>;
   resetQuiz: () => void;
   abandonQuiz: () => void;
@@ -331,6 +333,20 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       set({ currentIndex: currentIndex + 1 });
     } else {
       get().finishQuiz();
+    }
+  },
+
+  previousQuestion: () => {
+    const { currentIndex } = get();
+    if (currentIndex > 0) {
+      set({ currentIndex: currentIndex - 1 });
+    }
+  },
+
+  jumpToQuestion: (index: number) => {
+    const { questions } = get();
+    if (index >= 0 && index < questions.length) {
+      set({ currentIndex: index });
     }
   },
 

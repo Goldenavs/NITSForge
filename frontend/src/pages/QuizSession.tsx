@@ -24,7 +24,9 @@ export default function QuizSession() {
     mode,
     lives,
     aiAllowed,
-    abandonQuiz
+    abandonQuiz,
+    selectedAnswers,
+    previousQuestion
   } = useQuizStore();
 
   const [searchParams] = useSearchParams();
@@ -48,6 +50,22 @@ export default function QuizSession() {
       }, 100);
     }
   }, [selectedOption, isSubmitted]);
+
+  // Synchronize local UI state with the global store when navigating questions
+  useEffect(() => {
+    if (questions.length === 0) return;
+    const currentQId = questions[currentIndex]?.id;
+    if (!currentQId) return;
+
+    const storedAnswer = selectedAnswers[currentQId];
+    if (storedAnswer) {
+      setSelectedOption(storedAnswer);
+      setIsSubmitted(true);
+    } else {
+      setSelectedOption(null);
+      setIsSubmitted(false);
+    }
+  }, [currentIndex, questions, selectedAnswers]);
 
   // Auto-start or redirect
   useEffect(() => {
@@ -174,26 +192,40 @@ export default function QuizSession() {
           />
 
           {/* Bottom Action Bar */}
-          <div className="mt-8 flex justify-end">
-            {!isSubmitted ? (
-              <Button
-                variant="primary"
-                disabled={!selectedOption}
-                onClick={handleSubmit}
-                className="font-orbitron tracking-widest px-8 py-3"
-              >
-                Submit Answer
-              </Button>
-            ) : (
-              <Button
-                variant={isGameOver ? "outline" : "primary"}
-                onClick={handleNext}
-                className={`font-orbitron tracking-widest px-8 py-3 transition-colors ${isGameOver ? 'border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' : ''
-                  }`}
-              >
-                {isGameOver ? 'Exit Arena' : currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'} <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            )}
+          <div className="mt-8 flex justify-between items-center w-full">
+            <div className="flex-1">
+              {currentIndex > 0 && mode !== 'survival' && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => { previousQuestion(); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                  className="border-borderline/50 text-text-muted hover:bg-surface/50"
+                >
+                  Previous
+                </Button>
+              )}
+            </div>
+            
+            <div className="flex-none">
+              {!isSubmitted ? (
+                <Button
+                  variant="primary"
+                  disabled={!selectedOption}
+                  onClick={handleSubmit}
+                  className="font-orbitron tracking-widest px-8 py-3"
+                >
+                  Submit Answer
+                </Button>
+              ) : (
+                <Button
+                  variant={isGameOver ? "outline" : "primary"}
+                  onClick={handleNext}
+                  className={`font-orbitron tracking-widest px-8 py-3 transition-colors ${isGameOver ? 'border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' : ''
+                    }`}
+                >
+                  {isGameOver ? 'Exit Arena' : currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'} <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Invisible Spacer for Auto-scroll Margin */}
