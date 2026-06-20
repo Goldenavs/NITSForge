@@ -22,7 +22,8 @@ export default function QuizSession() {
     nextQuestion,
     tick,
     mode,
-    lives
+    lives,
+    aiAllowed
   } = useQuizStore();
 
   const [searchParams] = useSearchParams();
@@ -112,7 +113,7 @@ export default function QuizSession() {
       <QuizHeader
         currentQuestion={currentIndex + 1}
         totalQuestions={questions.length}
-        modeLabel={mode === 'simulation' ? "Exam Simulation" : mode === 'quick' ? "Quick Quiz" : mode === 'missed' ? "Missed Questions" : mode === 'daily-challenge' ? "Daily Challenge" : mode === 'zen' ? "Zen Mode" : "Practice Mode"}
+        modeLabel={mode === 'simulation' ? "Exam Simulation" : mode === 'quick' ? "Quick Quiz" : mode === 'missed' ? "Missed Questions" : mode === 'daily-challenge' ? "Daily Challenge" : mode === 'zen' ? "Zen Mode" : mode === 'sandbox' ? "Sandbox Mode" : mode === 'survival' ? "Survival Mode" : "Practice Mode"}
       />
 
       <AnimatePresence mode="wait">
@@ -130,6 +131,7 @@ export default function QuizSession() {
             onSelect={(opt) => !isSubmitted && setSelectedOption(opt)}
             isSubmitted={isSubmitted}
             hideExplanation={mode === 'simulation'} // Simulation mode hides explanations
+            aiAllowed={aiAllowed ?? true} // Pass to hide Forge Explain button
           />
 
           {/* Bottom Action Bar */}
@@ -147,21 +149,20 @@ export default function QuizSession() {
               <Button
                 variant={isGameOver ? "outline" : "primary"}
                 onClick={handleNext}
-                className={`font-orbitron tracking-widest px-8 py-3 transition-colors ${
-                  isGameOver ? 'border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' : ''
-                }`}
+                className={`font-orbitron tracking-widest px-8 py-3 transition-colors ${isGameOver ? 'border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' : ''
+                  }`}
               >
                 {isGameOver ? 'Exit Arena' : currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'} <ChevronRight className="w-4 h-4 ml-2" />
               </Button>
             )}
           </div>
-          
+
           {/* Invisible Spacer for Auto-scroll Margin */}
           <div ref={submitButtonRef} className="h-6 sm:h-10" />
         </motion.div>
       </AnimatePresence>
 
-      {mode !== 'simulation' && <ForgeFAB context={currentQ} />}
+      {(mode !== 'simulation' && aiAllowed !== false) && <ForgeFAB context={currentQ} />}
     </div>
   );
 }

@@ -82,6 +82,8 @@ export default function QuizResults() {
         <p className="text-sm sm:text-base text-text-muted max-w-lg leading-relaxed">
           {mode === 'practice' ? (
             "Practice session complete. Your performance here is not permanently logged, so feel free to experiment!"
+          ) : mode === 'sandbox' ? (
+            "Sandbox configuration terminated. This isolated session has not been permanently logged."
           ) : (
             "Your performance data has been logged to the Forge servers. XP and streak multipliers have been applied."
           )}
@@ -93,7 +95,7 @@ export default function QuizResults() {
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className={`grid grid-cols-1 ${mode === 'practice' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-4`}
+        className={`grid grid-cols-1 ${mode === 'practice' || mode === 'sandbox' ? 'sm:grid-cols-2' : 'sm:grid-cols-3'} gap-4`}
       >
         <motion.div variants={fadeUpVariant} className="h-full">
           <StatCard
@@ -104,7 +106,8 @@ export default function QuizResults() {
             colorClass="text-primary border-primary/30"
           />
         </motion.div>
-        {mode !== 'practice' && (
+        {/* Only show XP if not in practice/sandbox mode */}
+        {mode !== 'practice' && mode !== 'sandbox' && (
           <motion.div variants={fadeUpVariant} className="h-full">
             <StatCard
               title="XP Earned"

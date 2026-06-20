@@ -45,9 +45,10 @@ interface QuestionCardProps {
   onSelect: (option: string) => void;
   isSubmitted: boolean;
   hideExplanation?: boolean;
+  aiAllowed?: boolean;
 }
 
-export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, hideExplanation = false }: QuestionCardProps) {
+export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, hideExplanation = false, aiAllowed = true }: QuestionCardProps) {
   const [isExplanationOpen, setIsExplanationOpen] = useState(false);
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiExplanation, setAiExplanation] = useState<string | null>(null);
@@ -220,7 +221,7 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
         )}
 
         {/* AI Explain This Section */}
-        {isSubmitted && !hideExplanation && (
+        {isSubmitted && !hideExplanation && aiAllowed && (
           <motion.div 
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="p-4 rounded-xl bg-surface-2/50 border border-borderline flex flex-col items-start gap-4"

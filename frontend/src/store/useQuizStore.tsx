@@ -16,6 +16,7 @@ interface QuizState {
   timeSpent: number;
   endTime: number | null;
   lives: number | null;
+  aiAllowed: boolean | null;
 
   // Actions
   startQuiz: (mode?: string, options?: any) => Promise<void>;
@@ -40,9 +41,10 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   timeSpent: 0,
   endTime: null,
   lives: null,
+  aiAllowed: null,
 
   startQuiz: async (mode = 'practice', options: any = {}) => {
-    set({ status: 'loading', mode: mode as any, timeSpent: 0, xpEarned: 0 });
+    set({ status: 'loading', mode: mode as any, timeSpent: 0, xpEarned: 0, aiAllowed: options?.aiAllowed ?? true });
 
     let finalQuestions: Question[] = [];
     let timer: number | null = null;
@@ -210,6 +212,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       endTime: endTime,
       // lives is only set for survival mode above, otherwise it stays null or current value (which should be null)
       lives: mode === 'survival' ? 3 : null,
+      aiAllowed: options?.aiAllowed ?? true,
     });
   },
 
@@ -433,6 +436,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       timeSpent: 0,
       endTime: null,
       lives: null,
+      aiAllowed: null,
     });
   },
 
@@ -449,6 +453,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       timeSpent: 0,
       endTime: null,
       lives: null,
+      aiAllowed: null,
     });
   }
 }));

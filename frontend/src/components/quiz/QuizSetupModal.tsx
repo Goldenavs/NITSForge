@@ -41,7 +41,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [sandboxAmount, setSandboxAmount] = useState(30);
   const [sandboxTime, setSandboxTime] = useState(30); // 0 = None
-  const [sandboxAI, setSandboxAI] = useState(false);
+  const [sandboxAI, setSandboxAI] = useState(true);
 
   // Reset state when modal opens
   useEffect(() => {
@@ -50,7 +50,7 @@ export function QuizSetupModal({ isOpen, onClose, configType, onStart }: QuizSet
       setSelectedDates([]);
       setSandboxAmount(30);
       setSandboxTime(30);
-      setSandboxAI(false);
+      setSandboxAI(true);
     }
   }, [isOpen]);
 
