@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useQuizStore } from '../../store/useQuizStore';
 import { Map, ChevronRight, ChevronLeft, CheckCircle, XCircle, CircleDashed } from 'lucide-react';
@@ -6,6 +6,13 @@ import { Map, ChevronRight, ChevronLeft, CheckCircle, XCircle, CircleDashed } fr
 export function QuizSidebar() {
   const { questions, currentIndex, selectedAnswers, mode, jumpToQuestion } = useQuizStore();
   const [isCollapsed, setIsCollapsed] = useState(true);
+  const [highestVisited, setHighestVisited] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex > highestVisited) {
+      setHighestVisited(currentIndex);
+    }
+  }, [currentIndex, highestVisited]);
 
   if (questions.length === 0) return null;
 
@@ -19,7 +26,7 @@ export function QuizSidebar() {
         highestAnswered = Math.max(highestAnswered, idx);
       }
     });
-    maxVisible = Math.max(currentIndex, highestAnswered) + 1;
+    maxVisible = Math.max(highestVisited, currentIndex, highestAnswered) + 1;
     maxVisible = Math.min(maxVisible, questions.length);
   }
 
