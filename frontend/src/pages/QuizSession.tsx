@@ -2,11 +2,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Sparkles } from 'lucide-react';
+import { ChevronRight, Sparkles, Menu } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { QuizHeader } from '../components/quiz/QuizHeader';
 import { QuestionCard } from '../components/quiz/QuestionCard';
 import { ForgeFAB } from '../components/forge/ForgeFAB';
+import { QuizSidebar } from '../components/quiz/QuizSidebar';
 import { useQuizStore } from '../store/useQuizStore';
 
 export default function QuizSession() {
@@ -34,6 +35,7 @@ export default function QuizSession() {
 
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const hasInitialized = useRef(status !== 'idle');
   const submitButtonRef = useRef<HTMLDivElement>(null);
 
@@ -165,14 +167,26 @@ export default function QuizSession() {
   const isGameOver = mode === 'survival' && lives === 0;
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col pt-8 pb-24 px-4 md:px-8 max-w-4xl mx-auto">
+    <div className="relative min-h-screen w-full flex flex-col pt-8 pb-24 px-4 md:px-8 max-w-6xl mx-auto">
+      
+      {/* Mobile Sidebar Toggle */}
+      <div className="lg:hidden flex justify-end mb-4">
+        <Button variant="outline" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="flex items-center gap-2 text-text-muted">
+          <Menu className="w-4 h-4" />
+          {isSidebarOpen ? 'Hide Navigation' : 'Show Navigation'}
+        </Button>
+      </div>
 
-      {/* Dynamic Header */}
-      <QuizHeader
-        currentQuestion={currentIndex + 1}
-        totalQuestions={questions.length}
-        modeLabel={mode === 'simulation' ? "Exam Simulation" : mode === 'quick' ? "Quick Quiz" : mode === 'missed' ? "Missed Questions" : mode === 'daily-challenge' ? "Daily Challenge" : mode === 'zen' ? "Zen Mode" : mode === 'sandbox' ? "Sandbox Mode" : mode === 'survival' ? "Survival Mode" : "Practice Mode"}
-      />
+      <div className="flex flex-col lg:flex-row gap-6 w-full relative">
+        
+        {/* Main Content Area */}
+        <div className="flex-1 min-w-0 flex flex-col">
+          {/* Dynamic Header */}
+          <QuizHeader
+            currentQuestion={currentIndex + 1}
+            totalQuestions={questions.length}
+            modeLabel={mode === 'simulation' ? "Exam Simulation" : mode === 'quick' ? "Quick Quiz" : mode === 'missed' ? "Missed Questions" : mode === 'daily-challenge' ? "Daily Challenge" : mode === 'zen' ? "Zen Mode" : mode === 'sandbox' ? "Sandbox Mode" : mode === 'survival' ? "Survival Mode" : "Practice Mode"}
+          />
 
       <AnimatePresence mode="wait">
         <motion.div
@@ -236,10 +250,26 @@ export default function QuizSession() {
             </div>
           </div>
 
-          {/* Invisible Spacer for Auto-scroll Margin */}
-          <div ref={submitButtonRef} className="h-6 sm:h-10" />
-        </motion.div>
-      </AnimatePresence>
+            {/* Invisible Spacer for Auto-scroll Margin */}
+            <div ref={submitButtonRef} className="h-6 sm:h-10" />
+          </motion.div>
+        </AnimatePresence>
+        </div>
+
+        {/* Sidebar Area (Desktop & Mobile Drawer) */}
+        <div className={`
+          lg:block lg:w-80 shrink-0 lg:sticky lg:top-24 lg:h-[calc(100vh-8rem)]
+          ${isSidebarOpen ? 'block fixed inset-0 z-50 p-6 bg-background/95 backdrop-blur-md overflow-y-auto' : 'hidden'}
+        `}>
+          {isSidebarOpen && (
+            <div className="flex justify-between items-center mb-6 lg:hidden">
+              <h2 className="text-xl font-display font-bold text-text-main">Navigation Map</h2>
+              <Button variant="outline" onClick={() => setIsSidebarOpen(false)}>Close</Button>
+            </div>
+          )}
+          <QuizSidebar />
+        </div>
+      </div>
 
       {(mode !== 'simulation' && aiAllowed !== false) && <ForgeFAB context={currentQ} />}
     </div>
