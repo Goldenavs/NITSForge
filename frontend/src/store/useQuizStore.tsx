@@ -158,7 +158,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
           const ep = (q.exam_period || "").trim().toLowerCase();
           const src = (q.source || "").trim().toLowerCase();
           return (ep && selectedDates.some((d: string) => ep.includes(d))) ||
-                 (src && selectedDates.some((d: string) => src.includes(d)));
+            (src && selectedDates.some((d: string) => src.includes(d)));
         });
       }
 
@@ -259,7 +259,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
   nextQuestion: () => {
     const { currentIndex, questions, mode, lives } = get();
-    
+
     if (mode === 'survival' && lives === 0) {
       get().finishQuiz();
       return;
@@ -284,10 +284,15 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   },
 
   finishQuiz: async () => {
-    const { questions, selectedAnswers, timeSpent } = get();
-    
-    // Filter out unattempted questions so we don't flood stats in infinite modes like Survival/Zen
-    const attemptedQuestions = questions.filter(q => selectedAnswers[q.id] !== undefined);
+    const { questions, selectedAnswers, mode, currentIndex } = get();
+
+    // For infinite modes, we truncate the questions array to what the user actually reached.
+    const finalQuestions = (mode === 'survival' || mode === 'zen')
+      ? questions.slice(0, currentIndex + 1)
+      : questions;
+
+    // Filter out unattempted questions so we don't flood stats
+    const attemptedQuestions = finalQuestions.filter(q => selectedAnswers[q.id] !== undefined);
     let finalScore = 0;
 
     // Calculate final score based only on attempted questions
@@ -297,12 +302,11 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       }
     });
 
-    set({ status: 'finished', score: finalScore });
+    set({ status: 'finished', score: finalScore, questions: finalQuestions });
 
     // Grab the current user session
     const { data: { session } } = await supabase.auth.getSession();
     const userId = session?.user?.id;
-    const { mode } = get();
 
     // Calculate a fallback xpEarned for guests or non-saved modes
     let fallbackXp = finalScore * 5;
@@ -385,7 +389,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       selected_answer: selectedAnswers[q.id],
       is_correct: selectedAnswers[q.id] === q.correct_answer,
     }));
-    
+
     if (sessionAnswers.length > 0) {
       const { error: answersError } = await supabase
         .from('session_answers')
