@@ -21,13 +21,22 @@ const viewportConfig = { once: true, margin: "-50px" };
 import { useHistory } from '../hooks/useHistory';
 import { Loader2 } from 'lucide-react';
 
+import { useMemo } from 'react';
+import { groupHistoryByDateAndAttempt } from '../utils/historyGrouping';
+import { HistoryTimeline } from '../components/history/HistoryTimeline';
+
 export default function History() {
   const { data: logs, isLoading, loadMore, hasMore } = useHistory();
+
+  const groupedData = useMemo(() => {
+    return groupHistoryByDateAndAttempt(logs);
+  }, [logs]);
+
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
-      
+
       {/* 1. HEADER & CONTROLS */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         animate="visible"
         variants={fadeUpVariant}
@@ -57,30 +66,28 @@ export default function History() {
       </motion.div>
 
       {/* 2. THE HISTORY LOG LIST */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
         viewport={viewportConfig}
         className="flex flex-col gap-3 mt-2"
       >
-        {logs.map((log) => (
-          <motion.div key={log.answer_id} variants={fadeUpVariant}>
-            <HistoryRow log={log} />
-          </motion.div>
-        ))}
-        
-        {logs.length === 0 && !isLoading && (
+        {groupedData.length > 0 && (
+          <HistoryTimeline groupedData={groupedData} />
+        )}
+
+        {groupedData.length === 0 && !isLoading && (
           <div className="text-center py-12 text-text-muted bg-surface-2/20 rounded-xl border border-borderline/30">
-            No history found. Start taking quizzes to see your performance logs!
+            No history found for the last 30 days. Start taking quizzes to see your performance logs!
           </div>
         )}
-        
+
         {/* Load More Button */}
         {hasMore && (
           <motion.div variants={fadeUpVariant} className="flex justify-center mt-6">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={loadMore}
               disabled={isLoading}
               className="font-orbitron text-[10px] uppercase tracking-widest text-text-muted hover:text-primary leading-none pt-2.5 pb-2"
