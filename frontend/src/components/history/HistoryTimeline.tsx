@@ -9,7 +9,14 @@ interface HistoryTimelineProps {
 }
 
 export function HistoryTimeline({ groupedData }: HistoryTimelineProps) {
-  let globalAttemptIndex = 0; // Use this to alternate left/right across all attempts
+  const groupsWithIndices = useMemo(() => {
+    let index = 0;
+    return groupedData.map((group) => {
+      const startIndex = index;
+      index += group.attempts.length;
+      return { ...group, startIndex };
+    });
+  }, [groupedData]);
 
   return (
     <div className="relative w-full py-8">
@@ -17,18 +24,13 @@ export function HistoryTimeline({ groupedData }: HistoryTimelineProps) {
       <div className="absolute left-[16px] md:left-1/2 top-0 bottom-0 w-px bg-borderline/80 md:-translate-x-1/2"></div>
 
       <div className="flex flex-col gap-16 relative z-10">
-        {groupedData.map((dateGroup) => {
-          const startIndex = globalAttemptIndex;
-          globalAttemptIndex += dateGroup.attempts.length;
-
-          return (
-            <DateNode 
-              key={dateGroup.dateStr} 
-              dateGroup={dateGroup} 
-              startIndex={startIndex} 
-            />
-          );
-        })}
+        {groupsWithIndices.map((dateGroup) => (
+          <DateNode 
+            key={dateGroup.dateStr} 
+            dateGroup={dateGroup} 
+            startIndex={dateGroup.startIndex} 
+          />
+        ))}
       </div>
     </div>
   );
