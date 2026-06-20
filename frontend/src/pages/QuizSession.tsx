@@ -60,12 +60,13 @@ export default function QuizSession() {
     const storedAnswer = selectedAnswers[currentQId];
     if (storedAnswer) {
       setSelectedOption(storedAnswer);
-      setIsSubmitted(true);
+      if (mode !== 'simulation') setIsSubmitted(true);
+      else setIsSubmitted(false); // In simulation, everything is a draft until Finish Exam
     } else {
       setSelectedOption(null);
       setIsSubmitted(false);
     }
-  }, [currentIndex, questions, selectedAnswers]);
+  }, [currentIndex, questions, selectedAnswers, mode]);
 
   // Auto-start or redirect
   useEffect(() => {
@@ -185,7 +186,14 @@ export default function QuizSession() {
           <QuestionCard
             question={currentQ}
             selectedOption={selectedOption}
-            onSelect={(opt) => !isSubmitted && setSelectedOption(opt)}
+            onSelect={(opt) => {
+              if (!isSubmitted) {
+                setSelectedOption(opt);
+                if (mode === 'simulation') {
+                  answerQuestion(currentQ.id, opt as 'A' | 'B' | 'C' | 'D');
+                }
+              }
+            }}
             isSubmitted={isSubmitted}
             hideExplanation={mode === 'simulation'} // Simulation mode hides explanations
             aiAllowed={aiAllowed ?? true} // Pass to hide Forge Explain button
@@ -206,7 +214,7 @@ export default function QuizSession() {
             </div>
             
             <div className="flex-none">
-              {!isSubmitted ? (
+              {(!isSubmitted && mode !== 'simulation') ? (
                 <Button
                   variant="primary"
                   disabled={!selectedOption}
@@ -222,7 +230,7 @@ export default function QuizSession() {
                   className={`font-orbitron tracking-widest px-8 py-3 transition-colors ${isGameOver ? 'border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' : ''
                     }`}
                 >
-                  {isGameOver ? 'Exit Arena' : currentIndex === questions.length - 1 ? 'Finish Quiz' : 'Next Question'} <ChevronRight className="w-4 h-4 ml-2" />
+                  {isGameOver ? 'Exit Arena' : currentIndex === questions.length - 1 ? 'Finish Exam' : 'Next Question'} <ChevronRight className="w-4 h-4 ml-2" />
                 </Button>
               )}
             </div>
