@@ -3,7 +3,7 @@ import { motion, type Variants } from 'framer-motion';
 import { History as HistoryIcon, Download, Filter } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
-import { HistoryRow } from '../components/history/HistoryRow';
+
 
 // Motion Orchestration
 const staggerContainer: Variants = {
