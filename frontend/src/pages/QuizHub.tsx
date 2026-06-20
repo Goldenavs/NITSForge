@@ -45,16 +45,13 @@ export default function QuizHub() {
   const { status, abandonQuiz, mode, startQuiz } = useQuizStore();
   const navigate = useNavigate();
   const [showActiveModal, setShowActiveModal] = useState(false);
+  const [showSimulationWarning, setShowSimulationWarning] = useState(false);
   const [pendingQuiz, setPendingQuiz] = useState<{ mode: string, config?: any } | null>(null);
 
   // Setup Modal State
   const [setupModalConfig, setSetupModalConfig] = useState<{ mode: string, type: 'topic' | 'date' | 'sandbox' } | null>(null);
 
-  const handleStartQuiz = (targetMode: string, config?: any) => {
-    // If the mode is 'ai', we might want to navigate to the specialized /quiz/ai page
-    // but the user wants to polish modes later. We will just use the standard session page 
-    // for all standard modes, except the AI Sandbox link which has its own custom banner.
-
+  const executeStartQuiz = (targetMode: string, config?: any) => {
     if (status === 'in-progress') {
       // Auto-resume if clicking the same mode card
       if (targetMode === mode) {
@@ -69,6 +66,19 @@ export default function QuizHub() {
       startQuiz(targetMode, config);
       navigate(`/quiz/session?mode=${targetMode}`);
     }
+  };
+
+  const handleStartQuiz = (targetMode: string, config?: any) => {
+    if (targetMode === 'simulation') {
+      setShowSimulationWarning(true);
+      return;
+    }
+    executeStartQuiz(targetMode, config);
+  };
+
+  const confirmSimulation = () => {
+    setShowSimulationWarning(false);
+    executeStartQuiz('simulation');
   };
 
   const handleAbandonAndContinue = () => {
@@ -342,6 +352,35 @@ export default function QuizHub() {
               <button className="text-xs text-text-muted hover:text-text-main" onClick={() => setShowActiveModal(false)}>
                 Cancel
               </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Simulation Warning Modal */}
+      {showSimulationWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-background/80 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-surface border border-red-500/30 p-6 rounded-xl shadow-[0_0_40px_rgba(239,68,68,0.15)] max-w-sm w-full"
+          >
+            <div className="flex items-center gap-3 mb-2 text-red-500">
+              <Shield className="w-6 h-6" />
+              <h3 className="text-xl font-bold font-display">Warning</h3>
+            </div>
+            <p className="text-sm text-text-muted mb-6 leading-relaxed">
+              You are about to start a <strong className="text-text-main">150-minute</strong> strict Exam Simulation.
+              <br /><br />
+              There is <strong className="text-red-400">no pause button</strong>, <strong className="text-red-400">no AI assist</strong>, and <strong className="text-red-400">no abandon option</strong> without severe penalty. Are you absolutely sure you are ready?
+            </p>
+            <div className="flex flex-col gap-3">
+              <Button variant="outline" className="w-full text-red-500 border-red-500/30 hover:bg-red-500 hover:text-white transition-colors" onClick={confirmSimulation}>
+                I'm Ready. Start Simulation
+              </Button>
+              <Button variant="ghost" onClick={() => setShowSimulationWarning(false)} className="w-full justify-center">
+                Not Yet, Cancel
+              </Button>
             </div>
           </motion.div>
         </div>
