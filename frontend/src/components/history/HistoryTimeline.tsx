@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import type { GroupedDate, GroupedAttempt } from '../../utils/historyGrouping';
 import { HistoryRow } from './HistoryRow';
 import { Calendar, Target, CheckCircle2, ChevronDown } from 'lucide-react';
@@ -10,12 +10,13 @@ interface HistoryTimelineProps {
 
 export function HistoryTimeline({ groupedData }: HistoryTimelineProps) {
   const groupsWithIndices = useMemo(() => {
-    let index = 0;
-    return groupedData.map((group) => {
-      const startIndex = index;
-      index += group.attempts.length;
-      return { ...group, startIndex };
-    });
+    return groupedData.reduce((acc, group) => {
+      const startIndex = acc.length > 0 
+        ? acc[acc.length - 1].startIndex + acc[acc.length - 1].attempts.length 
+        : 0;
+      acc.push({ ...group, startIndex });
+      return acc;
+    }, [] as Array<GroupedDate & { startIndex: number }>);
   }, [groupedData]);
 
   return (
@@ -25,10 +26,10 @@ export function HistoryTimeline({ groupedData }: HistoryTimelineProps) {
 
       <div className="flex flex-col gap-16 relative z-10">
         {groupsWithIndices.map((dateGroup) => (
-          <DateNode 
-            key={dateGroup.dateStr} 
-            dateGroup={dateGroup} 
-            startIndex={dateGroup.startIndex} 
+          <DateNode
+            key={dateGroup.dateStr}
+            dateGroup={dateGroup}
+            startIndex={dateGroup.startIndex}
           />
         ))}
       </div>
@@ -41,10 +42,10 @@ function DateNode({ dateGroup, startIndex }: { dateGroup: GroupedDate; startInde
 
   return (
     <div className="relative">
-      
+
       {/* Centered Clickable Date Badge */}
       <div className="flex justify-start md:justify-center mb-10 sticky top-[140px] z-20 pl-4 md:pl-0">
-        <button 
+        <button
           onClick={() => setIsExpanded(!isExpanded)}
           className={`bg-surface/95 backdrop-blur-md border shadow-[0_0_15px_rgba(var(--color-primary),0.15)] rounded-full px-6 py-2.5 flex items-center gap-3 transition-colors hover:border-primary ${isExpanded ? 'border-primary/50' : 'border-borderline'}`}
         >
@@ -70,10 +71,10 @@ function DateNode({ dateGroup, startIndex }: { dateGroup: GroupedDate; startInde
               {dateGroup.attempts.map((attempt, idx) => {
                 const isLeft = (startIndex + idx) % 2 === 0;
                 return (
-                  <AttemptNode 
-                    key={attempt.session_id} 
-                    attempt={attempt} 
-                    isLeft={isLeft} 
+                  <AttemptNode
+                    key={attempt.session_id}
+                    attempt={attempt}
+                    isLeft={isLeft}
                   />
                 );
               })}
@@ -81,7 +82,7 @@ function DateNode({ dateGroup, startIndex }: { dateGroup: GroupedDate; startInde
           </motion.div>
         )}
       </AnimatePresence>
-      
+
     </div>
   );
 }
@@ -110,7 +111,7 @@ function AttemptNode({ attempt, isLeft }: { attempt: GroupedAttempt; isLeft: boo
           className={`bg-surface-2/40 border border-borderline/50 rounded-2xl overflow-hidden transition-all duration-300 group shadow-lg ${isExpanded ? 'border-primary/50 bg-surface-2/80 shadow-[0_0_30px_rgba(var(--color-primary),0.1)]' : 'hover:border-primary/40'}`}
         >
           {/* Header Info - Clickable Area */}
-          <div 
+          <div
             onClick={() => setIsExpanded(!isExpanded)}
             className="p-4 sm:p-5 cursor-pointer flex flex-col items-center justify-center text-center gap-3"
           >
