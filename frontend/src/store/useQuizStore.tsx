@@ -102,7 +102,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       let query = supabase
         .from('questions')
         .select('*')
-        .eq('is_active', true);
+        .eq('is_active', true)
+        .limit(10000); // Bypass default 1000 row limit for true random shuffle
 
       // Future filtering e.g. options.category or options.source_exam
       if (options?.category) {
@@ -283,11 +284,14 @@ export const useQuizStore = create<QuizState>((set, get) => ({
   },
 
   finishQuiz: async () => {
-    const { questions, selectedAnswers } = get();
+    const { questions, selectedAnswers, timeSpent } = get();
+    
+    // Filter out unattempted questions so we don't flood stats in infinite modes like Survival/Zen
+    const attemptedQuestions = questions.filter(q => selectedAnswers[q.id] !== undefined);
     let finalScore = 0;
 
-    // Calculate final score
-    questions.forEach((q) => {
+    // Calculate final score based only on attempted questions
+    attemptedQuestions.forEach((q) => {
       if (selectedAnswers[q.id] === q.correct_answer) {
         finalScore += 1;
       }
@@ -305,7 +309,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     if (mode === 'simulation') fallbackXp += 100;
     if (mode === 'topic') fallbackXp += 30;
     if (mode === 'daily-challenge') fallbackXp += 50;
-    if (questions.length > 0 && finalScore === questions.length) fallbackXp += 25;
+    if (attemptedQuestions.length > 0 && finalScore === attemptedQuestions.length) fallbackXp += 25;
 
     // Do not save Practice or Zen runs to the database or local history
     if (mode === 'practice' || mode === 'zen') {
@@ -322,7 +326,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
         const guestSessions = JSON.parse(localStorage.getItem('nitsforge_guest_sessions') || '[]');
 
         guestSessions.push({
-          questions,
+          questions: attemptedQuestions,
           selectedAnswers,
           finalScore,
           completedAt: new Date().toISOString()
@@ -336,7 +340,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
     }
 
     // Insert into quiz_sessions
-    const accuracyRate = questions.length > 0 ? (finalScore / questions.length) * 100 : 0;
+    const accuracyRate = attemptedQuestions.length > 0 ? (finalScore / attemptedQuestions.length) * 100 : 0;
     const xpMultiplier = mode === 'daily-challenge' ? 2 : 1;
 
     const { data: sessionData, error: sessionError } = await supabase
@@ -344,7 +348,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       .insert({
         user_id: userId,
         mode: mode,
-        total_questions: questions.length,
+        total_questions: attemptedQuestions.length,
         correct_answers: finalScore,
         accuracy_rate: accuracyRate,
         xp_earned: finalScore * 10 * xpMultiplier,
@@ -372,18 +376,20 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
     // Insert into session_answers
     const sessionId = sessionData.id;
-    const answerInserts = questions.map(q => ({
+
+    // Prepare answers for batch insert
+    const sessionAnswers = attemptedQuestions.map((q) => ({
       session_id: sessionId,
       user_id: userId,
       question_id: q.id,
-      selected_answer: selectedAnswers[q.id] || null,
+      selected_answer: selectedAnswers[q.id],
       is_correct: selectedAnswers[q.id] === q.correct_answer,
     }));
-
-    if (answerInserts.length > 0) {
+    
+    if (sessionAnswers.length > 0) {
       const { error: answersError } = await supabase
         .from('session_answers')
-        .insert(answerInserts);
+        .insert(sessionAnswers);
 
       if (answersError) {
         console.error('Error saving session answers:', answersError);
