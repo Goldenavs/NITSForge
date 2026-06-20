@@ -66,10 +66,12 @@ export function HistoryRow({ log }: HistoryRowProps) {
               </span>
               <span className="text-[10px] text-text-muted/60 font-body hidden sm:inline-block">• {new Date(log.answered_at).toLocaleString()}</span>
             </div>
-            {/* Truncated question text */}
-            <h4 className={`font-body text-sm sm:text-base leading-snug line-clamp-1 transition-colors ${isOpen ? 'text-text-main' : 'text-text-muted group-hover:text-text-main'}`}>
-              {log.question_text}
-            </h4>
+            {/* Truncated question text - Hides when expanded */}
+            {!isOpen && (
+              <h4 className="font-body text-sm sm:text-base leading-snug line-clamp-1 transition-colors text-text-muted group-hover:text-text-main">
+                {log.question_text}
+              </h4>
+            )}
           </div>
         </div>
 
@@ -117,18 +119,18 @@ export function HistoryRow({ log }: HistoryRowProps) {
               </div>
 
               {/* Explanation & AI Actions */}
-              <div className="flex flex-col lg:flex-row gap-4 p-4 rounded-xl bg-surface-2/40 border border-borderline/50">
-                <div className="flex-1">
+              <div className="flex flex-col gap-4 p-4 rounded-xl bg-surface-2/40 border border-borderline/50">
+                <div>
                   <span className="text-[10px] font-orbitron text-text-main uppercase tracking-widest font-bold mb-2 block leading-none pt-0.5">Official Explanation</span>
                   <p className="text-xs sm:text-sm text-text-muted font-body leading-relaxed">
                     {log.explanation}
                   </p>
                 </div>
-                <div className="shrink-0 flex items-center lg:items-end lg:justify-end pt-2 lg:pt-0 border-t lg:border-t-0 border-borderline/50 lg:pl-4 lg:border-l">
+                <div className="pt-3 border-t border-borderline/50 flex justify-end">
                   <Button 
                     onClick={handleExplain}
                     disabled={isAiLoading}
-                    variant="outline" size="sm" className="w-full lg:w-auto font-orbitron text-[10px] tracking-widest border-accent/40 text-accent hover:bg-accent/10 leading-none pt-2.5 pb-2">
+                    variant="outline" size="sm" className="w-full sm:w-auto font-orbitron text-[10px] tracking-widest border-accent/40 text-accent hover:bg-accent/10 leading-none pt-2.5 pb-2">
                     {isAiLoading ? <Loader2 className="w-3 h-3 mr-2 animate-spin -mt-0.5" /> : <Sparkles className="w-3 h-3 mr-2 -mt-0.5" />}
                     {isAiLoading ? 'Analyzing...' : 'Explain This'}
                   </Button>

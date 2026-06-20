@@ -23,9 +23,10 @@ export function useHistory() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
+  const [isFullHistory, setIsFullHistory] = useState(false);
   const PAGE_SIZE = 50;
 
-  const fetchHistory = async (pageNumber: number, append: boolean = false) => {
+  const fetchHistory = async (pageNumber: number, append: boolean = false, bypass30Days: boolean = false) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
@@ -37,16 +38,20 @@ export function useHistory() {
       const start = pageNumber * PAGE_SIZE;
       const end = start + PAGE_SIZE - 1;
 
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-      const { data: records, error: dbError } = await supabase
+      let query = supabase
         .from('user_answer_history')
         .select('*')
         .eq('user_id', session.user.id)
-        .gte('answered_at', thirtyDaysAgo.toISOString())
         .order('answered_at', { ascending: false })
         .range(start, end);
+
+      if (!bypass30Days) {
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        query = query.gte('answered_at', thirtyDaysAgo.toISOString());
+      }
+
+      const { data: records, error: dbError } = await query;
 
       if (dbError) throw dbError;
 
@@ -68,14 +73,19 @@ export function useHistory() {
   };
 
   useEffect(() => {
-    fetchHistory(0, false);
-  }, []);
+    fetchHistory(0, false, isFullHistory);
+  }, [isFullHistory]);
 
   const loadMore = () => {
     const nextPage = page + 1;
     setPage(nextPage);
-    fetchHistory(nextPage, true);
+    fetchHistory(nextPage, true, isFullHistory);
   };
 
-  return { data, isLoading, error, loadMore, hasMore };
+  const loadAllTime = () => {
+    setIsFullHistory(true);
+    setPage(0);
+  };
+
+  return { data, isLoading, error, loadMore, hasMore, loadAllTime, isFullHistory };
 }

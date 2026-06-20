@@ -1,6 +1,6 @@
 // src/pages/History.tsx
 import { motion, type Variants } from 'framer-motion';
-import { History as HistoryIcon, Download, Filter } from 'lucide-react';
+import { History as HistoryIcon, Download } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 
@@ -21,20 +21,25 @@ const viewportConfig = { once: true, margin: "-50px" };
 import { useHistory } from '../hooks/useHistory';
 import { Loader2 } from 'lucide-react';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { groupHistoryByDateAndAttempt } from '../utils/historyGrouping';
 import { HistoryTimeline } from '../components/history/HistoryTimeline';
 
 export default function History() {
   const { data: logs, isLoading, loadMore, hasMore } = useHistory();
+  const [filterMode, setFilterMode] = useState<string>('all');
 
   const groupedData = useMemo(() => {
-    return groupHistoryByDateAndAttempt(logs);
-  }, [logs]);
+    let filteredLogs = logs;
+    if (filterMode !== 'all') {
+      filteredLogs = logs.filter(log => log.session_mode === filterMode);
+    }
+    return groupHistoryByDateAndAttempt(filteredLogs);
+  }, [logs, filterMode]);
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 pt-4">
-      
+
       {/* 1. HEADER & CONTROLS */}
       <motion.div
         initial="hidden"
@@ -54,10 +59,27 @@ export default function History() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto shrink-0">
-          <Button variant="outline" className="flex-1 md:flex-initial font-orbitron text-[10px] tracking-widest border-borderline text-text-main leading-none pt-2.5 pb-2">
-            <Filter className="w-3.5 h-3.5 mr-2 -mt-0.5" /> Filter
-          </Button>
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto shrink-0">
+          <select
+            value={filterMode}
+            onChange={(e) => setFilterMode(e.target.value)}
+            className="flex-1 md:flex-initial font-orbitron text-[10px] tracking-widest border border-borderline bg-background text-text-main leading-none py-2 px-3 rounded-md outline-none cursor-pointer"
+          >
+            <option value="all">ALL MODES</option>
+            <option value="practice">PRACTICE</option>
+            <option value="zen">ZEN</option>
+            <option value="survival">SURVIVAL</option>
+            <option value="simulation">SIMULATION</option>
+            <option value="ai-generated">FORGE AI</option>
+            <option value="quick">QUICK</option>
+            <option value="topic">TOPIC</option>
+            <option value="date">DATE</option>
+            <option value="missed">MISSED</option>
+            <option value="speed">SPEED</option>
+            <option value="sandbox">SANDBOX</option>
+            <option value="daily-challenge">DAILY CHALLENGE</option>
+          </select>
+
           {/* CSV Export strictly required by documentation */}
           <Button variant="outline" className="flex-1 md:flex-initial font-orbitron text-[10px] tracking-widest border-primary/40 text-primary hover:bg-primary/10 leading-none pt-2.5 pb-2">
             <Download className="w-3.5 h-3.5 mr-2 -mt-0.5" /> Export CSV
