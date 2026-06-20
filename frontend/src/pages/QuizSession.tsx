@@ -123,16 +123,18 @@ export default function QuizSession() {
             This usually takes 10-15 seconds depending on server load.
           </p>
         )}
-        <Button
-          variant="outline"
-          onClick={() => {
-            abandonQuiz();
-            navigate('/quiz');
-          }}
-          className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-        >
-          Cancel Initialization
-        </Button>
+        {mode === 'ai-generated' && (
+          <Button
+            variant="outline"
+            onClick={() => {
+              abandonQuiz();
+              navigate('/quiz');
+            }}
+            className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+          >
+            Cancel Initialization
+          </Button>
+        )}
       </div>
     );
   }

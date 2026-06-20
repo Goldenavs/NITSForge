@@ -37,10 +37,14 @@ export function useHistory() {
       const start = pageNumber * PAGE_SIZE;
       const end = start + PAGE_SIZE - 1;
 
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
       const { data: records, error: dbError } = await supabase
         .from('user_answer_history')
         .select('*')
         .eq('user_id', session.user.id)
+        .gte('answered_at', thirtyDaysAgo.toISOString())
         .order('answered_at', { ascending: false })
         .range(start, end);
 
