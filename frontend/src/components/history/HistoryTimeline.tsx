@@ -17,38 +17,69 @@ export function HistoryTimeline({ groupedData }: HistoryTimelineProps) {
       <div className="absolute left-[28px] md:left-1/2 top-0 bottom-0 w-px bg-borderline/80 md:-translate-x-1/2"></div>
 
       <div className="flex flex-col gap-16 relative z-10">
-        {groupedData.map((dateGroup) => (
-          <div key={dateGroup.dateStr} className="relative">
+        {groupedData.map((dateGroup) => {
+          const startIndex = globalAttemptIndex;
+          globalAttemptIndex += dateGroup.attempts.length;
 
-            {/* Centered Date Badge */}
-            <div className="flex justify-start md:justify-center mb-10 sticky top-[140px] z-20 pl-4 md:pl-0">
-              <div className="bg-surface/95 backdrop-blur-md border border-primary/30 shadow-[0_0_15px_rgba(var(--color-primary),0.15)] rounded-full px-6 py-2.5 flex items-center gap-3">
-                <Calendar className="w-4 h-4 text-primary" />
-                <span className="font-orbitron font-bold text-sm tracking-widest text-primary uppercase">
-                  {dateGroup.dateStr}
-                </span>
-              </div>
-            </div>
+          return (
+            <DateNode 
+              key={dateGroup.dateStr} 
+              dateGroup={dateGroup} 
+              startIndex={startIndex} 
+            />
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
-            {/* Attempts under this date */}
-            <div className="flex flex-col gap-8 md:gap-12">
-              {dateGroup.attempts.map((attempt) => {
-                const isLeft = globalAttemptIndex % 2 === 0;
-                globalAttemptIndex++;
+function DateNode({ dateGroup, startIndex }: { dateGroup: GroupedDate; startIndex: number }) {
+  const [isExpanded, setIsExpanded] = useState(true);
 
+  return (
+    <div className="relative">
+      
+      {/* Centered Clickable Date Badge */}
+      <div className="flex justify-start md:justify-center mb-10 sticky top-[140px] z-20 pl-4 md:pl-0">
+        <button 
+          onClick={() => setIsExpanded(!isExpanded)}
+          className={`bg-surface/95 backdrop-blur-md border shadow-[0_0_15px_rgba(var(--color-primary),0.15)] rounded-full px-6 py-2.5 flex items-center gap-3 transition-colors hover:border-primary ${isExpanded ? 'border-primary/50' : 'border-borderline'}`}
+        >
+          <Calendar className="w-4 h-4 text-primary" />
+          <span className="font-orbitron font-bold text-sm tracking-widest text-primary uppercase">
+            {dateGroup.dateStr}
+          </span>
+          <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+        </button>
+      </div>
+
+      {/* Expandable Attempts Container */}
+      <AnimatePresence initial={false}>
+        {isExpanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.4, ease: [0.76, 0, 0.24, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="flex flex-col gap-8 md:gap-12 pb-4">
+              {dateGroup.attempts.map((attempt, idx) => {
+                const isLeft = (startIndex + idx) % 2 === 0;
                 return (
-                  <AttemptNode
-                    key={attempt.session_id}
-                    attempt={attempt}
-                    isLeft={isLeft}
+                  <AttemptNode 
+                    key={attempt.session_id} 
+                    attempt={attempt} 
+                    isLeft={isLeft} 
                   />
                 );
               })}
             </div>
-
-          </div>
-        ))}
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
     </div>
   );
 }
