@@ -1,10 +1,15 @@
 // src/pages/Leaderboard.tsx
-import { useState, useEffect } from 'react';
-import { motion, type Variants } from 'framer-motion';
-import { Trophy } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
+import { Trophy, ArrowDown, ArrowUp, Navigation } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
+import { Button } from '../components/ui/Button';
 import { PodiumProfile } from '../components/leaderboard/PodiumProfile';
 import { CompetitorRow } from '../components/leaderboard/CompetitorRow';
+
+import { useAuth } from '../store/AuthContext';
+import { useProfile } from '../hooks/useProfile';
+import { useLeaderboard } from '../hooks/useLeaderboard';
 
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
@@ -18,22 +23,29 @@ const fadeUpVariant: Variants = {
 
 const viewportConfig = { once: true, margin: "-50px" };
 
-import { useRef } from 'react';
-import { useAuth } from '../store/AuthContext';
-import { useProfile } from '../hooks/useProfile';
-import { useLeaderboard, LeaderboardEntry } from '../hooks/useLeaderboard';
-import { ArrowDown, ArrowUp, Navigation, Filter } from 'lucide-react';
-import { Button } from '../components/ui/Button';
+export default function Leaderboard() {
+  const [timeLeft, setTimeLeft] = useState({ days: 4, hours: 12, minutes: 30 });
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1 };
+        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59 };
+        return { ...prev };
+      });
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   const { user } = useAuth();
   const { profile } = useProfile();
-  
+
   const [timeframe, setTimeframe] = useState<'all-time' | 'weekly'>('all-time');
   const [scope, setScope] = useState<'global' | 'course' | 'yearLevel'>('global');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
-  
+
   const { data: rawData, isLoading } = useLeaderboard(timeframe, scope, profile?.course, profile?.year_level);
-  
+
   const currentUserRef = useRef<HTMLDivElement>(null);
 
   // Process data to include rank and current user flag, and handle XP based on timeframe
@@ -53,7 +65,7 @@ import { Button } from '../components/ui/Button';
   }
 
   // Handle selected user for Modal
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [setSelectedUser] = useState<any>(null);
 
   const scrollToMe = () => {
     if (currentUserRef.current) {
@@ -69,9 +81,9 @@ import { Button } from '../components/ui/Button';
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
-      
+
       {/* 1. HEADER & SEASON INFO */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         animate="visible"
         variants={fadeUpVariant}
@@ -104,7 +116,7 @@ import { Button } from '../components/ui/Button';
       </motion.div>
 
       {/* FILTER CONTROLS */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col sm:flex-row items-center gap-4 w-full bg-surface-2/30 p-2 rounded-2xl border border-borderline/50"
@@ -116,9 +128,8 @@ import { Button } from '../components/ui/Button';
               <button
                 key={tf}
                 onClick={() => setTimeframe(tf)}
-                className={`relative flex-1 py-2 text-xs font-body capitalize transition-colors z-10 flex items-center justify-center text-center ${
-                  isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main'
-                }`}
+                className={`relative flex-1 py-2 text-xs font-body capitalize transition-colors z-10 flex items-center justify-center text-center ${isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main'
+                  }`}
               >
                 {isActive && (
                   <motion.div layoutId="timeframeIndicator" className="absolute inset-0 bg-primary rounded-lg shadow-md -z-10" transition={{ type: "spring", stiffness: 300, damping: 25 }} />
@@ -141,9 +152,8 @@ import { Button } from '../components/ui/Button';
                 key={sc.id}
                 disabled={sc.id !== 'global' && (!profile?.course && sc.id === 'course' || !profile?.year_level && sc.id === 'yearLevel')}
                 onClick={() => setScope(sc.id as any)}
-                className={`relative flex-1 py-2 text-xs font-body transition-colors z-10 flex items-center justify-center text-center ${
-                  isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed'
-                }`}
+                className={`relative flex-1 py-2 text-xs font-body transition-colors z-10 flex items-center justify-center text-center ${isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed'
+                  }`}
                 title={sc.id !== 'global' ? 'Requires profile setup' : ''}
               >
                 {isActive && (
@@ -157,7 +167,7 @@ import { Button } from '../components/ui/Button';
       </motion.div>
 
       {/* 2. THE PODIUM */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
@@ -179,7 +189,7 @@ import { Button } from '../components/ui/Button';
       </motion.div>
 
       {/* 3. THE GAUNTLET */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
@@ -190,8 +200,8 @@ import { Button } from '../components/ui/Button';
           <span className="text-[10px] font-orbitron text-text-muted uppercase tracking-widest font-bold">Rank / Candidate</span>
           <div className="flex items-center gap-4">
             <span className="text-[10px] font-orbitron text-text-muted uppercase tracking-widest font-bold hidden sm:inline">Experience</span>
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
               className="p-1 h-auto text-text-muted hover:text-text-main"
             >
@@ -210,13 +220,13 @@ import { Button } from '../components/ui/Button';
       {/* FAB: Go to me */}
       <AnimatePresence>
         {showGoToMeBtn && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.8 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.8 }}
             className="fixed bottom-24 right-6 z-40"
           >
-            <Button 
+            <Button
               onClick={scrollToMe}
               className="shadow-xl bg-primary hover:bg-primary/90 text-surface rounded-full px-4 py-3 flex items-center gap-2"
             >
@@ -226,7 +236,7 @@ import { Button } from '../components/ui/Button';
           </motion.div>
         )}
       </AnimatePresence>
-      
+
       {/* <UserProfileModal 
         isOpen={!!selectedUser} 
         onClose={() => setSelectedUser(null)} 
