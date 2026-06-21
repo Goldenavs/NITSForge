@@ -3,7 +3,7 @@ import { motion, type Variants } from 'framer-motion';
 import { Crown, Medal } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 
-import { LeaderboardEntry } from '../../hooks/useLeaderboard';
+import type { LeaderboardEntry } from '../../hooks/useLeaderboard';
 
 interface PodiumProfileProps {
   user: LeaderboardEntry & { rank: number; isCurrentUser: boolean; display_xp: number };

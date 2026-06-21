@@ -10,7 +10,7 @@ import { UserProfileModal } from '../components/leaderboard/UserProfileModal';
 
 import { useAuth } from '../store/AuthContext';
 import { useProfile } from '../hooks/useProfile';
-import { useLeaderboard } from '../hooks/useLeaderboard';
+import { useLeaderboard, type LeaderboardEntry } from '../hooks/useLeaderboard';
 
 const staggerContainer: Variants = {
   hidden: { opacity: 0 },
@@ -66,7 +66,7 @@ export default function Leaderboard() {
   }
 
   // Handle selected user for Modal
-  const [setSelectedUser] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<LeaderboardEntry | null>(null);
 
   const scrollToMe = () => {
     if (currentUserRef.current) {
@@ -239,9 +239,9 @@ export default function Leaderboard() {
       </AnimatePresence>
 
       <UserProfileModal
-        isOpen={!!setSelectedUser}
+        isOpen={!!selectedUser}
         onClose={() => setSelectedUser(null)}
-        user={setSelectedUser}
+        user={selectedUser}
       />
     </div>
   );
