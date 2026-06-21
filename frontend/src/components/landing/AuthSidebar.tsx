@@ -1,7 +1,7 @@
 // src/components/landing/AuthSidebar.tsx
 import { useState } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { Mail, Lock, ArrowRight, User, Eye, EyeOff, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, User, Eye, EyeOff, AlertCircle, ChevronLeft, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../../services/supabase';
 import { useAuth } from '../../store/AuthContext';
@@ -317,8 +317,35 @@ export function AuthSidebar() {
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           required={!isLogin}
                           placeholder="••••••••"
-                          className="w-full pl-11 pr-12 py-2.5 bg-surface-2 border border-borderline rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm text-text-main placeholder-text-muted/50"
+                          className="w-full pl-11 pr-20 py-2.5 bg-surface-2 border border-borderline rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm text-text-main placeholder-text-muted/50"
                         />
+                        <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center">
+                          <AnimatePresence mode="wait">
+                            {confirmPassword.length > 0 && (
+                              password === confirmPassword ? (
+                                <motion.div
+                                  key="match"
+                                  initial={{ opacity: 0, scale: 0.8, rotate: -90 }}
+                                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                  exit={{ opacity: 0, scale: 0.8, rotate: 90 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  <CheckCircle2 className="w-4 h-4 text-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)] rounded-full" />
+                                </motion.div>
+                              ) : (
+                                <motion.div
+                                  key="mismatch"
+                                  initial={{ opacity: 0, scale: 0.8, rotate: 90 }}
+                                  animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                                  exit={{ opacity: 0, scale: 0.8, rotate: -90 }}
+                                  transition={{ duration: 0.2 }}
+                                >
+                                  <XCircle className="w-4 h-4 text-red-500 shadow-[0_0_8px_rgba(239,68,68,0.3)] rounded-full" />
+                                </motion.div>
+                              )
+                            )}
+                          </AnimatePresence>
+                        </div>
                         <button
                           type="button"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
