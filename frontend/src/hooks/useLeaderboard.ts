@@ -33,21 +33,15 @@ export function useLeaderboard(
 
       try {
         if (timeframe === 'all-time') {
-          // Standard Supabase query for all-time
-          let query = supabase
-            .from('profiles')
-            .select('id as user_id, display_name, avatar_url, rank_level, total_xp, course, year_level, bio, banner_url, avatar_frame, current_streak')
-            .gt('total_xp', 0) // Hide users with 0 XP
-            .order('total_xp', { ascending: false })
-            .limit(50);
-
+          // RPC call for all-time to bypass RLS (since profiles table only allows reading own profile)
+          const rpcParams: Record<string, any> = {};
           if (scope === 'course' && userCourse) {
-            query = query.eq('course', userCourse);
+            rpcParams.p_course = userCourse;
           } else if (scope === 'yearLevel' && userYearLevel) {
-            query = query.eq('year_level', userYearLevel);
+            rpcParams.p_year_level = userYearLevel;
           }
 
-          const { data: allTimeData, error: dbError } = await query;
+          const { data: allTimeData, error: dbError } = await supabase.rpc('get_all_time_leaderboard', rpcParams);
           if (dbError) throw dbError;
           setData(allTimeData as unknown as LeaderboardEntry[]);
         } else {
