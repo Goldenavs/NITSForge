@@ -5,18 +5,18 @@ import { X, Filter, Target, Hash } from 'lucide-react';
 import { Button } from '../ui/Button';
 
 export const MODES = [
-  { id: 'practice', label: 'PRACTICE' },
-  { id: 'zen', label: 'ZEN' },
-  { id: 'survival', label: 'SURVIVAL' },
-  { id: 'simulation', label: 'SIMULATION' },
-  { id: 'ai-generated', label: 'FORGE AI' },
-  { id: 'quick', label: 'QUICK' },
-  { id: 'topic', label: 'TOPIC' },
-  { id: 'date', label: 'DATE' },
-  { id: 'missed', label: 'MISSED' },
-  { id: 'speed', label: 'SPEED' },
-  { id: 'sandbox', label: 'SANDBOX' },
-  { id: 'daily-challenge', label: 'DAILY CHALLENGE' }
+  { id: 'practice', label: 'Practice' },
+  { id: 'zen', label: 'Zen' },
+  { id: 'survival', label: 'Survival' },
+  { id: 'simulation', label: 'Simulation' },
+  { id: 'ai-generated', label: 'Forge AI' },
+  { id: 'quick', label: 'Quick' },
+  { id: 'topic', label: 'Topic' },
+  { id: 'date', label: 'Date' },
+  { id: 'missed', label: 'Missed' },
+  { id: 'speed', label: 'Speed' },
+  { id: 'sandbox', label: 'Sandbox' },
+  { id: 'daily-challenge', label: 'Daily Challenge' }
 ];
 
 export type AccuracyFilter = 'all' | 'correct' | 'incorrect';
@@ -122,10 +122,10 @@ export function FilterModal({ isOpen, onClose, currentFilters, onApplyFilters }:
                     <button
                       key={mode.id}
                       onClick={() => toggleMode(mode.id)}
-                      className={`px-4 py-2 rounded-xl border text-xs font-orbitron font-bold tracking-wider uppercase transition-all duration-300 ${
+                      className={`px-3 py-2 rounded-lg border text-xs font-body transition-all duration-300 ${
                         isSelected
-                          ? 'border-primary bg-primary/10 text-primary shadow-[0_0_15px_rgba(var(--color-primary),0.2)] scale-105'
-                          : 'border-borderline/50 bg-surface-2 text-text-muted hover:border-text-muted/40 hover:bg-surface'
+                          ? 'border-primary bg-primary/10 text-primary font-medium shadow-[0_0_10px_rgba(var(--color-primary),0.2)] scale-[1.02]'
+                          : 'border-borderline/50 bg-surface-2/50 text-text-muted hover:border-text-muted/40 hover:bg-surface-2'
                       }`}
                     >
                       {mode.label}
@@ -146,9 +146,9 @@ export function FilterModal({ isOpen, onClose, currentFilters, onApplyFilters }:
                   <button
                     key={acc}
                     onClick={() => setLocalFilters(prev => ({ ...prev, accuracy: acc }))}
-                    className={`flex-1 py-2 rounded-lg text-xs font-orbitron font-bold tracking-wider uppercase transition-all ${
+                    className={`flex-1 py-2 rounded-lg text-xs font-body capitalize transition-all ${
                       localFilters.accuracy === acc
-                        ? 'bg-surface shadow-md text-text-main'
+                        ? 'bg-surface shadow-md text-text-main font-medium border border-borderline/50'
                         : 'text-text-muted hover:text-text-main'
                     }`}
                   >
@@ -169,9 +169,9 @@ export function FilterModal({ isOpen, onClose, currentFilters, onApplyFilters }:
                   <button
                     key={len}
                     onClick={() => setLocalFilters(prev => ({ ...prev, sessionLength: len }))}
-                    className={`flex-1 py-2 rounded-lg text-xs font-orbitron font-bold tracking-wider uppercase transition-all ${
+                    className={`flex-1 py-2 rounded-lg text-xs font-body transition-all ${
                       localFilters.sessionLength === len
-                        ? 'bg-surface shadow-md text-text-main'
+                        ? 'bg-surface shadow-md text-text-main font-medium border border-borderline/50'
                         : 'text-text-muted hover:text-text-main'
                     }`}
                   >

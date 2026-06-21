@@ -70,9 +70,9 @@ export default function History() {
 
     // 4. Sort
     if (sortOrder === 'asc') {
-      grouped = grouped.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      grouped = grouped.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
       grouped.forEach(group => {
-        group.attempts.sort((a, b) => new Date(a.logs[0].answered_at).getTime() - new Date(b.logs[0].answered_at).getTime());
+        group.attempts.sort((a, b) => new Date(a.answered_at).getTime() - new Date(b.answered_at).getTime());
       });
     }
 
