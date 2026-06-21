@@ -1,6 +1,7 @@
 import type { AnswerHistoryRecord } from '../hooks/useHistory';
 
 export interface GroupedAttempt {
+  logs: any;
   session_id: string;
   session_mode: string;
   answered_at: string; // The time of the most recent answer in this attempt
@@ -8,6 +9,7 @@ export interface GroupedAttempt {
 }
 
 export interface GroupedDate {
+  date: string | number | Date;
   dateStr: string;
   dateObj: Date;
   attempts: GroupedAttempt[];
@@ -45,7 +47,8 @@ export function groupHistoryByDateAndAttempt(records: AnswerHistoryRecord[]): Gr
         session_id: record.session_id,
         session_mode: record.session_mode,
         answered_at: record.answered_at,
-        questions: []
+        questions: [],
+        logs: undefined
       });
     }
 
@@ -75,7 +78,8 @@ export function groupHistoryByDateAndAttempt(records: AnswerHistoryRecord[]): Gr
     groupedDates.push({
       dateStr,
       dateObj: new Date(attempts[0].answered_at), // Representative date object for sorting
-      attempts
+      attempts,
+      date: ''
     });
   }
 

@@ -1,6 +1,6 @@
 // src/pages/History.tsx
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { History as HistoryIcon, Download } from 'lucide-react';
+import { History as HistoryIcon, Download, Filter, ArrowUp, ArrowDown } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 
@@ -24,18 +24,60 @@ import { Loader2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { groupHistoryByDateAndAttempt } from '../utils/historyGrouping';
 import { HistoryTimeline } from '../components/history/HistoryTimeline';
+import { FilterModal, type FilterState } from '../components/history/FilterModal';
 
 export default function History() {
   const { data: logs, isLoading, loadMore, hasMore } = useHistory();
-  const [filterMode, setFilterMode] = useState<string>('all');
+  const [activeFilters, setActiveFilters] = useState<FilterState>({
+    modes: [],
+    accuracy: 'all',
+    sessionLength: 'all'
+  });
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   const groupedData = useMemo(() => {
     let filteredLogs = logs;
-    if (filterMode !== 'all') {
-      filteredLogs = logs.filter(log => log.session_mode === filterMode);
+
+    // 1. Filter by Modes
+    if (activeFilters.modes.length > 0) {
+      filteredLogs = filteredLogs.filter(log => activeFilters.modes.includes(log.session_mode));
     }
-    return groupHistoryByDateAndAttempt(filteredLogs);
-  }, [logs, filterMode]);
+
+    // 2. Filter by Accuracy
+    if (activeFilters.accuracy !== 'all') {
+      const isCorrect = activeFilters.accuracy === 'correct';
+      filteredLogs = filteredLogs.filter(log => log.is_correct === isCorrect);
+    }
+
+    // 3. Filter by Session Length
+    if (activeFilters.sessionLength !== 'all') {
+      const sessionCounts = logs.reduce((acc, log) => {
+        acc[log.session_id] = (acc[log.session_id] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      filteredLogs = filteredLogs.filter(log => {
+        const count = sessionCounts[log.session_id];
+        if (activeFilters.sessionLength === '<10') return count < 10;
+        if (activeFilters.sessionLength === '10-30') return count >= 10 && count <= 30;
+        if (activeFilters.sessionLength === '>30') return count > 30;
+        return true;
+      });
+    }
+
+    let grouped = groupHistoryByDateAndAttempt(filteredLogs);
+
+    // 4. Sort
+    if (sortOrder === 'asc') {
+      grouped = grouped.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      grouped.forEach(group => {
+        group.attempts.sort((a, b) => new Date(a.logs[0].answered_at).getTime() - new Date(b.logs[0].answered_at).getTime());
+      });
+    }
+
+    return grouped;
+  }, [logs, activeFilters, sortOrder]);
 
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
@@ -86,7 +128,7 @@ export default function History() {
     const csvContent = [headers.join(","), ...rows].join("\n");
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
-    
+
     const link = document.createElement("a");
     link.setAttribute("href", url);
     link.setAttribute("download", `nitsforge_history_${new Date().toISOString().split('T')[0]}.csv`);
@@ -118,30 +160,34 @@ export default function History() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto shrink-0">
-          <select
-            value={filterMode}
-            onChange={(e) => setFilterMode(e.target.value)}
-            className="flex-1 md:flex-initial font-orbitron text-[10px] tracking-widest border border-borderline bg-background text-text-main leading-none py-2 px-3 rounded-md outline-none cursor-pointer"
-          >
-            <option value="all">ALL MODES</option>
-            <option value="practice">PRACTICE</option>
-            <option value="zen">ZEN</option>
-            <option value="survival">SURVIVAL</option>
-            <option value="simulation">SIMULATION</option>
-            <option value="ai-generated">FORGE AI</option>
-            <option value="quick">QUICK</option>
-            <option value="topic">TOPIC</option>
-            <option value="date">DATE</option>
-            <option value="missed">MISSED</option>
-            <option value="speed">SPEED</option>
-            <option value="sandbox">SANDBOX</option>
-            <option value="daily-challenge">DAILY CHALLENGE</option>
-          </select>
+          {/* Filter & Sort Controls */}
+          <div className="flex gap-2 flex-1 md:flex-initial">
+            <Button
+              variant="outline"
+              onClick={() => setIsFilterModalOpen(true)}
+              className={`flex-1 md:flex-initial font-orbitron text-[10px] tracking-widest leading-none pt-2.5 pb-2 border-borderline ${activeFilters.modes.length > 0 || activeFilters.accuracy !== 'all' || activeFilters.sessionLength !== 'all'
+                  ? 'bg-primary/10 text-primary border-primary/40'
+                  : 'bg-surface-2 text-text-main'
+                }`}
+            >
+              <Filter className="w-3.5 h-3.5 mr-2 -mt-0.5" />
+              {activeFilters.modes.length > 0 || activeFilters.accuracy !== 'all' || activeFilters.sessionLength !== 'all' ? 'Filtered' : 'Filter'}
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+              className="px-3 bg-surface-2 text-text-main border-borderline hover:bg-surface-2/80"
+              title={`Sort ${sortOrder === 'desc' ? 'Ascending' : 'Descending'}`}
+            >
+              {sortOrder === 'desc' ? <ArrowDown className="w-4 h-4" /> : <ArrowUp className="w-4 h-4" />}
+            </Button>
+          </div>
 
           {/* CSV Export Dropdown strictly required by documentation */}
           <div className="relative flex-1 md:flex-initial">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
               disabled={!logs || logs.length === 0}
               className="w-full font-orbitron text-[10px] tracking-widest border-primary/40 text-primary hover:bg-primary/10 leading-none pt-2.5 pb-2"
@@ -202,6 +248,14 @@ export default function History() {
           </motion.div>
         )}
       </motion.div>
+
+      {/* Modals */}
+      <FilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        currentFilters={activeFilters}
+        onApplyFilters={setActiveFilters}
+      />
 
     </div>
   );
