@@ -169,6 +169,7 @@ export default function Leaderboard() {
 
       {/* 2. THE PODIUM */}
       <motion.div
+        key={`podium-${scope}-${timeframe}`}
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
@@ -191,6 +192,7 @@ export default function Leaderboard() {
 
       {/* 3. THE GAUNTLET */}
       <motion.div
+        key={`gauntlet-${scope}-${timeframe}`}
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
