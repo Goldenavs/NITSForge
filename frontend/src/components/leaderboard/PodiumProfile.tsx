@@ -3,19 +3,15 @@ import { motion, type Variants } from 'framer-motion';
 import { Crown, Medal } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 
+import { LeaderboardEntry } from '../../hooks/useLeaderboard';
+
 interface PodiumProfileProps {
-  user: {
-    id: number;
-    name: string;
-    level: number;
-    xp: number;
-    rank: number;
-    isCurrentUser: boolean;
-  };
+  user: LeaderboardEntry & { rank: number; isCurrentUser: boolean; display_xp: number };
   fadeUpVariant: Variants;
+  onClick: () => void;
 }
 
-export function PodiumProfile({ user, fadeUpVariant }: PodiumProfileProps) {
+export function PodiumProfile({ user, fadeUpVariant, onClick }: PodiumProfileProps) {
   const isFirst = user.rank === 1;
   const isSecond = user.rank === 2;
   
@@ -26,7 +22,11 @@ export function PodiumProfile({ user, fadeUpVariant }: PodiumProfileProps) {
   const iconColor = isFirst ? 'text-yellow-400' : isSecond ? 'text-slate-300' : 'text-orange-500';
 
   return (
-    <motion.div variants={fadeUpVariant} className={`relative flex flex-col items-center w-full max-w-[200px] ${user.isCurrentUser ? 'scale-105 z-10' : ''}`}>
+    <motion.div 
+      variants={fadeUpVariant} 
+      onClick={onClick}
+      className={`relative flex flex-col items-center w-full max-w-[200px] cursor-pointer hover:-translate-y-2 transition-transform duration-300 ${user.isCurrentUser ? 'scale-105 z-10' : ''}`}
+    >
       
       {/* Avatar Container */}
       <div className="relative mb-4 flex flex-col items-center group">
@@ -34,9 +34,13 @@ export function PodiumProfile({ user, fadeUpVariant }: PodiumProfileProps) {
           <Icon className={`w-6 h-6 ${iconColor} drop-shadow-[0_0_10px_rgba(currentColor,0.5)]`} />
         </div>
         <div className={`w-14 h-14 sm:w-20 sm:h-20 rounded-full border-2 ${colorClass} flex items-center justify-center bg-surface backdrop-blur-md shadow-lg overflow-hidden`}>
-          <span className={`font-display font-bold text-xl sm:text-3xl ${iconColor} leading-none pt-1`}>
-            {user.name.charAt(0)}
-          </span>
+          {user.avatar_url ? (
+            <img src={user.avatar_url} alt={user.display_name} className="w-full h-full object-cover" />
+          ) : (
+            <span className={`font-display font-bold text-xl sm:text-3xl ${iconColor} leading-none pt-1`}>
+              {user.display_name.charAt(0).toUpperCase()}
+            </span>
+          )}
         </div>
         {user.isCurrentUser && (
           <Badge className="absolute -bottom-2 bg-primary text-surface border-none font-orbitron text-[8px] uppercase tracking-widest px-2 py-0.5 shadow-md">You</Badge>
@@ -49,13 +53,13 @@ export function PodiumProfile({ user, fadeUpVariant }: PodiumProfileProps) {
         <div className={`absolute inset-0 ${glowClass} opacity-[0.03] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white to-transparent`} />
         
         <h3 className="font-display font-bold text-text-main text-center text-sm sm:text-base line-clamp-1 mb-1 relative z-10 pt-1 leading-none">
-          {user.name.split(' ')[0]}
+          {user.display_name.split(' ')[0]}
         </h3>
-        <p className="text-[10px] font-orbitron text-text-muted tracking-widest uppercase mb-4 relative z-10">Lvl {user.level}</p>
+        <p className="text-[10px] font-orbitron text-text-muted tracking-widest uppercase mb-4 relative z-10">Lvl {user.rank_level}</p>
         
         <div className="mt-auto relative z-10 flex flex-col items-center">
           <span className={`font-orbitron font-bold text-xl sm:text-2xl ${iconColor} leading-none pt-1`}>
-            {user.xp.toLocaleString()}
+            {user.display_xp.toLocaleString()}
           </span>
           <span className="text-[9px] font-orbitron text-text-muted tracking-widest uppercase">XP</span>
         </div>

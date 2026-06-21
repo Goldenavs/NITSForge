@@ -18,34 +18,54 @@ const fadeUpVariant: Variants = {
 
 const viewportConfig = { once: true, margin: "-50px" };
 
-const LEADERBOARD_DATA = [
-  { id: 1, name: 'James Andrew S. Ologuin', level: 45, xp: 24500, streak: 14, rank: 1, isCurrentUser: false },
-  { id: 2, name: 'John Zachary N. Gillana', level: 44, xp: 23150, streak: 12, rank: 2, isCurrentUser: false },
-  { id: 3, name: 'John Michael A. Nave', level: 42, xp: 21840, streak: 21, rank: 3, isCurrentUser: true },
-  { id: 4, name: 'John Peter D. Pestaño', level: 39, xp: 19200, streak: 8, rank: 4, isCurrentUser: false },
-  { id: 5, name: 'Jordan A. Cabandon', level: 38, xp: 18450, streak: 5, rank: 5, isCurrentUser: false },
-  { id: 6, name: 'K. Dela Cruz', level: 35, xp: 15200, streak: 3, rank: 6, isCurrentUser: false },
-  { id: 7, name: 'M. Santos', level: 32, xp: 13400, streak: 1, rank: 7, isCurrentUser: false },
-  { id: 8, name: 'A. Villanueva', level: 28, xp: 11100, streak: 0, rank: 8, isCurrentUser: false },
-];
+import { useRef } from 'react';
+import { useAuth } from '../store/AuthContext';
+import { useProfile } from '../hooks/useProfile';
+import { useLeaderboard, LeaderboardEntry } from '../hooks/useLeaderboard';
+import { ArrowDown, ArrowUp, Navigation, Filter } from 'lucide-react';
+import { Button } from '../components/ui/Button';
 
-export default function Leaderboard() {
-  const [timeLeft, setTimeLeft] = useState({ days: 4, hours: 12, minutes: 30 });
+  const { user } = useAuth();
+  const { profile } = useProfile();
+  
+  const [timeframe, setTimeframe] = useState<'all-time' | 'weekly'>('all-time');
+  const [scope, setScope] = useState<'global' | 'course' | 'yearLevel'>('global');
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
+  
+  const { data: rawData, isLoading } = useLeaderboard(timeframe, scope, profile?.course, profile?.year_level);
+  
+  const currentUserRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.minutes > 0) return { ...prev, minutes: prev.minutes - 1 };
-        if (prev.hours > 0) return { ...prev, hours: prev.hours - 1, minutes: 59 };
-        return { ...prev };
-      });
-    }, 60000);
-    return () => clearInterval(timer);
-  }, []);
+  // Process data to include rank and current user flag, and handle XP based on timeframe
+  const processedData = (rawData || []).map((entry, index) => ({
+    ...entry,
+    rank: index + 1,
+    isCurrentUser: entry.user_id === user?.id,
+    display_xp: timeframe === 'weekly' ? (entry.weekly_xp || 0) : entry.total_xp
+  }));
 
-  const topThree = LEADERBOARD_DATA.slice(0, 3);
-  const remainingRanks = LEADERBOARD_DATA.slice(3);
-  const podiumOrder = [topThree[1], topThree[0], topThree[2]];
+  const topThree = processedData.slice(0, 3);
+  let remainingRanks = processedData.slice(3);
+
+  // Apply sorting to remaining ranks
+  if (sortOrder === 'asc') {
+    remainingRanks = [...remainingRanks].reverse();
+  }
+
+  // Handle selected user for Modal
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+
+  const scrollToMe = () => {
+    if (currentUserRef.current) {
+      currentUserRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
+
+  const isCurrentUserInTop3 = topThree.some(u => u.isCurrentUser);
+  const isCurrentUserInRemaining = remainingRanks.some(u => u.isCurrentUser);
+  const showGoToMeBtn = !isCurrentUserInTop3 && isCurrentUserInRemaining;
+
+  const podiumOrder = topThree.length === 3 ? [topThree[1], topThree[0], topThree[2]] : topThree;
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
@@ -62,7 +82,7 @@ export default function Leaderboard() {
             <Trophy className="w-3 h-3 text-amber-400 -mt-0.5" /> Specialist Division
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-text-main font-display tracking-tight leading-none mb-3 pt-1">
-            Global <span className="text-primary">Rankings.</span>
+            {scope === 'global' ? 'Global' : scope === 'course' ? 'Course' : 'Year Level'} <span className="text-primary">Rankings.</span>
           </h1>
           <p className="text-sm sm:text-base text-text-muted max-w-xl leading-relaxed">
             Compete against top engineering candidates. Earn XP through drills and daily challenges to climb the division ladder before the weekly reset.
@@ -83,16 +103,79 @@ export default function Leaderboard() {
         </div>
       </motion.div>
 
+      {/* FILTER CONTROLS */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row items-center gap-4 w-full bg-surface-2/30 p-2 rounded-2xl border border-borderline/50"
+      >
+        <div className="relative flex items-center w-full sm:w-1/2 bg-surface-2/40 border border-borderline/50 rounded-xl p-1 overflow-hidden">
+          {(['all-time', 'weekly'] as const).map((tf) => {
+            const isActive = timeframe === tf;
+            return (
+              <button
+                key={tf}
+                onClick={() => setTimeframe(tf)}
+                className={`relative flex-1 py-2 text-xs font-body capitalize transition-colors z-10 flex items-center justify-center text-center ${
+                  isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main'
+                }`}
+              >
+                {isActive && (
+                  <motion.div layoutId="timeframeIndicator" className="absolute inset-0 bg-primary rounded-lg shadow-md -z-10" transition={{ type: "spring", stiffness: 300, damping: 25 }} />
+                )}
+                {tf.replace('-', ' ')}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="relative flex items-center w-full sm:w-1/2 bg-surface-2/40 border border-borderline/50 rounded-xl p-1 overflow-hidden">
+          {[
+            { id: 'global', label: 'Global' },
+            { id: 'course', label: profile?.course ? `${profile.course}` : 'Course' },
+            { id: 'yearLevel', label: profile?.year_level ? `Year ${profile.year_level}` : 'Year Level' }
+          ].map((sc) => {
+            const isActive = scope === sc.id;
+            return (
+              <button
+                key={sc.id}
+                disabled={sc.id !== 'global' && (!profile?.course && sc.id === 'course' || !profile?.year_level && sc.id === 'yearLevel')}
+                onClick={() => setScope(sc.id as any)}
+                className={`relative flex-1 py-2 text-xs font-body transition-colors z-10 flex items-center justify-center text-center ${
+                  isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed'
+                }`}
+                title={sc.id !== 'global' ? 'Requires profile setup' : ''}
+              >
+                {isActive && (
+                  <motion.div layoutId="scopeIndicator" className="absolute inset-0 bg-primary rounded-lg shadow-md -z-10" transition={{ type: "spring", stiffness: 300, damping: 25 }} />
+                )}
+                {sc.label}
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+
       {/* 2. THE PODIUM */}
       <motion.div 
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
-        className="flex items-end justify-center gap-2 sm:gap-4 lg:gap-6 mt-8 sm:mt-12 mb-8 h-[280px] sm:h-[320px]"
+        className="flex items-end justify-center gap-2 sm:gap-4 lg:gap-6 mt-4 sm:mt-8 mb-8 h-[280px] sm:h-[320px]"
       >
-        {podiumOrder.map((user) => user && (
-          <PodiumProfile key={user.id} user={user} fadeUpVariant={fadeUpVariant} />
-        ))}
+        {isLoading ? (
+          <div className="flex items-center justify-center w-full h-full text-text-muted font-orbitron tracking-widest text-sm">
+            CALCULATING RANKS...
+          </div>
+        ) : topThree.length === 0 ? (
+          <div className="flex items-center justify-center w-full h-full text-text-muted font-orbitron tracking-widest text-sm">
+            NO PLAYERS FOUND
+          </div>
+        ) : (
+          podiumOrder.map((user) => user && (
+            <PodiumProfile key={user.user_id} user={user} fadeUpVariant={fadeUpVariant} onClick={() => setSelectedUser(user)} />
+          ))
+        )}
       </motion.div>
 
       {/* 3. THE GAUNTLET */}
@@ -105,14 +188,50 @@ export default function Leaderboard() {
       >
         <div className="flex items-center justify-between px-4 pb-2 border-b border-borderline/50 mb-2">
           <span className="text-[10px] font-orbitron text-text-muted uppercase tracking-widest font-bold">Rank / Candidate</span>
-          <span className="text-[10px] font-orbitron text-text-muted uppercase tracking-widest font-bold">Experience</span>
+          <div className="flex items-center gap-4">
+            <span className="text-[10px] font-orbitron text-text-muted uppercase tracking-widest font-bold hidden sm:inline">Experience</span>
+            <Button 
+              variant="ghost" 
+              onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+              className="p-1 h-auto text-text-muted hover:text-text-main"
+            >
+              {sortOrder === 'desc' ? <ArrowDown className="w-4 h-4" /> : <ArrowUp className="w-4 h-4" />}
+            </Button>
+          </div>
         </div>
 
         {remainingRanks.map((user) => (
-          <CompetitorRow key={user.id} user={user} fadeUpVariant={fadeUpVariant} />
+          <div key={user.user_id} ref={user.isCurrentUser ? currentUserRef : null}>
+            <CompetitorRow user={user} fadeUpVariant={fadeUpVariant} onClick={() => setSelectedUser(user)} />
+          </div>
         ))}
       </motion.div>
+
+      {/* FAB: Go to me */}
+      <AnimatePresence>
+        {showGoToMeBtn && (
+          <motion.div 
+            initial={{ opacity: 0, y: 50, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 50, scale: 0.8 }}
+            className="fixed bottom-24 right-6 z-40"
+          >
+            <Button 
+              onClick={scrollToMe}
+              className="shadow-xl bg-primary hover:bg-primary/90 text-surface rounded-full px-4 py-3 flex items-center gap-2"
+            >
+              <Navigation className="w-4 h-4 fill-surface" />
+              <span className="font-orbitron font-bold text-[10px] tracking-widest uppercase">Go to Me</span>
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       
+      {/* <UserProfileModal 
+        isOpen={!!selectedUser} 
+        onClose={() => setSelectedUser(null)} 
+        user={selectedUser} 
+      /> */}
     </div>
   );
 }
