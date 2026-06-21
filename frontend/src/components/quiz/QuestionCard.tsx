@@ -177,9 +177,9 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
         </div>
 
         {/* Question Text */}
-        <h2 className="text-xl md:text-2xl font-body font-medium text-text-main leading-relaxed mb-8 whitespace-pre-wrap">
-          {question.text}
-        </h2>
+        <div className="text-xl md:text-2xl font-body font-medium text-text-main leading-relaxed mb-8 prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-surface-2 prose-pre:border prose-pre:border-borderline prose-code:text-primary">
+          <ReactMarkdown>{question.text}</ReactMarkdown>
+        </div>
 
         {/* Options Grid */}
         <div className="flex flex-col gap-3 mb-8">

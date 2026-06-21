@@ -69,9 +69,13 @@ export function HistoryRow({ log }: HistoryRowProps) {
             </div>
             {/* Truncated question text - Hides when expanded */}
             {!isOpen && (
-              <h4 className="font-body text-sm sm:text-base leading-snug line-clamp-1 transition-colors text-text-muted group-hover:text-text-main">
-                {log.question_text}
-              </h4>
+              <div className="font-body text-sm sm:text-base leading-snug line-clamp-1 transition-colors text-text-muted group-hover:text-text-main prose prose-invert max-w-none prose-p:m-0 prose-headings:m-0 prose-pre:m-0 prose-pre:p-0 prose-pre:bg-transparent">
+                <ReactMarkdown 
+                  components={{ p: 'span', pre: 'span', code: 'span', h1: 'span', h2: 'span', h3: 'span' }}
+                >
+                  {log.question_text}
+                </ReactMarkdown>
+              </div>
             )}
           </div>
         </div>
@@ -100,9 +104,9 @@ export function HistoryRow({ log }: HistoryRowProps) {
               
               {/* Question */}
               <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-                <p className="text-text-main font-body leading-relaxed flex-1">
-                  {log.question_text}
-                </p>
+                <div className="text-text-main font-body leading-relaxed flex-1 prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-surface-2 prose-pre:border prose-pre:border-borderline prose-code:text-primary">
+                  <ReactMarkdown>{log.question_text}</ReactMarkdown>
+                </div>
               </div>
 
               {/* Options Grid */}
