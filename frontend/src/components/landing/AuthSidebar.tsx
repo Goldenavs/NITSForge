@@ -145,7 +145,7 @@ export function AuthSidebar() {
 
       {/* Content Mask */}
       <div className="absolute inset-0 overflow-hidden">
-        <div className={`w-full h-full py-16 lg:py-0 flex flex-col justify-center transition-opacity duration-300 ${isCollapsed ? 'lg:opacity-0 lg:invisible' : 'opacity-100 visible'}`}>
+        <div className={`w-full h-full py-8 lg:py-0 flex flex-col justify-center transition-opacity duration-300 ${isCollapsed ? 'lg:opacity-0 lg:invisible' : 'opacity-100 visible'}`}>
           <div className="w-full lg:w-[30vw] min-w-[320px] px-6 lg:px-10 mx-auto flex flex-col justify-center h-full">
             <motion.div
               initial="hidden"
@@ -154,16 +154,16 @@ export function AuthSidebar() {
               className="relative z-10 w-full max-w-sm mx-auto"
             >
               {/* Logo Section */}
-              <motion.div variants={itemVariants} className="flex justify-center mb-6">
+              <motion.div variants={itemVariants} className="flex justify-center mb-4">
                 <img
                   src={logoSrc}
                   alt="NITSForge"
-                  className="w-full max-w-[240px] h-auto object-contain"
+                  className="w-full max-w-[200px] h-auto object-contain"
                 />
               </motion.div>
 
-              <motion.div variants={itemVariants} className="mb-8">
-                <h2 className="text-3xl font-display font-bold tracking-tight mb-2">
+              <motion.div variants={itemVariants} className="mb-4">
+                <h2 className="text-3xl font-display font-bold tracking-tight mb-1">
                   {isLogin ? 'Welcome back' : 'Join the Forge'}
                 </h2>
                 <p className="text-text-muted text-sm">
@@ -178,7 +178,7 @@ export function AuthSidebar() {
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: 'auto' }}
                     exit={{ opacity: 0, height: 0 }}
-                    className="mb-6 bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg flex items-center gap-2"
+                    className="mb-4 bg-red-500/10 border border-red-500/20 text-red-500 text-sm p-3 rounded-lg flex items-center gap-2"
                   >
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <p>{errorMsg}</p>
@@ -187,31 +187,31 @@ export function AuthSidebar() {
               </AnimatePresence>
 
               {/* Social Logins */}
-              <motion.div variants={itemVariants} className="flex gap-3 mb-6">
+              <motion.div variants={itemVariants} className="flex gap-3 mb-4">
                 <button
                   type="button"
                   onClick={() => handleOAuth('github')}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface-2 border border-borderline rounded-xl hover:border-primary/50 hover:bg-background transition-all text-sm font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-2 border border-borderline rounded-xl hover:border-primary/50 hover:bg-background transition-all text-sm font-medium"
                 >
                   <GithubIcon /> GitHub
                 </button>
                 <button
                   type="button"
                   onClick={() => handleOAuth('google')}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-surface-2 border border-borderline rounded-xl hover:border-primary/50 hover:bg-background transition-all text-sm font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-2 bg-surface-2 border border-borderline rounded-xl hover:border-primary/50 hover:bg-background transition-all text-sm font-medium"
                 >
                   <GoogleIcon /> Google
                 </button>
               </motion.div>
 
-              <motion.div variants={itemVariants} className="flex items-center gap-4 mb-6">
+              <motion.div variants={itemVariants} className="flex items-center gap-4 mb-4">
                 <div className="h-px flex-1 bg-borderline"></div>
                 <span className="text-xs text-text-muted font-medium uppercase tracking-wider">Or</span>
                 <div className="h-px flex-1 bg-borderline"></div>
               </motion.div>
 
               {/* Core Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 <motion.div variants={itemVariants} className="space-y-1.5">
                   <label className="text-xs font-semibold text-text-muted uppercase tracking-wider ml-1">Email</label>
                   <div className="relative group">
@@ -222,7 +222,7 @@ export function AuthSidebar() {
                       onChange={(e) => setEmail(e.target.value)}
                       required
                       placeholder="engineer@nitsforge.com"
-                      className="w-full pl-11 pr-4 py-3 bg-surface-2 border border-borderline rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm text-text-main placeholder-text-muted/50"
+                      className="w-full pl-11 pr-4 py-2.5 bg-surface-2 border border-borderline rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm text-text-main placeholder-text-muted/50"
                     />
                   </div>
                 </motion.div>
@@ -237,7 +237,7 @@ export function AuthSidebar() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       placeholder="••••••••"
-                      className="w-full pl-11 pr-12 py-3 bg-surface-2 border border-borderline rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm text-text-main placeholder-text-muted/50"
+                      className="w-full pl-11 pr-12 py-2.5 bg-surface-2 border border-borderline rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm text-text-main placeholder-text-muted/50"
                     />
                     <button
                       type="button"
@@ -317,7 +317,7 @@ export function AuthSidebar() {
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           required={!isLogin}
                           placeholder="••••••••"
-                          className="w-full pl-11 pr-12 py-3 bg-surface-2 border border-borderline rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm text-text-main placeholder-text-muted/50"
+                          className="w-full pl-11 pr-12 py-2.5 bg-surface-2 border border-borderline rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary transition-all text-sm text-text-main placeholder-text-muted/50"
                         />
                         <button
                           type="button"
@@ -346,7 +346,7 @@ export function AuthSidebar() {
                 </motion.div>
               </form>
 
-              <motion.div variants={itemVariants} className="mt-8 flex flex-col items-center gap-4">
+              <motion.div variants={itemVariants} className="mt-4 flex flex-col items-center gap-3">
                 <button
                   onClick={() => {
                     setIsLogin(!isLogin);
@@ -362,7 +362,7 @@ export function AuthSidebar() {
 
                 <button
                   onClick={handleGuestLogin}
-                  className="text-sm font-medium flex items-center gap-2 text-text-muted hover:text-primary transition-colors px-4 py-2 rounded-lg hover:bg-surface-2"
+                  className="text-sm font-medium flex items-center gap-2 text-text-muted hover:text-primary transition-colors px-4 py-1.5 rounded-lg hover:bg-surface-2"
                 >
                   <User className="w-4 h-4" /> Skip & Continue as Guest
                 </button>
