@@ -6,9 +6,10 @@ import { Calendar, Target, CheckCircle2, ChevronDown } from 'lucide-react';
 
 interface HistoryTimelineProps {
   groupedData: GroupedDate[];
+  sessionStats?: Record<string, { total: number, score: number }>;
 }
 
-export function HistoryTimeline({ groupedData }: HistoryTimelineProps) {
+export function HistoryTimeline({ groupedData, sessionStats }: HistoryTimelineProps) {
   const groupsWithIndices = useMemo(() => {
     return groupedData.reduce((acc, group) => {
       const startIndex = acc.length > 0 
@@ -30,6 +31,7 @@ export function HistoryTimeline({ groupedData }: HistoryTimelineProps) {
             key={dateGroup.dateStr}
             dateGroup={dateGroup}
             startIndex={dateGroup.startIndex}
+            sessionStats={sessionStats}
           />
         ))}
       </div>
@@ -37,7 +39,7 @@ export function HistoryTimeline({ groupedData }: HistoryTimelineProps) {
   );
 }
 
-function DateNode({ dateGroup, startIndex }: { dateGroup: GroupedDate; startIndex: number }) {
+function DateNode({ dateGroup, startIndex, sessionStats }: { dateGroup: GroupedDate; startIndex: number; sessionStats?: Record<string, { total: number, score: number }> }) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
@@ -75,6 +77,7 @@ function DateNode({ dateGroup, startIndex }: { dateGroup: GroupedDate; startInde
                     key={attempt.session_id}
                     attempt={attempt}
                     isLeft={isLeft}
+                    sessionStats={sessionStats}
                   />
                 );
               })}
@@ -87,12 +90,14 @@ function DateNode({ dateGroup, startIndex }: { dateGroup: GroupedDate; startInde
   );
 }
 
-function AttemptNode({ attempt, isLeft }: { attempt: GroupedAttempt; isLeft: boolean }) {
+function AttemptNode({ attempt, isLeft, sessionStats }: { attempt: GroupedAttempt; isLeft: boolean; sessionStats?: Record<string, { total: number, score: number }> }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const timeStr = new Date(attempt.answered_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  const score = attempt.questions.filter(q => q.is_correct).length;
-  const total = attempt.questions.length;
+  
+  const stats = sessionStats?.[attempt.session_id];
+  const score = stats ? stats.score : attempt.questions.filter(q => q.is_correct).length;
+  const total = stats ? stats.total : attempt.questions.length;
   const accuracy = Math.round((score / total) * 100) || 0;
 
   return (

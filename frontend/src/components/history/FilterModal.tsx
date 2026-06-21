@@ -19,13 +19,29 @@ export const MODES = [
   { id: 'daily-challenge', label: 'Daily Challenge' }
 ];
 
+export const CATEGORIES = [
+  { id: 'math', label: 'Basic Theory' },
+  { id: 'arch', label: 'Computer Architecture' },
+  { id: 'os', label: 'Operating Systems' },
+  { id: 'ds', label: 'Data Structures' },
+  { id: 'db', label: 'Databases' },
+  { id: 'net', label: 'Networking' },
+  { id: 'sec', label: 'Information Security' },
+  { id: 'se', label: 'Software Engineering' },
+  { id: 'strat', label: 'Strategy' },
+  { id: 'mgmt', label: 'Management' }
+];
+
 export type AccuracyFilter = 'all' | 'correct' | 'incorrect';
 export type SessionLengthFilter = 'all' | '<10' | '10-30' | '>30';
+export type TimeFilter = 'all' | 'AM' | 'PM';
 
 export interface FilterState {
   modes: string[];
+  categories: string[];
   accuracy: AccuracyFilter;
   sessionLength: SessionLengthFilter;
+  timeOfDay: TimeFilter;
 }
 
 interface FilterModalProps {
@@ -55,6 +71,15 @@ export function FilterModal({ isOpen, onClose, currentFilters, onApplyFilters }:
     }));
   };
 
+  const toggleCategory = (catId: string) => {
+    setLocalFilters(prev => ({
+      ...prev,
+      categories: prev.categories.includes(catId)
+        ? prev.categories.filter(c => c !== catId)
+        : [...prev.categories, catId]
+    }));
+  };
+
   const handleApply = () => {
     onApplyFilters(localFilters);
     onClose();
@@ -63,8 +88,10 @@ export function FilterModal({ isOpen, onClose, currentFilters, onApplyFilters }:
   const handleClearAll = () => {
     setLocalFilters({
       modes: [],
+      categories: [],
       accuracy: 'all',
-      sessionLength: 'all'
+      sessionLength: 'all',
+      timeOfDay: 'all'
     });
   };
 
@@ -135,51 +162,129 @@ export function FilterModal({ isOpen, onClose, currentFilters, onApplyFilters }:
               </div>
             </section>
 
-            {/* Accuracy Section */}
+            {/* Categories Section */}
             <section>
               <div className="flex items-center gap-2 mb-4">
                 <Target className="w-4 h-4 text-text-muted" />
-                <h3 className="font-orbitron font-bold text-sm tracking-widest uppercase text-text-main">Accuracy</h3>
+                <h3 className="font-orbitron font-bold text-sm tracking-widest uppercase text-text-main">Categories</h3>
               </div>
-              <div className="flex gap-2 p-1 bg-surface-2 rounded-xl border border-borderline">
-                {(['all', 'correct', 'incorrect'] as AccuracyFilter[]).map((acc) => (
-                  <button
-                    key={acc}
-                    onClick={() => setLocalFilters(prev => ({ ...prev, accuracy: acc }))}
-                    className={`flex-1 py-2 rounded-lg text-xs font-body capitalize transition-all ${
-                      localFilters.accuracy === acc
-                        ? 'bg-surface shadow-md text-text-main font-medium border border-borderline/50'
-                        : 'text-text-muted hover:text-text-main'
-                    }`}
-                  >
-                    {acc}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((cat) => {
+                  const isSelected = localFilters.categories.includes(cat.id);
+                  return (
+                    <button
+                      key={cat.id}
+                      onClick={() => toggleCategory(cat.id)}
+                      className={`px-3 py-2 rounded-lg border text-xs font-body transition-all duration-300 ${
+                        isSelected
+                          ? 'border-primary bg-primary/10 text-primary font-medium shadow-[0_0_10px_rgba(var(--color-primary),0.2)] scale-[1.02]'
+                          : 'border-borderline/50 bg-surface-2/50 text-text-muted hover:border-text-muted/40 hover:bg-surface-2'
+                      }`}
+                    >
+                      {cat.label}
+                    </button>
+                  );
+                })}
               </div>
             </section>
 
-            {/* Session Length Section */}
-            <section>
-              <div className="flex items-center gap-2 mb-4">
-                <Hash className="w-4 h-4 text-text-muted" />
-                <h3 className="font-orbitron font-bold text-sm tracking-widest uppercase text-text-main">Session Length (Questions)</h3>
-              </div>
-              <div className="flex gap-2 p-1 bg-surface-2 rounded-xl border border-borderline">
-                {(['all', '<10', '10-30', '>30'] as SessionLengthFilter[]).map((len) => (
-                  <button
-                    key={len}
-                    onClick={() => setLocalFilters(prev => ({ ...prev, sessionLength: len }))}
-                    className={`flex-1 py-2 rounded-lg text-xs font-body transition-all ${
-                      localFilters.sessionLength === len
-                        ? 'bg-surface shadow-md text-text-main font-medium border border-borderline/50'
-                        : 'text-text-muted hover:text-text-main'
-                    }`}
-                  >
-                    {len === 'all' ? 'Any' : len}
-                  </button>
-                ))}
-              </div>
-            </section>
+            {/* Segmented Controls Wrapper */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Accuracy Section */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Target className="w-4 h-4 text-text-muted" />
+                  <h3 className="font-orbitron font-bold text-sm tracking-widest uppercase text-text-main">Accuracy</h3>
+                </div>
+                <div className="relative flex items-center w-full bg-surface-2/40 border border-borderline/50 rounded-2xl p-1 overflow-hidden">
+                  {(['all', 'correct', 'incorrect'] as AccuracyFilter[]).map((acc) => {
+                    const isActive = localFilters.accuracy === acc;
+                    return (
+                      <button
+                        key={acc}
+                        onClick={() => setLocalFilters(prev => ({ ...prev, accuracy: acc }))}
+                        className={`relative flex-1 py-2 text-xs font-body capitalize transition-colors z-10 flex items-center justify-center text-center ${
+                          isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main'
+                        }`}
+                      >
+                        {isActive && (
+                          <motion.div
+                            layoutId="accuracyIndicator"
+                            className="absolute inset-0 bg-primary rounded-xl shadow-md -z-10"
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                          />
+                        )}
+                        {acc}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+              {/* Session Length Section */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Hash className="w-4 h-4 text-text-muted" />
+                  <h3 className="font-orbitron font-bold text-sm tracking-widest uppercase text-text-main">Questions</h3>
+                </div>
+                <div className="relative flex items-center w-full bg-surface-2/40 border border-borderline/50 rounded-2xl p-1 overflow-hidden">
+                  {(['all', '<10', '10-30', '>30'] as SessionLengthFilter[]).map((len) => {
+                    const isActive = localFilters.sessionLength === len;
+                    return (
+                      <button
+                        key={len}
+                        onClick={() => setLocalFilters(prev => ({ ...prev, sessionLength: len }))}
+                        className={`relative flex-1 py-2 text-xs font-body transition-colors z-10 flex items-center justify-center text-center ${
+                          isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main'
+                        }`}
+                      >
+                        {isActive && (
+                          <motion.div
+                            layoutId="sessionLengthIndicator"
+                            className="absolute inset-0 bg-primary rounded-xl shadow-md -z-10"
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                          />
+                        )}
+                        {len === 'all' ? 'Any' : len}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+              {/* Time Section */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Filter className="w-4 h-4 text-text-muted" />
+                  <h3 className="font-orbitron font-bold text-sm tracking-widest uppercase text-text-main">Time</h3>
+                </div>
+                <div className="relative flex items-center w-full bg-surface-2/40 border border-borderline/50 rounded-2xl p-1 overflow-hidden">
+                  {(['all', 'AM', 'PM'] as TimeFilter[]).map((time) => {
+                    const isActive = localFilters.timeOfDay === time;
+                    return (
+                      <button
+                        key={time}
+                        onClick={() => setLocalFilters(prev => ({ ...prev, timeOfDay: time }))}
+                        className={`relative flex-1 py-2 text-xs font-body transition-colors z-10 flex items-center justify-center text-center ${
+                          isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main'
+                        }`}
+                      >
+                        {isActive && (
+                          <motion.div
+                            layoutId="timeOfDayIndicator"
+                            className="absolute inset-0 bg-primary rounded-xl shadow-md -z-10"
+                            transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                          />
+                        )}
+                        {time === 'all' ? 'Any' : time}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+            </div>
 
           </div>
 

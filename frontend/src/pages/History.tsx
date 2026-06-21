@@ -30,21 +30,61 @@ export default function History() {
   const { data: logs, isLoading, loadMore, hasMore } = useHistory();
   const [activeFilters, setActiveFilters] = useState<FilterState>({
     modes: [],
+    categories: [],
     accuracy: 'all',
-    sessionLength: 'all'
+    sessionLength: 'all',
+    timeOfDay: 'all'
   });
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
+  const sessionStats = useMemo(() => {
+    if (!logs) return {};
+    const stats: Record<string, { total: number, score: number }> = {};
+    logs.forEach(log => {
+      if (!stats[log.session_id]) stats[log.session_id] = { total: 0, score: 0 };
+      stats[log.session_id].total += 1;
+      if (log.is_correct) stats[log.session_id].score += 1;
+    });
+    return stats;
+  }, [logs]);
+
   const groupedData = useMemo(() => {
-    let filteredLogs = logs;
+    let filteredLogs = logs || [];
 
     // 1. Filter by Modes
     if (activeFilters.modes.length > 0) {
       filteredLogs = filteredLogs.filter(log => activeFilters.modes.includes(log.session_mode));
     }
 
-    // 2. Filter by Accuracy
+    // 2. Filter by Categories
+    if (activeFilters.categories.length > 0) {
+      const DB_CATEGORY_MAP: Record<string, string> = {
+        'math': 'Basic Theory of Information',
+        'arch': 'Computer Architecture',
+        'os': 'Operating Systems',
+        'ds': 'Data Structures & Algorithms',
+        'db': 'Databases',
+        'net': 'Networking & Communication',
+        'sec': 'Information Security',
+        'se': 'Software Engineering & Development',
+        'strat': 'Strategy',
+        'mgmt': 'Management'
+      };
+      const allowedTitles = activeFilters.categories.map(catId => DB_CATEGORY_MAP[catId]);
+      filteredLogs = filteredLogs.filter(log => allowedTitles.includes(log.question_category));
+    }
+
+    // 3. Filter by Time of Day
+    if (activeFilters.timeOfDay !== 'all') {
+      filteredLogs = filteredLogs.filter(log => {
+        const hour = new Date(log.answered_at).getHours();
+        if (activeFilters.timeOfDay === 'AM') return hour < 12;
+        return hour >= 12; // PM
+      });
+    }
+
+    // 4. Filter by Accuracy
     if (activeFilters.accuracy !== 'all') {
       const isCorrect = activeFilters.accuracy === 'correct';
       filteredLogs = filteredLogs.filter(log => log.is_correct === isCorrect);
@@ -225,7 +265,7 @@ export default function History() {
         className="flex flex-col gap-3 mt-2"
       >
         {groupedData.length > 0 && (
-          <HistoryTimeline groupedData={groupedData} />
+          <HistoryTimeline groupedData={groupedData} sessionStats={sessionStats} />
         )}
 
         {groupedData.length === 0 && !isLoading && (
