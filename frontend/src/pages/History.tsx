@@ -1,5 +1,5 @@
 // src/pages/History.tsx
-import { motion, type Variants } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import { History as HistoryIcon, Download } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
@@ -36,6 +36,64 @@ export default function History() {
     }
     return groupHistoryByDateAndAttempt(filteredLogs);
   }, [logs, filterMode]);
+
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+
+  const handleExportCSV = (mode: 'last-30-days' | 'last-50') => {
+    if (!logs || logs.length === 0) return;
+
+    let logsToExport = logs;
+    if (mode === 'last-50') {
+      logsToExport = logs.slice(0, 50);
+    } else if (mode === 'last-30-days') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      logsToExport = logs.filter(l => new Date(l.answered_at) >= thirtyDaysAgo);
+    }
+
+    if (logsToExport.length === 0) {
+      alert("No logs match this criteria to export.");
+      return;
+    }
+
+    const headers = [
+      "Session ID",
+      "Mode",
+      "Date",
+      "Time",
+      "Question ID",
+      "Category",
+      "Correct Answer",
+      "User Answer",
+      "Is Correct"
+    ];
+
+    const rows = logsToExport.map(log => {
+      const date = new Date(log.answered_at);
+      return [
+        log.session_id,
+        log.session_mode,
+        date.toLocaleDateString(),
+        date.toLocaleTimeString(),
+        log.question_id,
+        `"${(log.question_category || '').replace(/"/g, '""')}"`,
+        log.correct_answer,
+        log.user_answer || "N/A",
+        log.is_correct ? "Yes" : "No"
+      ].join(",");
+    });
+
+    const csvContent = [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `nitsforge_history_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 pt-4">
@@ -80,10 +138,35 @@ export default function History() {
             <option value="daily-challenge">DAILY CHALLENGE</option>
           </select>
 
-          {/* CSV Export strictly required by documentation */}
-          <Button variant="outline" className="flex-1 md:flex-initial font-orbitron text-[10px] tracking-widest border-primary/40 text-primary hover:bg-primary/10 leading-none pt-2.5 pb-2">
-            <Download className="w-3.5 h-3.5 mr-2 -mt-0.5" /> Export CSV
-          </Button>
+          {/* CSV Export Dropdown strictly required by documentation */}
+          <div className="relative flex-1 md:flex-initial">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+              disabled={!logs || logs.length === 0}
+              className="w-full font-orbitron text-[10px] tracking-widest border-primary/40 text-primary hover:bg-primary/10 leading-none pt-2.5 pb-2"
+            >
+              <Download className="w-3.5 h-3.5 mr-2 -mt-0.5" /> Export CSV
+            </Button>
+
+            <AnimatePresence>
+              {isExportMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  className="absolute right-0 top-full mt-2 w-48 bg-surface-2 border border-borderline rounded-lg shadow-xl overflow-hidden z-50 flex flex-col"
+                >
+                  <button onClick={() => { handleExportCSV('last-30-days'); setIsExportMenuOpen(false); }} className="px-4 py-3 text-left text-xs font-orbitron tracking-wider hover:bg-surface text-text-main transition-colors border-b border-borderline/50">
+                    Last 30 Days
+                  </button>
+                  <button onClick={() => { handleExportCSV('last-50'); setIsExportMenuOpen(false); }} className="px-4 py-3 text-left text-xs font-orbitron tracking-wider hover:bg-surface text-text-main transition-colors">
+                    Last 50 Questions
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </motion.div>
 
