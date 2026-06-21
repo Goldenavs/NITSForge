@@ -49,9 +49,15 @@ export function AuthSidebar() {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!isLogin && password !== confirmPassword) {
-      setErrorMsg("Passwords do not match! Please check again.");
-      return;
+    if (!isLogin) {
+      if (password.length < 6) {
+        setErrorMsg("Password must be at least 6 characters long.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setErrorMsg("Passwords do not match! Please check again.");
+        return;
+      }
     }
 
     setLoading(true);
@@ -241,6 +247,57 @@ export function AuthSidebar() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  
+                  {/* Password Strength Meter (Only on Registration) */}
+                  <AnimatePresence>
+                    {!isLogin && password && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }} 
+                        animate={{ opacity: 1, height: 'auto' }} 
+                        exit={{ opacity: 0, height: 0 }}
+                        className="pt-1.5 space-y-1.5 overflow-hidden"
+                      >
+                        <div className="flex gap-1 h-1.5">
+                          {[1, 2, 3, 4].map((level) => {
+                            let score = 0;
+                            if (password.length > 5) score += 1;
+                            if (password.length > 7) score += 1;
+                            if (/[A-Z]/.test(password) || /[0-9]/.test(password)) score += 1;
+                            if (/[^A-Za-z0-9]/.test(password)) score += 1;
+                            const strength = Math.min(score, 4);
+                            
+                            let bgClass = "bg-borderline/50";
+                            if (strength >= level) {
+                              if (strength <= 1) bgClass = "bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]";
+                              else if (strength === 2) bgClass = "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]";
+                              else if (strength === 3) bgClass = "bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.4)]";
+                              else bgClass = "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]";
+                            }
+                            return (
+                              <div key={level} className={`flex-1 rounded-full transition-all duration-300 ${bgClass}`} />
+                            )
+                          })}
+                        </div>
+                        <div className="flex justify-between items-center text-[10px]">
+                          <span className="text-text-muted/60 font-body">Min 6 chars</span>
+                          <span className="text-text-muted font-orbitron font-bold tracking-widest uppercase">
+                            {(() => {
+                              let score = 0;
+                              if (password.length > 5) score += 1;
+                              if (password.length > 7) score += 1;
+                              if (/[A-Z]/.test(password) || /[0-9]/.test(password)) score += 1;
+                              if (/[^A-Za-z0-9]/.test(password)) score += 1;
+                              const strength = Math.min(score, 4);
+                              if (strength <= 1) return <span className="text-red-400">Weak</span>;
+                              if (strength === 2) return <span className="text-yellow-400">Fair</span>;
+                              if (strength === 3) return <span className="text-blue-400">Good</span>;
+                              return <span className="text-green-400">Strong</span>;
+                            })()}
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
 
                 <AnimatePresence>
