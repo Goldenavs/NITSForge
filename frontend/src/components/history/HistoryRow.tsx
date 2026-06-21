@@ -61,11 +61,11 @@ export function HistoryRow({ log }: HistoryRowProps) {
             {log.is_correct ? <CheckCircle2 className="w-5 h-5 text-green-500" /> : <XCircle className="w-5 h-5 text-red-500" />}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 mb-1.5">
-              <span className="text-[10px] font-orbitron font-bold text-text-muted tracking-widest uppercase leading-none pt-0.5">
+            <div className="flex items-start gap-3 mb-1.5">
+              <span className="text-[10px] font-orbitron font-bold text-text-muted tracking-widest uppercase leading-snug pt-0.5">
                 {log.question_category}
               </span>
-              <span className="text-[10px] text-text-muted/60 font-body hidden sm:inline-block">• {new Date(log.answered_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+              <span className="text-[10px] text-text-muted/60 font-body hidden sm:inline-block shrink-0 whitespace-nowrap pt-0.5">• {new Date(log.answered_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
             </div>
             {/* Truncated question text - Hides when expanded */}
             {!isOpen && (
