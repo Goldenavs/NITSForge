@@ -1,7 +1,7 @@
 // src/pages/Leaderboard.tsx
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, type Variants } from 'framer-motion';
-import { Trophy, ArrowDown, ArrowUp, Navigation } from 'lucide-react';
+import { Trophy, ArrowDown, ArrowUp, Navigation, ChevronDown } from 'lucide-react';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { PodiumProfile } from '../components/leaderboard/PodiumProfile';
@@ -65,6 +65,9 @@ export default function Leaderboard() {
     remainingRanks = [...remainingRanks].reverse();
   }
 
+  // Handle dropdown state
+  const [isScopeDropdownOpen, setIsScopeDropdownOpen] = useState(false);
+
   // Handle selected user for Modal
   const [selectedUser, setSelectedUser] = useState<LeaderboardEntry | null>(null);
 
@@ -102,68 +105,97 @@ export default function Leaderboard() {
           </p>
         </div>
 
-        {/* Season Timer */}
-        <div className="flex items-center gap-4 bg-surface/85 backdrop-blur-md border border-borderline/60 rounded-2xl p-4 sm:p-5 shrink-0 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 left-0 w-1 h-full bg-accent" />
-          <div className="flex flex-col items-start">
-            <p className="text-[9px] font-orbitron uppercase tracking-widest text-text-muted leading-none mb-2 pt-0.5">Season Ends In</p>
-            <div className="flex items-center gap-2 text-xl sm:text-2xl font-bold font-orbitron text-text-main leading-none pt-1">
-              <span className="text-accent">{timeLeft.days}</span><span className="text-xs text-text-muted">d</span>
-              <span className="text-accent">{timeLeft.hours}</span><span className="text-xs text-text-muted">h</span>
-              <span className="text-accent">{timeLeft.minutes}</span><span className="text-xs text-text-muted">m</span>
-            </div>
-          </div>
-        </div>
       </motion.div>
 
       {/* FILTER CONTROLS */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col sm:flex-row items-center gap-4 w-full bg-surface-2/30 p-2 rounded-2xl border border-borderline/50"
+        className="flex flex-col items-center gap-8 w-full mt-4 mb-12 sm:mb-16"
       >
-        <div className="relative flex items-center w-full sm:w-1/2 bg-surface-2/40 border border-borderline/50 rounded-xl p-1 overflow-hidden">
-          {(['all-time', 'weekly'] as const).map((tf) => {
-            const isActive = timeframe === tf;
-            return (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                className={`relative flex-1 py-2 text-xs font-body capitalize transition-colors z-10 flex items-center justify-center text-center ${isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main'
-                  }`}
-              >
-                {isActive && (
-                  <motion.div layoutId="timeframeIndicator" className="absolute inset-0 bg-primary rounded-lg shadow-md -z-10" transition={{ type: "spring", stiffness: 300, damping: 25 }} />
-                )}
-                {tf.replace('-', ' ')}
-              </button>
-            );
-          })}
+        {/* Row 1: Timeframe (Equally sized, longer horizontally) */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-3xl">
+          <button
+            onClick={() => setTimeframe('all-time')}
+            className={`relative flex-1 w-full py-4 sm:py-5 rounded-2xl transition-all duration-300 flex items-center justify-center border ${
+              timeframe === 'all-time'
+                ? 'bg-primary/10 border-primary text-primary shadow-[0_0_20px_rgba(var(--color-primary),0.25)]'
+                : 'bg-surface-2/40 border-borderline/50 text-text-muted hover:border-text-muted/50 hover:bg-surface-2/60'
+            }`}
+          >
+            <span className={`font-orbitron font-bold tracking-widest uppercase text-base sm:text-xl ${timeframe === 'all-time' ? 'drop-shadow-[0_0_8px_rgba(var(--color-primary),0.8)]' : ''}`}>
+              All Time
+            </span>
+          </button>
+
+          <button
+            onClick={() => setTimeframe('weekly')}
+            className={`relative flex-1 w-full py-4 sm:py-5 rounded-2xl transition-all duration-300 flex items-center justify-center border ${
+              timeframe === 'weekly'
+                ? 'bg-accent/10 border-accent text-accent shadow-[0_0_20px_rgba(var(--color-accent),0.25)]'
+                : 'bg-surface-2/40 border-borderline/50 text-text-muted hover:border-text-muted/50 hover:bg-surface-2/60'
+            }`}
+          >
+            <div className="flex items-center gap-4 sm:gap-6">
+              {/* Timer on the left */}
+              <div className="flex flex-col items-end border-r border-borderline/50 pr-4 sm:pr-6">
+                <span className="text-[8px] sm:text-[10px] font-orbitron uppercase tracking-widest text-text-muted leading-none mb-1.5">Resets In</span>
+                <span className={`text-xs sm:text-sm font-bold font-orbitron leading-none ${timeframe === 'weekly' ? 'text-accent drop-shadow-[0_0_5px_rgba(var(--color-accent),0.5)]' : 'text-text-main'}`}>
+                  {timeLeft.days}d {timeLeft.hours}h {timeLeft.minutes}m
+                </span>
+              </div>
+              
+              {/* Weekly Text */}
+              <span className={`font-orbitron font-bold tracking-widest uppercase text-base sm:text-xl ${timeframe === 'weekly' ? 'drop-shadow-[0_0_8px_rgba(var(--color-accent),0.8)]' : ''}`}>
+                Weekly
+              </span>
+            </div>
+          </button>
         </div>
 
-        <div className="relative flex items-center w-full sm:w-1/2 bg-surface-2/40 border border-borderline/50 rounded-xl p-1 overflow-hidden">
-          {[
-            { id: 'global', label: 'Global' },
-            { id: 'course', label: profile?.course ? `${profile.course}` : 'Course' },
-            { id: 'yearLevel', label: profile?.year_level ? `Year ${profile.year_level}` : 'Year Level' }
-          ].map((sc) => {
-            const isActive = scope === sc.id;
-            return (
-              <button
-                key={sc.id}
-                disabled={sc.id !== 'global' && (!profile?.course && sc.id === 'course' || !profile?.year_level && sc.id === 'yearLevel')}
-                onClick={() => setScope(sc.id as any)}
-                className={`relative flex-1 py-2 text-xs font-body transition-colors z-10 flex items-center justify-center text-center ${isActive ? 'text-surface font-medium' : 'text-text-muted hover:text-text-main disabled:opacity-30 disabled:cursor-not-allowed'
-                  }`}
-                title={sc.id !== 'global' ? 'Requires profile setup' : ''}
-              >
-                {isActive && (
-                  <motion.div layoutId="scopeIndicator" className="absolute inset-0 bg-primary rounded-lg shadow-md -z-10" transition={{ type: "spring", stiffness: 300, damping: 25 }} />
-                )}
-                {sc.label}
-              </button>
-            );
-          })}
+        {/* Row 2: Custom Scope Dropdown */}
+        <div className="relative flex justify-center w-full max-w-sm">
+           <div 
+             className="w-full flex items-center justify-between bg-surface-2/50 border border-borderline/80 text-text-main py-4 px-6 rounded-xl font-body text-sm sm:text-base outline-none hover:border-primary/50 hover:bg-surface-2/80 transition-all cursor-pointer shadow-sm group"
+             onClick={() => setIsScopeDropdownOpen(!isScopeDropdownOpen)}
+           >
+              <span className="font-medium">
+                {scope === 'global' ? 'Global' : scope === 'course' ? `Course - ${profile?.course}` : `Year Level - ${profile?.year_level}`}
+              </span>
+              <ChevronDown className={`w-5 h-5 text-text-muted group-hover:text-primary transition-transform duration-300 ${isScopeDropdownOpen ? 'rotate-180 text-primary' : ''}`} />
+           </div>
+
+           <AnimatePresence>
+             {isScopeDropdownOpen && (
+               <motion.div
+                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                 animate={{ opacity: 1, y: 0, scale: 1 }}
+                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                 transition={{ duration: 0.2 }}
+                 className="absolute top-[calc(100%+8px)] left-0 right-0 bg-surface-2 border border-borderline rounded-xl shadow-2xl overflow-hidden z-50 flex flex-col"
+               >
+                 {[
+                   { id: 'global', label: 'Global' },
+                   { id: 'course', label: profile?.course ? `Course - ${profile.course}` : 'Course (Requires Profile Setup)', disabled: !profile?.course },
+                   { id: 'yearLevel', label: profile?.year_level ? `Year Level - ${profile.year_level}` : 'Year Level (Requires Profile Setup)', disabled: !profile?.year_level }
+                 ].map((opt) => (
+                   <button
+                     key={opt.id}
+                     disabled={opt.disabled}
+                     onClick={() => {
+                       setScope(opt.id as any);
+                       setIsScopeDropdownOpen(false);
+                     }}
+                     className={`text-left px-6 py-4 font-body text-sm sm:text-base transition-colors ${
+                       scope === opt.id ? 'bg-primary/10 text-primary font-bold border-l-4 border-primary' : 'text-text-main hover:bg-surface-3 border-l-4 border-transparent disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent'
+                     }`}
+                   >
+                     {opt.label}
+                   </button>
+                 ))}
+               </motion.div>
+             )}
+           </AnimatePresence>
         </div>
       </motion.div>
 
