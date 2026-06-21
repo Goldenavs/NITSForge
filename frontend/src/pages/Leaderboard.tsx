@@ -6,6 +6,7 @@ import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { PodiumProfile } from '../components/leaderboard/PodiumProfile';
 import { CompetitorRow } from '../components/leaderboard/CompetitorRow';
+import { UserProfileModal } from '../components/leaderboard/UserProfileModal';
 
 import { useAuth } from '../store/AuthContext';
 import { useProfile } from '../hooks/useProfile';
@@ -237,11 +238,11 @@ export default function Leaderboard() {
         )}
       </AnimatePresence>
 
-      {/* <UserProfileModal 
-        isOpen={!!selectedUser} 
-        onClose={() => setSelectedUser(null)} 
-        user={selectedUser} 
-      /> */}
+      <UserProfileModal
+        isOpen={!!setSelectedUser}
+        onClose={() => setSelectedUser(null)}
+        user={setSelectedUser}
+      />
     </div>
   );
 }
