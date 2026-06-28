@@ -8,6 +8,7 @@ interface GuestLockScreenProps {
 
 export function GuestLockScreen({ featureName }: GuestLockScreenProps) {
   const handleSignUpClick = () => {
+    localStorage.removeItem('nitsforge_guest_session');
     window.location.href = '/?signup=true';
   };
 

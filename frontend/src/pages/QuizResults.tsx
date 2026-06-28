@@ -177,7 +177,10 @@ export default function QuizResults() {
               </div>
             </div>
             <button 
-              onClick={() => window.location.href = '/?signup=true'}
+              onClick={() => {
+                localStorage.removeItem('nitsforge_guest_session');
+                window.location.href = '/?signup=true';
+              }}
               className="w-full sm:w-auto whitespace-nowrap bg-primary text-background font-orbitron font-bold uppercase tracking-widest text-xs px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)] flex items-center justify-center gap-2"
             >
               <UserPlus className="w-4 h-4" /> Create Account

@@ -1,5 +1,4 @@
 // src/pages/Dashboard.tsx
-import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Trophy, Target, BookOpen, AlertTriangle, Save, UserPlus, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -24,10 +23,10 @@ const staggerContainer = {
 // 2. Individual Item Animation (Spring Physics)
 const fadeUpVariant = {
   hidden: { opacity: 0, y: 40 },
-  visible: { 
-    opacity: 1, 
-    y: 0, 
-    transition: { type: "spring" as const, stiffness: 250, damping: 24 } 
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring" as const, stiffness: 250, damping: 24 }
   }
 };
 
@@ -55,8 +54,8 @@ export default function Dashboard() {
     );
   }
 
-  const profile = user ? data?.profile : { 
-    total_xp: guestXp, 
+  const profile = user ? data?.profile : {
+    total_xp: guestXp,
     rank_level: Math.floor(guestXp / 1000) + 1,
     current_streak: 0,
     display_name: 'Guest Explorer'
@@ -75,9 +74,9 @@ export default function Dashboard() {
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 overflow-y-visible pt-4">
-      
+
       {/* 1. WELCOME HEADER - Animates instantly on load */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         animate="visible"
         variants={fadeUpVariant}
@@ -118,8 +117,11 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
-            <button 
-              onClick={() => window.location.href = '/?signup=true'}
+            <button
+              onClick={() => {
+                localStorage.removeItem('nitsforge_guest_session');
+                window.location.href = '/?signup=true';
+              }}
               className="w-full md:w-auto whitespace-nowrap bg-primary text-background font-orbitron font-bold uppercase tracking-widest text-xs px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)] flex items-center justify-center gap-2"
             >
               <UserPlus className="w-4 h-4" /> Create Account
@@ -129,7 +131,7 @@ export default function Dashboard() {
       )}
 
       {/* 2. OVERVIEW STATS ROW - Cascades when scrolled into view */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
@@ -151,7 +153,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* 3. AI WEEKLY REPORT - Slides up on scroll */}
-      <motion.div 
+      <motion.div
         variants={fadeUpVariant}
         initial="hidden"
         whileInView="visible"
@@ -161,7 +163,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* 4. MAIN VISUALIZATION GRID */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
@@ -177,7 +179,7 @@ export default function Dashboard() {
       </motion.div>
 
       {/* 5. INSIGHTS & ACTIONS PANEL */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"

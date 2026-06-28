@@ -88,7 +88,10 @@ export function DailyChallengeBanner({ isCompleted, onStart }: DailyChallengeBan
           {!user ? (
             <Button
               variant="outline"
-              onClick={() => window.location.href = '/?signup=true'}
+              onClick={() => {
+                localStorage.removeItem('nitsforge_guest_session');
+                window.location.href = '/?signup=true';
+              }}
               className="w-full lg:w-auto font-orbitron uppercase tracking-widest text-xs py-3 px-6 border-text-muted/30 text-text-muted hover:text-text-main hover:bg-surface-2"
             >
               <Lock className="w-4 h-4 mr-2" /> Login Required
