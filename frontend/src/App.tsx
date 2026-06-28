@@ -22,7 +22,6 @@ import History from './pages/History';
 import Bookmarks from './pages/Bookmarks';
 import BookmarkCollection from './pages/BookmarkCollection';
 import Leaderboard from './pages/Leaderboard';
-import Planner from './pages/Planner';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 
@@ -66,7 +65,6 @@ function App() {
               
               {/* Social & Planning */}
               <Route path="/leaderboard" element={<Leaderboard />} />
-              <Route path="/planner" element={<Planner />} />
               
               {/* Account */}
               <Route path="/profile" element={<Profile />} />

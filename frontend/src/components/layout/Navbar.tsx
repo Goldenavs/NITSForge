@@ -112,7 +112,6 @@ export default function Navbar() {
     { name: 'Quiz', path: '/quiz' },
     { name: 'Topics', path: '/topics' },
     { name: 'Challenge', path: '/daily' },
-    { name: 'Planner', path: '/planner' },
     { name: 'Leaderboard', path: '/leaderboard' },
     { name: 'History', path: '/history' },
     { name: 'Bookmarks', path: '/bookmarks' },
