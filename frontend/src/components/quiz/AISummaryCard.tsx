@@ -1,7 +1,7 @@
 // src/components/quiz/AISummaryCard.tsx
 import { useState } from 'react';
-import { Zap, Loader2 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { Bot, Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { MarkdownRenderer } from '../ui/MarkdownRenderer';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
@@ -51,7 +51,7 @@ export function AISummaryCard() {
       <CardContent className="p-6 md:p-8 flex flex-col md:flex-row gap-6 items-start md:items-center relative z-10">
         
         <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500">
-          <Zap className="w-6 h-6 text-amber-500 fill-amber-500/20" />
+          <Bot className="w-6 h-6 text-amber-500" />
         </div>
 
         <div className="flex-1 min-w-0 w-full">
@@ -82,8 +82,8 @@ export function AISummaryCard() {
               <Loader2 className="w-4 h-4 animate-spin" /> Analyzing performance data...
             </div>
           ) : (
-            <div className="mt-2 text-sm text-text-main leading-relaxed prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed">
-              <ReactMarkdown>{debrief || ""}</ReactMarkdown>
+            <div className="text-sm text-text-main leading-relaxed">
+              <MarkdownRenderer>{debrief || ""}</MarkdownRenderer>
             </div>
           )}
         </div>

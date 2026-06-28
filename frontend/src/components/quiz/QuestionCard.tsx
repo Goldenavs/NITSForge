@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bookmark, Sparkles, CheckCircle2, XCircle, Calendar, Loader2, Tag } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { MarkdownRenderer } from '../ui/MarkdownRenderer';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
@@ -176,9 +176,9 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
           )}
         </div>
 
-        {/* Question Text */}
-        <div className="text-xl md:text-2xl font-body font-medium text-text-main leading-relaxed mb-8 prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-surface-2 prose-pre:border prose-pre:border-borderline prose-code:text-primary">
-          <ReactMarkdown>{question.text}</ReactMarkdown>
+        {/* Main Question Area */}
+        <div className="mb-8 font-medium text-lg md:text-xl text-text-main leading-relaxed">
+          <MarkdownRenderer>{question.text}</MarkdownRenderer>
         </div>
 
         {/* Options Grid */}
@@ -213,9 +213,11 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="mb-8 p-4 rounded-xl bg-surface-2/30 border border-borderline flex flex-col items-start"
           >
-            <h3 className="text-xs font-bold font-orbitron tracking-widest text-text-muted uppercase mb-2">Answer Key Explanation</h3>
-            <div className="text-sm text-text-main leading-relaxed prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-pre:bg-surface-3 max-w-none">
-              <ReactMarkdown>{question.explanation}</ReactMarkdown>
+            <h3 className="font-orbitron font-bold text-primary mb-2 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" /> Official Explanation
+            </h3>
+            <div className="text-text-main/90 text-sm leading-relaxed">
+              <MarkdownRenderer>{question.explanation}</MarkdownRenderer>
             </div>
           </motion.div>
         )}
@@ -259,15 +261,13 @@ export function QuestionCard({ question, selectedOption, onSelect, isSubmitted, 
                   exit={{ height: 0, opacity: 0 }}
                   className="overflow-hidden w-full"
                 >
-                  <div className="pt-4 border-t border-borderline/50 mt-2 text-sm text-text-main leading-relaxed">
+                  <div className="pt-4 border-t border-borderline/50 mt-2 text-text-main/90 text-sm leading-relaxed">
                     {isAiLoading ? (
-                      <div className="flex items-center gap-2 text-accent animate-pulse">
-                        <Sparkles className="w-4 h-4" /> Generating AI breakdown...
+                      <div className="flex items-center gap-2 text-primary animate-pulse">
+                        <Loader2 className="w-4 h-4 animate-spin" /> Forging explanation...
                       </div>
                     ) : (
-                      <div className="prose prose-sm dark:prose-invert prose-p:leading-relaxed prose-pre:bg-surface-3 max-w-none prose-a:text-accent">
-                        <ReactMarkdown>{aiExplanation || "No explanation generated."}</ReactMarkdown>
-                      </div>
+                      <MarkdownRenderer>{aiExplanation || "No explanation generated."}</MarkdownRenderer>
                     )}
                   </div>
                 </motion.div>

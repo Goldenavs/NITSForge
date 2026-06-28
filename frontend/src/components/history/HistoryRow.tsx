@@ -5,10 +5,10 @@ import { CheckCircle2, XCircle, ChevronDown, Sparkles, Loader2 } from 'lucide-re
 import { Card } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
+import { MarkdownRenderer } from '../ui/MarkdownRenderer';
 
 import type { AnswerHistoryRecord } from '../../hooks/useHistory';
 import { explainQuestion } from '../../services/ai';
-import ReactMarkdown from 'react-markdown';
 
 interface HistoryRowProps {
   log: AnswerHistoryRecord;
@@ -69,12 +69,10 @@ export function HistoryRow({ log }: HistoryRowProps) {
             </div>
             {/* Truncated question text - Hides when expanded */}
             {!isOpen && (
-              <div className="font-body text-sm sm:text-base leading-snug line-clamp-1 transition-colors text-text-muted group-hover:text-text-main prose prose-invert max-w-none prose-p:m-0 prose-headings:m-0 prose-pre:m-0 prose-pre:p-0 prose-pre:bg-transparent">
-                <ReactMarkdown 
-                  components={{ p: 'span', pre: 'span', code: 'span', h1: 'span', h2: 'span', h3: 'span' }}
-                >
-                  {log.question_text}
-                </ReactMarkdown>
+              <div className="text-text-muted mt-1 leading-relaxed text-xs">
+                <MarkdownRenderer>
+                  {log.question_text.substring(0, 150) + (log.question_text.length > 150 ? '...' : '')}
+                </MarkdownRenderer>
               </div>
             )}
           </div>
@@ -105,7 +103,7 @@ export function HistoryRow({ log }: HistoryRowProps) {
               {/* Question */}
               <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
                 <div className="text-text-main font-body leading-relaxed flex-1 prose prose-invert max-w-none prose-p:leading-relaxed prose-pre:bg-surface-2 prose-pre:border prose-pre:border-borderline prose-code:text-primary">
-                  <ReactMarkdown>{log.question_text}</ReactMarkdown>
+                  <MarkdownRenderer>{log.question_text}</MarkdownRenderer>
                 </div>
               </div>
 
@@ -128,7 +126,7 @@ export function HistoryRow({ log }: HistoryRowProps) {
                 <div>
                   <span className="text-[10px] font-orbitron text-text-main uppercase tracking-widest font-bold mb-2 block leading-none pt-0.5">Official Explanation</span>
                   <div className="text-xs sm:text-sm text-text-muted font-body leading-relaxed prose prose-invert max-w-none">
-                    <ReactMarkdown>{log.explanation}</ReactMarkdown>
+                    <MarkdownRenderer>{log.explanation}</MarkdownRenderer>
                   </div>
                 </div>
                 <div className="pt-3 border-t border-borderline/50 flex justify-end">
@@ -158,25 +156,21 @@ export function HistoryRow({ log }: HistoryRowProps) {
                         <span className="text-xs font-orbitron font-bold text-accent tracking-widest uppercase leading-none pt-0.5">Forge AI Analysis</span>
                       </div>
                       
-                      {isAiLoading && (
-                        <div className="flex flex-col gap-2 animate-pulse">
-                          <div className="h-3 bg-surface-2/60 rounded w-3/4"></div>
-                          <div className="h-3 bg-surface-2/60 rounded w-full"></div>
-                          <div className="h-3 bg-surface-2/60 rounded w-5/6"></div>
-                        </div>
-                      )}
-
                       {aiError && (
                         <div className="text-red-400 text-sm font-body">
                           {aiError}
                         </div>
                       )}
 
-                      {aiExplanation && !isAiLoading && (
-                        <div className="text-sm text-text-main font-body leading-relaxed prose prose-invert max-w-none">
-                          <ReactMarkdown>{aiExplanation}</ReactMarkdown>
-                        </div>
-                      )}
+                      <div className="pt-4 border-t border-borderline/50 mt-2 text-text-main/90 text-sm leading-relaxed">
+                        {isAiLoading ? (
+                          <div className="flex items-center gap-2 text-primary animate-pulse">
+                            <Sparkles className="w-4 h-4" /> Generating AI breakdown...
+                          </div>
+                        ) : (
+                          <MarkdownRenderer>{aiExplanation}</MarkdownRenderer>
+                        )}
+                      </div>
                     </div>
                   </motion.div>
                 )}
