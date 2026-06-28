@@ -2,6 +2,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Bot, User, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import { supabase } from '../../services/supabase';
 
 interface Message {
@@ -14,6 +15,23 @@ interface ForgeChatDrawerProps {
   onClose: () => void;
   context?: any;
 }
+
+const markdownComponents = {
+  p: ({node, ...props}: any) => <p className="leading-relaxed" {...props} />,
+  strong: ({node, ...props}: any) => <strong className="font-bold text-primary" {...props} />,
+  em: ({node, ...props}: any) => <em className="italic text-text-muted" {...props} />,
+  ul: ({node, ...props}: any) => <ul className="list-disc pl-4 space-y-1" {...props} />,
+  ol: ({node, ...props}: any) => <ol className="list-decimal pl-4 space-y-1" {...props} />,
+  li: ({node, ...props}: any) => <li className="pl-1" {...props} />,
+  code: ({node, className, ...props}: any) => {
+    const match = /language-(\w+)/.exec(className || '');
+    return match ? (
+      <code className="block bg-background p-3 rounded-lg font-mono text-xs overflow-x-auto border border-borderline/50 my-2" {...props} />
+    ) : (
+      <code className="bg-background px-1.5 py-0.5 rounded text-primary font-mono text-xs" {...props} />
+    );
+  }
+};
 
 export function ForgeChatDrawer({ isOpen, onClose, context }: ForgeChatDrawerProps) {
   const [messages, setMessages] = useState<Message[]>([
@@ -139,8 +157,16 @@ export function ForgeChatDrawer({ isOpen, onClose, context }: ForgeChatDrawerPro
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${m.role === 'user' ? 'bg-primary/20 text-primary' : 'bg-surface-2 text-accent'}`}>
                     {m.role === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
                   </div>
-                  <div className={`px-4 py-2 rounded-2xl max-w-[75%] text-sm whitespace-pre-wrap ${m.role === 'user' ? 'bg-primary/20 text-primary-light rounded-tr-sm' : 'bg-surface-2 text-text-main rounded-tl-sm'}`}>
-                    {m.text}
+                  <div className={`px-4 py-3 rounded-2xl max-w-[85%] text-sm ${m.role === 'user' ? 'bg-primary/20 text-primary-light rounded-tr-sm whitespace-pre-wrap' : 'bg-surface-2 text-text-main rounded-tl-sm'}`}>
+                    {m.role === 'user' ? (
+                      m.text
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        <ReactMarkdown components={markdownComponents}>
+                          {m.text}
+                        </ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
