@@ -19,7 +19,6 @@ const fadeUpVariant: Variants = {
 const viewportConfig = { once: true, margin: "-50px" };
 
 import { useAuth } from '../store/AuthContext';
-import { supabase } from '../services/supabase';
 import { GuestLockScreen } from '../components/auth/GuestLockScreen';
 import { useHistory } from '../hooks/useHistory';
 import { Loader2 } from 'lucide-react';

@@ -66,7 +66,11 @@ export default function Dashboard() {
     total_questions_answered: guestQuizzesTaken
   };
 
-  const { accuracy_trends, category_radar, insights } = data || {};
+  const { 
+    accuracy_trends = [], 
+    category_radar = [], 
+    insights 
+  } = data || {};
 
   // Rank Names
   const rankNames = ['Apprentice', 'Technician', 'Analyst', 'Specialist', 'Engineer', 'Senior Engineer', 'Architect', 'FE Master'];
