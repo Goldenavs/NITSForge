@@ -64,15 +64,17 @@ export function UserProfileModal({ isOpen, onClose, user }: UserProfileModalProp
             <X className="w-5 h-5" />
           </button>
 
-          {/* Banner */}
-          <div className="relative h-32 sm:h-48 w-full bg-gradient-to-r from-primary/40 to-accent/40 shrink-0">
-            {user.banner_url && (
-              <img src={user.banner_url} alt="Banner" className="w-full h-full object-cover opacity-80" />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent" />
-          </div>
+          {/* Scrollable Wrapper for entire modal content */}
+          <div className="w-full h-full overflow-y-auto overflow-x-hidden flex flex-col">
+            {/* Banner */}
+            <div className="relative h-32 sm:h-48 w-full bg-gradient-to-r from-primary/40 to-accent/40 shrink-0">
+              {user.banner_url && (
+                <img src={user.banner_url} alt="Banner" className="w-full h-full object-cover opacity-80" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/50 to-transparent" />
+            </div>
 
-          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden p-6 sm:p-8 pt-0 -mt-12 sm:-mt-16">
+            <div className="flex flex-col flex-1 p-6 sm:p-8 pt-0 -mt-12 sm:-mt-16 relative z-10">
             {/* Header / Avatar */}
             <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-end relative z-10">
               <div className="w-24 h-24 sm:w-32 sm:h-32 shrink-0 rounded-full border-4 border-surface bg-surface-2 overflow-hidden shadow-xl flex items-center justify-center">
@@ -159,6 +161,7 @@ export function UserProfileModal({ isOpen, onClose, user }: UserProfileModalProp
               )}
             </div>
 
+          </div>
           </div>
         </motion.div>
       </motion.div>
