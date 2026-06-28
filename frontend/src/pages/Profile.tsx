@@ -34,7 +34,7 @@ export const ProfilePage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto flex items-center justify-center h-64">
+      <div className="max-w-5xl mx-auto flex items-center justify-center h-64 px-1 sm:px-0">
         <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -42,7 +42,7 @@ export const ProfilePage: React.FC = () => {
 
   if (!profile) {
     return (
-      <div className="max-w-5xl mx-auto flex flex-col items-center justify-center h-64 text-text-muted">
+      <div className="max-w-5xl mx-auto flex flex-col items-center justify-center h-64 text-text-muted px-1 sm:px-0">
         <UserIcon className="w-16 h-16 mb-4 opacity-50" />
         <h2 className="text-xl font-display font-bold">Profile Not Found</h2>
         <p className="mt-2 text-sm">Please log in or try refreshing the page.</p>
@@ -56,7 +56,7 @@ export const ProfilePage: React.FC = () => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="max-w-5xl mx-auto space-y-6 pb-12"
+      className="max-w-5xl mx-auto space-y-6 pb-12 px-1 sm:px-0 pt-4"
     >
 
       {/* Header Section */}

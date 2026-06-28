@@ -64,7 +64,7 @@ export default function QuizResults() {
   };
 
   return (
-    <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-4xl mx-auto pb-24 px-4 sm:px-0 pt-4">
+    <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-4xl mx-auto pb-24 px-1 sm:px-0 pt-4">
 
       {/* 1. HEADER SECTION */}
       <motion.div
