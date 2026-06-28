@@ -1,10 +1,8 @@
 // src/pages/QuizHub.tsx
 import { AnimatePresence, motion } from 'framer-motion';
-import {
-  Target, Timer, Zap, RotateCcw, Sparkles, ChevronRight,
-  Book, Layers, Calendar, Flame, Shield, Box
-} from 'lucide-react';
+import { Target, Timer, Zap, RotateCcw, Sparkles, ChevronRight, Book, Layers, Calendar, Flame, Shield, Box } from 'lucide-react';
 import { QuizModeCard } from '../components/quiz/QuizModeCard';
+import { DailyChallengeBanner } from '../components/quiz/DailyChallengeBanner';
 import { Card, CardContent } from '../components/ui/Card';
 import { Badge } from '../components/ui/Badge';
 import { useNavigate } from 'react-router-dom';
@@ -175,17 +173,11 @@ export default function QuizHub() {
           title="Daily Protocol"
           subtitle="Your daily adaptive challenge for streak repair and double XP."
         />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-          <motion.div variants={fadeUpVariant} className="h-full">
-            <QuizModeCard
-              modeId="daily-challenge"
-              title="Daily Challenge"
-              description={isDailyCompleted ? "You have successfully completed today's challenge. Return tomorrow for a new sequence!" : "A high-stakes adaptive sequence. Complete this to secure your streak and earn double experience points."}
-              icon={Flame}
-              tags={['Daily', 'Adaptive', '2x XP']}
-              colorClass={isDailyCompleted ? "text-green-500 border-green-500/30" : "text-orange-500 border-orange-500/30"}
+        <div className="w-full mb-8">
+          <motion.div variants={fadeUpVariant} className="w-full">
+            <DailyChallengeBanner
+              isCompleted={isDailyCompleted}
               onStart={() => !isDailyCompleted && handleStartQuiz('daily-challenge')}
-              actionText={isDailyCompleted ? "Protocol Complete" : "Initiate Sequence"}
             />
           </motion.div>
         </div>
