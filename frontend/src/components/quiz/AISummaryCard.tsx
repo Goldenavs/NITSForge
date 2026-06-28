@@ -1,6 +1,6 @@
 // src/components/quiz/AISummaryCard.tsx
 import { useState } from 'react';
-import { Bot, Sparkles, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Bot, Loader2 } from 'lucide-react';
 import { MarkdownRenderer } from '../ui/MarkdownRenderer';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';

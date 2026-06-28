@@ -2,7 +2,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Bot, User, Loader2 } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 import { supabase } from '../../services/supabase';
 import { MarkdownRenderer } from '../ui/MarkdownRenderer';
 

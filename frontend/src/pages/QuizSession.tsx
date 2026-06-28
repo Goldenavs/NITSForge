@@ -38,6 +38,7 @@ export default function QuizSession() {
   const hasInitialized = useRef(status !== 'idle');
   const submitButtonRef = useRef<HTMLDivElement>(null);
   const setForgeContext = useForgeStore(state => state.setContext);
+  const currentQ = questions[currentIndex];
 
   // Snap to top when resuming or starting a quiz
   useEffect(() => {
@@ -161,8 +162,6 @@ export default function QuizSession() {
       </div>
     );
   }
-
-  const currentQ = questions[currentIndex];
 
   const handleSubmit = () => {
     if (!selectedOption) return;

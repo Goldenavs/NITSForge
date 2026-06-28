@@ -17,7 +17,8 @@ export const markdownComponents = {
   }
 };
 
-export function MarkdownRenderer({ children }: { children: string }) {
+export function MarkdownRenderer({ children }: { children?: string | null }) {
+  if (!children) return null;
   return (
     <div className="flex flex-col gap-2">
       <ReactMarkdown components={markdownComponents}>
