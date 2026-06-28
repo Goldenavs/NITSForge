@@ -17,7 +17,7 @@ interface ForgeChatDrawerProps {
 
 export function ForgeChatDrawer({ isOpen, onClose, context }: ForgeChatDrawerProps) {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'model', text: "Greetings! I'm Forge, your AI companion. Need a hint on this question?" }
+    { role: 'model', text: context ? "Greetings! I'm Forge, your AI companion. Need a hint on this question?" : "Greetings! I'm Forge, your AI companion. How can I help you conquer PhilNITS?" }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -30,6 +30,15 @@ export function ForgeChatDrawer({ isOpen, onClose, context }: ForgeChatDrawerPro
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    // Reset greeting when context changes (e.g. entering/leaving a quiz)
+    if (messages.length <= 1) {
+      setMessages([
+        { role: 'model', text: context ? "Greetings! I'm Forge, your AI companion. Need a hint on this question?" : "Greetings! I'm Forge, your AI companion. How can I help you conquer PhilNITS?" }
+      ]);
+    }
+  }, [context]);
 
   const handleSend = async () => {
     if (!input.trim()) return;

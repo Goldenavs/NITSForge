@@ -2,6 +2,7 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import InteractiveBackground from '../ui/InteractiveBackground';
+import { ForgeFAB } from '../forge/ForgeFAB';
 
 export default function MainLayout() {
   return (
@@ -21,6 +22,8 @@ export default function MainLayout() {
         <Outlet />
       </main>
       
+      {/* Global AI Assistant */}
+      <ForgeFAB />
     </div>
   );
 }

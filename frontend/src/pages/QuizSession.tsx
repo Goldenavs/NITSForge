@@ -6,9 +6,9 @@ import { ChevronRight, Sparkles } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { QuizHeader } from '../components/quiz/QuizHeader';
 import { QuestionCard } from '../components/quiz/QuestionCard';
-import { ForgeFAB } from '../components/forge/ForgeFAB';
 import { QuizSidebar } from '../components/quiz/QuizSidebar';
 import { useQuizStore } from '../store/useQuizStore';
+import { useForgeStore } from '../store/useForgeStore';
 
 export default function QuizSession() {
   const navigate = useNavigate();
@@ -37,6 +37,7 @@ export default function QuizSession() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const hasInitialized = useRef(status !== 'idle');
   const submitButtonRef = useRef<HTMLDivElement>(null);
+  const setForgeContext = useForgeStore(state => state.setContext);
 
   // Snap to top when resuming or starting a quiz
   useEffect(() => {
@@ -68,6 +69,18 @@ export default function QuizSession() {
       setIsSubmitted(false);
     }
   }, [currentIndex, questions, selectedAnswers, mode]);
+
+  // Synchronize global Forge Engine context with current question
+  useEffect(() => {
+    if (questions.length > 0 && currentQ && aiAllowed !== false && mode !== 'simulation') {
+      setForgeContext(currentQ);
+    } else {
+      setForgeContext(null);
+    }
+    
+    // Clear context when leaving the quiz
+    return () => setForgeContext(null);
+  }, [currentQ, aiAllowed, mode, setForgeContext, questions.length]);
 
   // Auto-start or redirect
   useEffect(() => {
@@ -247,8 +260,6 @@ export default function QuizSession() {
           </motion.div>
         </AnimatePresence>
       </div>
-
-      {(mode !== 'simulation' && aiAllowed !== false) && <ForgeFAB context={currentQ} />}
     </div>
   );
 }

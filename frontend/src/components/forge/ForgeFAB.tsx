@@ -2,13 +2,11 @@
 import { useState, useEffect } from 'react';
 import { Sparkles } from 'lucide-react';
 import { ForgeChatDrawer } from './ForgeChatDrawer';
+import { useForgeStore } from '../../store/useForgeStore';
 
-interface ForgeFABProps {
-  context?: any;
-}
-
-export function ForgeFAB({ context }: ForgeFABProps) {
+export function ForgeFAB() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const context = useForgeStore(state => state.context);
 
   useEffect(() => {
     const handleOpenForge = () => setIsDrawerOpen(true);
