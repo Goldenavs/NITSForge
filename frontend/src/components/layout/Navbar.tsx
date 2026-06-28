@@ -111,7 +111,6 @@ export default function Navbar() {
   const links = [
     { name: 'Quiz', path: '/quiz' },
     { name: 'Topics', path: '/topics' },
-    { name: 'Challenge', path: '/daily' },
     { name: 'Leaderboard', path: '/leaderboard' },
     { name: 'History', path: '/history' },
     { name: 'Bookmarks', path: '/bookmarks' },

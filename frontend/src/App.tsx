@@ -17,7 +17,6 @@ import QuizSession from './pages/QuizSession';
 import QuizResults from './pages/QuizResults';
 import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
-import DailyChallenge from './pages/DailyChallenge';
 import History from './pages/History';
 import Bookmarks from './pages/Bookmarks';
 import BookmarkCollection from './pages/BookmarkCollection';
@@ -56,7 +55,6 @@ function App() {
               {/* Topics & Learning */}
               <Route path="/topics" element={<Topics />} />
               <Route path="/topics/:category" element={<TopicDetail />} />
-              <Route path="/daily" element={<DailyChallenge />} />
               
               {/* User Data */}
               <Route path="/history" element={<History />} />

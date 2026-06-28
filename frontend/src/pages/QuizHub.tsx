@@ -12,6 +12,7 @@ import { useQuizStore } from '../store/useQuizStore';
 import { useState, useEffect } from 'react';
 import { Button } from '../components/ui/Button';
 import { QuizSetupModal } from '../components/quiz/QuizSetupModal';
+import { supabase } from '../services/supabase';
 
 // 1. Group Stagger Orchestrator
 const staggerContainer = {
@@ -52,6 +53,28 @@ export default function QuizHub() {
   const [setupModalConfig, setSetupModalConfig] = useState<{ mode: string, type: 'topic' | 'date' | 'sandbox' | 'ai-sandbox' } | null>(null);
 
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0);
+  const [isDailyCompleted, setIsDailyCompleted] = useState(false);
+
+  useEffect(() => {
+    const checkDailyStatus = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return;
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('last_daily_challenge_date')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!error && data?.last_daily_challenge_date) {
+        const today = new Date().toISOString().split('T')[0];
+        if (data.last_daily_challenge_date === today) {
+          setIsDailyCompleted(true);
+        }
+      }
+    };
+    checkDailyStatus();
+  }, []);
 
   useEffect(() => {
     const checkCooldown = () => {
@@ -146,6 +169,26 @@ export default function QuizHub() {
       </motion.div>
 
       <motion.div variants={staggerContainer} initial="hidden" animate="visible" viewport={viewportConfig}>
+
+        {/* CATEGORY 0: DAILY PROTOCOL */}
+        <SectionHeader
+          title="Daily Protocol"
+          subtitle="Your daily adaptive challenge for streak repair and double XP."
+        />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+          <motion.div variants={fadeUpVariant} className="h-full">
+            <QuizModeCard
+              modeId="daily-challenge"
+              title="Daily Challenge"
+              description={isDailyCompleted ? "You have successfully completed today's challenge. Return tomorrow for a new sequence!" : "A high-stakes adaptive sequence. Complete this to secure your streak and earn double experience points."}
+              icon={Flame}
+              tags={['Daily', 'Adaptive', '2x XP']}
+              colorClass={isDailyCompleted ? "text-green-500 border-green-500/30" : "text-orange-500 border-orange-500/30"}
+              onStart={() => !isDailyCompleted && handleStartQuiz('daily-challenge')}
+              actionText={isDailyCompleted ? "Protocol Complete" : "Initiate Sequence"}
+            />
+          </motion.div>
+        </div>
 
         {/* CATEGORY 1: LEARNING */}
         <SectionHeader
