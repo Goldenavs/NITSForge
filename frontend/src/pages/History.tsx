@@ -18,6 +18,9 @@ const fadeUpVariant: Variants = {
 
 const viewportConfig = { once: true, margin: "-50px" };
 
+import { useAuth } from '../store/AuthContext';
+import { supabase } from '../services/supabase';
+import { GuestLockScreen } from '../components/auth/GuestLockScreen';
 import { useHistory } from '../hooks/useHistory';
 import { Loader2 } from 'lucide-react';
 
@@ -27,6 +30,7 @@ import { HistoryTimeline } from '../components/history/HistoryTimeline';
 import { FilterModal, type FilterState } from '../components/history/FilterModal';
 
 export default function History() {
+  const { user } = useAuth();
   const { data: logs, isLoading, loadMore, hasMore } = useHistory();
   const [activeFilters, setActiveFilters] = useState<FilterState>({
     modes: [],
@@ -37,6 +41,10 @@ export default function History() {
   });
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  if (!user) {
+    return <GuestLockScreen featureName="History" />;
+  }
 
   const sessionStats = useMemo(() => {
     if (!logs) return {};

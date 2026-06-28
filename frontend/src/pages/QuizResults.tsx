@@ -10,6 +10,8 @@ import { AISummaryCard } from '../components/quiz/AISummaryCard';
 import { Card, CardContent } from '../components/ui/Card';
 import { useQuizStore } from '../store/useQuizStore';
 import { useState } from 'react';
+import { useAuth } from '../store/AuthContext';
+import { UserPlus, Save } from 'lucide-react';
 
 // Framer Motion Orchestration
 const staggerContainer: Variants = {
@@ -26,6 +28,7 @@ const viewportConfig = { once: true, margin: "-50px" };
 
 export default function QuizResults() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAllLogs, setShowAllLogs] = useState(false);
 
@@ -157,6 +160,31 @@ export default function QuizResults() {
           Return to Hub <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
       </motion.div>
+
+      {/* GUEST CTA BANNER */}
+      {!user && (
+        <motion.div variants={fadeUpVariant} initial="hidden" whileInView="visible" viewport={viewportConfig} className="w-full">
+          <div className="w-full relative overflow-hidden rounded-xl border border-primary/40 bg-primary/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]">
+            <div className="flex items-start md:items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <Save className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-display font-bold text-text-main mb-1">Save This Session</h3>
+                <p className="text-sm text-text-muted">
+                  Create a free account to permanently save these <strong className="text-primary">{xpEarned} XP</strong> and unlock full history tracking.
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => window.location.href = '/?signup=true'}
+              className="w-full sm:w-auto whitespace-nowrap bg-primary text-background font-orbitron font-bold uppercase tracking-widest text-xs px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)] flex items-center justify-center gap-2"
+            >
+              <UserPlus className="w-4 h-4" /> Create Account
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* 5. DYNAMIC SESSION LOG */}
       <motion.div

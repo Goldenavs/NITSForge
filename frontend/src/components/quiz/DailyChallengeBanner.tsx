@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { Flame, ShieldAlert, Play, Clock } from 'lucide-react';
+import { Flame, ShieldAlert, Play, Clock, Lock } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { useAuth } from '../../store/AuthContext';
 
 interface DailyChallengeBannerProps {
   isCompleted: boolean;
@@ -11,6 +11,7 @@ interface DailyChallengeBannerProps {
 }
 
 export function DailyChallengeBanner({ isCompleted, onStart }: DailyChallengeBannerProps) {
+  const { user } = useAuth();
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number }>({ hours: 0, minutes: 0, seconds: 0 });
 
   useEffect(() => {
@@ -42,9 +43,9 @@ export function DailyChallengeBanner({ isCompleted, onStart }: DailyChallengeBan
     <Card className={`relative w-full overflow-hidden bg-surface/85 backdrop-blur-sm transition-all duration-300 shadow-sm border border-borderline/60 hover:border-primary/40 group`}>
       {/* Shine Effect */}
       <div className="absolute top-0 -left-[100%] w-1/2 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg] z-20 pointer-events-none group-hover:animate-[shineOneWay_1s_ease-out_forwards]" />
-      
+
       <CardContent className="p-6 md:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 relative z-10">
-        
+
         {/* Left Side: Content */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 flex-1">
           <div className={`w-14 h-14 shrink-0 rounded-2xl border ${bgIconClass} ${isCompleted ? 'text-green-500' : 'text-orange-500'} flex items-center justify-center transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
@@ -61,8 +62,8 @@ export function DailyChallengeBanner({ isCompleted, onStart }: DailyChallengeBan
               </div>
             </h3>
             <p className="text-sm text-text-muted max-w-2xl leading-relaxed">
-              {isCompleted 
-                ? "You have successfully completed today's challenge. Return tomorrow for a new sequence!" 
+              {isCompleted
+                ? "You have successfully completed today's challenge. Return tomorrow for a new sequence!"
                 : "A high-stakes adaptive sequence. Complete this to secure your streak and earn double experience points."}
             </p>
           </div>
@@ -84,7 +85,15 @@ export function DailyChallengeBanner({ isCompleted, onStart }: DailyChallengeBan
             </div>
           </div>
 
-          {isCompleted ? (
+          {!user ? (
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = '/?signup=true'}
+              className="w-full lg:w-auto font-orbitron uppercase tracking-widest text-xs py-3 px-6 border-text-muted/30 text-text-muted hover:text-text-main hover:bg-surface-2"
+            >
+              <Lock className="w-4 h-4 mr-2" /> Login Required
+            </Button>
+          ) : isCompleted ? (
             <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500">
               <ShieldAlert className="w-4 h-4" />
               <span className="font-display font-bold text-sm tracking-wide">Protocol Complete</span>

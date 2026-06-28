@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button';
 import { PodiumProfile } from '../components/leaderboard/PodiumProfile';
 import { CompetitorRow } from '../components/leaderboard/CompetitorRow';
 import { UserProfileModal } from '../components/leaderboard/UserProfileModal';
+import { GuestLockScreen } from '../components/auth/GuestLockScreen';
 
 import { useAuth } from '../store/AuthContext';
 import { useProfile } from '../hooks/useProfile';
@@ -25,6 +26,12 @@ const fadeUpVariant: Variants = {
 const viewportConfig = { once: true, margin: "-50px" };
 
 export default function Leaderboard() {
+  const { user } = useAuth();
+  
+  if (!user) {
+    return <GuestLockScreen featureName="Global Leaderboard" />;
+  }
+
   const [timeLeft, setTimeLeft] = useState({ days: 4, hours: 12, minutes: 30 });
 
   useEffect(() => {
@@ -38,7 +45,7 @@ export default function Leaderboard() {
     return () => clearInterval(timer);
   }, []);
 
-  const { user } = useAuth();
+
   const { profile } = useProfile();
 
   const [timeframe, setTimeframe] = useState<'all-time' | 'weekly'>('all-time');

@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { type Question } from '../data/mockQuestions';
 import { supabase } from '../services/supabase';
+import { useForgeStore } from './useForgeStore';
 
 interface QuizState {
   // State
@@ -65,6 +66,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
       if (!userId) {
         console.error("Must be logged in for daily challenge");
+        alert("You must be logged in to access the Daily Challenge.");
+        window.location.href = '/quiz';
         set({ status: 'idle' });
         return;
       }
@@ -74,6 +77,7 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       if (error) {
         console.error('Error fetching daily challenge:', error);
         alert(error.message); // e.g. "Daily challenge already completed today."
+        window.location.href = '/quiz';
         set({ status: 'idle' });
         return;
       }
@@ -85,6 +89,8 @@ export const useQuizStore = create<QuizState>((set, get) => ({
 
       if (!userId) {
         console.error("Must be logged in for missed questions");
+        alert("You must be logged in to access Missed Questions.");
+        window.location.href = '/quiz';
         set({ status: 'idle' });
         return;
       }
@@ -95,12 +101,14 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       if (error) {
         console.error('Error fetching missed questions:', error);
         alert("Failed to fetch missed questions. Please try again.");
+        window.location.href = '/quiz';
         set({ status: 'idle' });
         return;
       }
 
       if (!data || data.length === 0) {
         alert("Great job! You don't have any missed questions on record.");
+        window.location.href = '/quiz';
         set({ status: 'idle' });
         return;
       }
@@ -403,8 +411,11 @@ export const useQuizStore = create<QuizState>((set, get) => ({
       console.log('Guest user finished the quiz. Saving session to localStorage.');
       set({ xpEarned: fallbackXp });
 
-
       try {
+        const { addGuestXp, incrementGuestQuizzes } = useForgeStore.getState();
+        addGuestXp(fallbackXp);
+        incrementGuestQuizzes();
+
         const guestSessions = JSON.parse(localStorage.getItem('nitsforge_guest_sessions') || '[]');
 
         guestSessions.push({

@@ -1,6 +1,7 @@
 // src/pages/Dashboard.tsx
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Trophy, Target, BookOpen, AlertTriangle } from 'lucide-react';
+import { Flame, Trophy, Target, BookOpen, AlertTriangle, Save, UserPlus, Loader2 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { StatCard } from '../components/dashboard/StatCard';
@@ -8,7 +9,8 @@ import { AIWeeklyReport } from '../components/dashboard/AIWeeklyReport';
 import { AccuracyChart, CategoryRadar } from '../components/dashboard/DashboardCharts';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useDashboardStats } from '../hooks/useDashboardStats';
-import { Loader2 } from 'lucide-react';
+import { useAuth } from '../store/AuthContext';
+import { useForgeStore } from '../store/useForgeStore';
 
 // 1. Group Stagger Orchestrator (Used for rows with multiple items like StatCards)
 const staggerContainer = {
@@ -33,6 +35,8 @@ const fadeUpVariant = {
 const viewportConfig = { once: true, margin: "-50px" };
 
 export default function Dashboard() {
+  const { user } = useAuth();
+  const { guestXp, guestQuizzesTaken } = useForgeStore();
   const { data, isLoading, error } = useDashboardStats();
 
   if (isLoading) {
@@ -43,7 +47,7 @@ export default function Dashboard() {
     );
   }
 
-  if (error || !data) {
+  if (error && user) {
     return (
       <div className="flex justify-center items-center h-[50vh] text-text-muted">
         <AlertTriangle className="w-6 h-6 mr-2" /> Failed to load dashboard data.
@@ -51,7 +55,19 @@ export default function Dashboard() {
     );
   }
 
-  const { profile, overview, accuracy_trends, category_radar, insights } = data;
+  const profile = user ? data?.profile : { 
+    total_xp: guestXp, 
+    rank_level: Math.floor(guestXp / 1000) + 1,
+    current_streak: 0,
+    display_name: 'Guest Explorer'
+  };
+
+  const overview = user ? data?.overview : {
+    overall_accuracy: 0,
+    total_questions_answered: guestQuizzesTaken
+  };
+
+  const { accuracy_trends, category_radar, insights } = data || {};
 
   // Rank Names
   const rankNames = ['Apprentice', 'Technician', 'Analyst', 'Specialist', 'Engineer', 'Senior Engineer', 'Architect', 'FE Master'];
@@ -71,18 +87,46 @@ export default function Dashboard() {
           <Badge className="mb-2 bg-surface-2/60 backdrop-blur-sm text-text-muted border-borderline font-orbitron tracking-widest uppercase text-[10px]">
             Level {profile?.rank_level || 1}: {currentRankName}
           </Badge>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main font-display tracking-tight leading-none pt-1">
-            Welcome back, <span className="text-primary">{profile?.display_name || 'Guest'}.</span>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-text-main">
+            {user ? `Welcome back, ${profile?.display_name || 'User'}.` : 'Guest Sandbox'}
           </h1>
-          <p className="text-sm sm:text-base text-text-muted mt-2 font-body flex items-center h-5">
-            Your PhilNITS FE Exam is in&nbsp;<strong className="text-text-main font-orbitron font-bold text-base sm:text-lg text-primary leading-none pt-0.5">42</strong>&nbsp;days.
+          <p className="text-text-muted mt-2 max-w-xl">
+            {user ? 'Monitor your learning metrics and recent operations.' : 'You are playing locally. Your progress is temporary until you create an account.'}
           </p>
         </div>
         <div className="flex gap-2.5 sm:gap-3 w-full sm:w-auto">
-          <Button variant="outline" className="flex-1 sm:flex-initial font-orbitron text-[11px] tracking-wide py-2.5">Topic Drill</Button>
-          <Button variant="primary" className="flex-1 sm:flex-initial font-orbitron text-[11px] tracking-wide py-2.5">Start Simulation</Button>
+          <Button variant="outline" className="flex-1 sm:flex-none border-borderline text-text-muted hover:text-text-main hover:bg-surface-2 hidden md:flex items-center justify-center">
+            View Analytics
+          </Button>
+          <Button variant="primary" className="flex-1 sm:flex-none flex items-center justify-center">
+            Take Quiz <Target className="w-4 h-4 ml-2" />
+          </Button>
         </div>
       </motion.div>
+
+      {!user && (
+        <motion.div variants={fadeUpVariant} initial="hidden" whileInView="visible" viewport={viewportConfig} className="mb-8">
+          <div className="w-full relative overflow-hidden rounded-xl border border-primary/40 bg-primary/10 p-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_0_15px_rgba(var(--primary-rgb),0.1)]">
+            <div className="flex items-start md:items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <Save className="w-6 h-6 text-primary" />
+              </div>
+              <div>
+                <h3 className="text-lg font-display font-bold text-text-main mb-1">Save Your Progress</h3>
+                <p className="text-sm text-text-muted">
+                  You've earned <strong className="text-primary">{guestXp} XP</strong>! Create a free account now to save it permanently, unlock the daily challenge, and climb the global leaderboards.
+                </p>
+              </div>
+            </div>
+            <button 
+              onClick={() => window.location.href = '/?signup=true'}
+              className="w-full md:w-auto whitespace-nowrap bg-primary text-background font-orbitron font-bold uppercase tracking-widest text-xs px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors shadow-[0_0_15px_rgba(var(--primary-rgb),0.4)] flex items-center justify-center gap-2"
+            >
+              <UserPlus className="w-4 h-4" /> Create Account
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* 2. OVERVIEW STATS ROW - Cascades when scrolled into view */}
       <motion.div 
