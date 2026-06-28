@@ -41,9 +41,6 @@ export default function History() {
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
-  if (!user) {
-    return <GuestLockScreen featureName="History" />;
-  }
 
   const sessionStats = useMemo(() => {
     if (!logs) return {};
@@ -183,6 +180,10 @@ export default function History() {
     link.click();
     document.body.removeChild(link);
   };
+
+  if (!user) {
+    return <GuestLockScreen featureName="History" />;
+  }
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 pt-4">

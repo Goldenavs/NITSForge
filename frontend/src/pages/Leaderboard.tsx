@@ -28,9 +28,6 @@ const viewportConfig = { once: true, margin: "-50px" };
 export default function Leaderboard() {
   const { user } = useAuth();
   
-  if (!user) {
-    return <GuestLockScreen featureName="Global Leaderboard" />;
-  }
 
   const [timeLeft, setTimeLeft] = useState({ days: 4, hours: 12, minutes: 30 });
 
@@ -89,6 +86,10 @@ export default function Leaderboard() {
   const showGoToMeBtn = !isCurrentUserInTop3 && isCurrentUserInRemaining;
 
   const podiumOrder = topThree.length === 3 ? [topThree[1], topThree[0], topThree[2]] : topThree;
+
+  if (!user) {
+    return <GuestLockScreen featureName="Global Leaderboard" />;
+  }
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
