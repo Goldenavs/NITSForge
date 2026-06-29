@@ -74,8 +74,8 @@ export default function TopicDetail() {
         variants={fadeUpVariant}
         className="flex flex-col items-start justify-center"
       >
-        <Link to="/topics" className="flex items-center gap-2 text-text-muted hover:text-primary transition-colors font-orbitron text-xs font-bold uppercase tracking-widest mb-6">
-          <ChevronLeft className="w-4 h-4" /> Back to Library
+        <Link to="/learning" className="flex items-center gap-2 text-text-muted hover:text-primary transition-colors font-orbitron text-xs font-bold uppercase tracking-widest mb-6">
+          <ChevronLeft className="w-4 h-4" /> Back to Hub
         </Link>
         
         <div className="flex flex-col sm:flex-row sm:items-end justify-between w-full gap-6">

@@ -49,13 +49,13 @@ export default function Topics() {
       >
         <div className="flex flex-col items-start justify-center">
           <Badge className="mb-3 bg-surface-2/60 backdrop-blur-sm text-text-muted border-borderline font-orbitron tracking-widest uppercase text-[10px]">
-            Syllabus Library
+            Knowledge Repository
           </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-text-main font-display tracking-tight leading-none mb-3">
-            Topic <span className="text-primary">Mastery.</span>
+            Learning <span className="text-primary">Hub.</span>
           </h1>
           <p className="text-sm sm:text-base text-text-muted max-w-2xl leading-relaxed">
-            Track your competence across all 11 core categories of the PhilNITS FE examination. Target your weak points by initiating focused drill sessions.
+            Access official PhilNITS FE examination materials, answer keys, and focused drill sessions grouped by core syllabus categories.
           </p>
         </div>
 

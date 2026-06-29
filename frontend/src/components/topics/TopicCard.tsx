@@ -66,7 +66,7 @@ export function TopicCard({ id, title, mastery, questionCount, icon: Icon, color
                 <Crosshair className="w-3 h-3 -mt-0.5" /> Drill
               </button>
             </Link>
-            <Link to={`/topics/${id}`} className="shrink-0">
+            <Link to={`/learning/${id}`} className="shrink-0">
               <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-surface-2 text-text-muted border border-borderline hover:border-text-muted hover:text-text-main transition-colors">
                 <ArrowRight className="w-4 h-4" />
               </button>

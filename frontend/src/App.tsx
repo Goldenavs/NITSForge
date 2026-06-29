@@ -52,9 +52,9 @@ function App() {
               <Route path="/quiz" element={<QuizHub />} />
               <Route path="/quiz/session" element={<QuizSession />} />
               <Route path="/quiz/results/:sessionId" element={<QuizResults />} />
-              {/* Topics & Learning */}
-              <Route path="/topics" element={<Topics />} />
-              <Route path="/topics/:category" element={<TopicDetail />} />
+              {/* Learning Hub */}
+              <Route path="/learning" element={<Topics />} />
+              <Route path="/learning/:category" element={<TopicDetail />} />
               
               {/* User Data */}
               <Route path="/history" element={<History />} />
