@@ -1,10 +1,9 @@
 import { motion, type Variants } from 'framer-motion';
-import { Globe, ChevronLeft, Target, Cpu, Clock, History, Binary, Layers, Code2, Database, ShieldCheck, TerminalSquare, Briefcase, LineChart, CheckCircle2 } from 'lucide-react';
+import { Globe, ChevronLeft, Target, Cpu, History, Binary, Layers, Code2, Database, ShieldCheck, TerminalSquare, Briefcase, LineChart, CheckCircle2 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { StatCard } from '../components/dashboard/StatCard';
-import { ConceptCard } from '../components/topics/ConceptCard';
 import { useTopicsData } from '../hooks/useTopicsData';
 
 // Motion Orchestration
@@ -35,7 +34,7 @@ const PHILNITS_CATEGORIES = [
 ];
 
 export default function TopicDetail() {
-  const { category: categoryId } = useParams<{ category: string }>(); 
+  const { category: categoryId } = useParams<{ category: string }>();
   const { topicsData } = useTopicsData();
 
   const categoryMeta = PHILNITS_CATEGORIES.find(c => c.id === categoryId);
@@ -49,9 +48,9 @@ export default function TopicDetail() {
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
-      
+
       {/* 1. NAVIGATION & HEADER */}
-      <motion.div 
+      <motion.div
         initial="hidden"
         animate="visible"
         variants={fadeUpVariant}
@@ -60,7 +59,7 @@ export default function TopicDetail() {
         <Link to="/topics" className="flex items-center gap-2 text-text-muted hover:text-primary transition-colors font-orbitron text-xs font-bold uppercase tracking-widest mb-6">
           <ChevronLeft className="w-4 h-4" /> Back to Hub
         </Link>
-        
+
         <div className="flex flex-col sm:flex-row sm:items-end justify-between w-full gap-6">
           <div className="flex items-center gap-4">
             <div className={`w-16 h-16 rounded-2xl ${categoryMeta.bgClass} border ${categoryMeta.color} flex items-center justify-center shrink-0`}>
@@ -91,43 +90,43 @@ export default function TopicDetail() {
       </motion.div>
 
       {/* 2. STATS ROW */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         animate="visible"
         className="grid grid-cols-1 sm:grid-cols-3 gap-4"
       >
         <motion.div variants={fadeUpVariant} className="h-full">
-          <StatCard 
-            title="Category Accuracy" 
+          <StatCard
+            title="Category Accuracy"
             value={`${accuracyPct}%`}
             subtitle={accuracyPct >= 85 ? "Mastered" : accuracyPct >= 50 ? "Proficient" : "Needs Improvement"}
-            icon={Target} 
-            colorClass={accuracyPct >= 85 ? "text-green-500 border-green-500/30" : accuracyPct >= 50 ? "text-amber-500 border-amber-500/30" : "text-rose-500 border-rose-500/30"} 
+            icon={Target}
+            colorClass={accuracyPct >= 85 ? "text-green-500 border-green-500/30" : accuracyPct >= 50 ? "text-amber-500 border-amber-500/30" : "text-rose-500 border-rose-500/30"}
           />
         </motion.div>
         <motion.div variants={fadeUpVariant} className="h-full">
-          <StatCard 
-            title="Questions Attempted" 
-            value={data.attempted_count} 
+          <StatCard
+            title="Questions Attempted"
+            value={data.attempted_count}
             subtitle={`Out of ${data.total_db_count} available`}
-            icon={History} 
-            colorClass="text-blue-500 border-blue-500/30" 
+            icon={History}
+            colorClass="text-blue-500 border-blue-500/30"
           />
         </motion.div>
         <motion.div variants={fadeUpVariant} className="h-full">
-          <StatCard 
-            title="Total Completion" 
-            value={`${completionPct}%`} 
+          <StatCard
+            title="Total Completion"
+            value={`${completionPct}%`}
             subtitle="Of category syllabus"
-            icon={CheckCircle2} 
-            colorClass="text-emerald-500 border-emerald-500/30" 
+            icon={CheckCircle2}
+            colorClass="text-emerald-500 border-emerald-500/30"
           />
         </motion.div>
       </motion.div>
 
       {/* 3. CONCEPT CARDS LIST */}
-      <motion.div 
+      <motion.div
         variants={staggerContainer}
         initial="hidden"
         whileInView="visible"
@@ -138,12 +137,14 @@ export default function TopicDetail() {
           <h2 className="text-xl font-display font-bold text-text-main mb-2">Core Concepts</h2>
           <p className="text-sm text-text-muted mb-4">Expand these cards for quick, high-yield syllabus reviews before starting a drill.</p>
         </motion.div>
-
-        {TOPIC_DATA.concepts.map((concept, idx) => (
+        {/* Placeholder for when concepts are wired up from the DB */}
+        {/* 
+        {concepts.map((concept, idx) => (
           <motion.div key={idx} variants={fadeUpVariant}>
             <ConceptCard {...concept} />
           </motion.div>
         ))}
+        */}
       </motion.div>
 
     </div>
