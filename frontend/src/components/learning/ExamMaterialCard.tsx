@@ -1,4 +1,4 @@
-import { FileText, ExternalLink, Download } from 'lucide-react';
+import { FileText, ExternalLink } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
 
 interface ExamMaterialCardProps {
@@ -12,7 +12,7 @@ export function ExamMaterialCard({ title, questionsUrl, answersUrl }: ExamMateri
     <Card className="w-full shrink-0 sm:w-[280px] bg-surface/80 backdrop-blur-sm border border-borderline hover:border-primary/50 transition-all duration-300 group overflow-hidden relative">
       {/* Glow Effect */}
       <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-      
+
       <CardContent className="p-5 flex flex-col h-full relative z-10">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20 text-primary">
