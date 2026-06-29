@@ -1,7 +1,7 @@
 // src/components/topics/TopicCard.tsx
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Crosshair, Target, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Crosshair, Target } from 'lucide-react';
 import { Card, CardContent } from '../ui/Card';
 import { Badge } from '../ui/Badge';
 

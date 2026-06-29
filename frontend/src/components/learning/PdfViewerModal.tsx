@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, FileText, CheckSquare, Download, ExternalLink } from 'lucide-react';
 import { Button } from '../ui/Button';
@@ -87,19 +87,19 @@ export function PdfViewerModal({ isOpen, onClose, exam }: PdfViewerModalProps) {
               {/* Actions */}
               <div className="flex items-center gap-2 pl-2 sm:pl-6 border-l border-borderline/50">
                 <a href={currentUrl} download target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost" size="icon" className="h-9 w-9 text-text-muted hover:text-text-main hover:bg-surface-2/50">
+                  <Button variant="ghost" size="sm" className="h-9 w-9 text-text-muted hover:text-text-main hover:bg-surface-2/50">
                     <Download className="w-4 h-4" />
                   </Button>
                 </a>
                 <a href={currentUrl} target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost" size="icon" className="h-9 w-9 text-text-muted hover:text-text-main hover:bg-surface-2/50">
+                  <Button variant="ghost" size="sm" className="h-9 w-9 text-text-muted hover:text-text-main hover:bg-surface-2/50">
                     <ExternalLink className="w-4 h-4" />
                   </Button>
                 </a>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={onClose}
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={onClose}
                   className="h-9 w-9 text-text-muted hover:text-error hover:bg-error/10 ml-1"
                 >
                   <X className="w-5 h-5" />

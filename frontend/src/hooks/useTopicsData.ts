@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../services/supabase';
-import type { JSX } from 'react/jsx-runtime';
 
 export interface TopicMastery {
   category: string;

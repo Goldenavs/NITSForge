@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { Binary, Cpu, Layers, Code2, Database, Globe, ShieldCheck, TerminalSquare, Briefcase, LineChart } from 'lucide-react';
 import { TopicCard } from '../components/topics/TopicCard';
@@ -34,7 +33,7 @@ const PHILNITS_CATEGORIES = [
 ];
 
 export default function Topics() {
-  const { topicsData, isLoading } = useTopicsData();
+  const { topicsData } = useTopicsData();
 
   // Calculate global stats
   const totalDbCount = Object.values(topicsData).reduce((sum, t) => sum + t.total_db_count, 0);
