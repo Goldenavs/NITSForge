@@ -1,8 +1,9 @@
-// src/pages/Topics.tsx
+import { useState, useMemo } from 'react';
 import { motion, type Variants } from 'framer-motion';
 import { Binary, Cpu, Layers, Code2, Database, Globe, ShieldCheck, TerminalSquare, Briefcase, LineChart } from 'lucide-react';
 import { TopicCard } from '../components/topics/TopicCard';
 import { ExamMaterialCard } from '../components/learning/ExamMaterialCard';
+import { PdfViewerModal } from '../components/learning/PdfViewerModal';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 
@@ -73,6 +74,24 @@ export default function Topics() {
   const totalQuestions = PHILNITS_CATEGORIES.reduce((acc, cat) => acc + cat.count, 0);
   const avgMastery = Math.round(PHILNITS_CATEGORIES.reduce((acc, cat) => acc + cat.mastery, 0) / 10);
 
+  const [selectedExam, setSelectedExam] = useState<{ id: string; title: string; qUrl: string; aUrl: string; } | null>(null);
+
+  // Group PAST_EXAMS by year
+  const groupedExams = useMemo(() => {
+    return PAST_EXAMS.reduce((acc, exam) => {
+      // Assuming title is "Month Year" (e.g. "October 2025")
+      const year = exam.title.split(' ')[1];
+      if (!acc[year]) acc[year] = [];
+      acc[year].push(exam);
+      return acc;
+    }, {} as Record<string, typeof PAST_EXAMS>);
+  }, []);
+
+  // Get years sorted descending
+  const sortedYears = useMemo(() => {
+    return Object.keys(groupedExams).sort((a, b) => parseInt(b) - parseInt(a));
+  }, [groupedExams]);
+
   return (
     <div className="flex flex-col gap-8 w-full max-w-7xl mx-auto pb-24 px-1 sm:px-0 pt-4">
       
@@ -109,31 +128,7 @@ export default function Topics() {
         </div>
       </motion.div>
 
-      {/* 2. PAST EXAMINATIONS LIBRARY */}
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={viewportConfig}
-        className="w-full"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-display font-bold text-text-main">Past Examinations</h2>
-        </div>
-        <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
-          {PAST_EXAMS.map((exam) => (
-            <motion.div key={exam.id} variants={fadeUpVariant} className="snap-start shrink-0">
-              <ExamMaterialCard 
-                title={exam.title} 
-                questionsUrl={exam.qUrl} 
-                answersUrl={exam.aUrl} 
-              />
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* 3. THE MASTER GRID */}
+      {/* 2. THE MASTER GRID */}
       <motion.div 
         variants={staggerContainer}
         initial="hidden"
@@ -147,7 +142,7 @@ export default function Topics() {
           </motion.div>
         ))}
 
-        {/* AI Sandbox Upsell Card (Fills the 12th slot perfectly in a 3 or 4 col grid) */}
+        {/* AI Sandbox Upsell Card */}
         <motion.div variants={fadeUpVariant} className="h-full">
           <div className="h-full flex flex-col items-center justify-center text-center p-6 rounded-2xl border-2 border-dashed border-borderline/80 bg-surface-2/20 hover:bg-surface-2/40 hover:border-accent/40 transition-colors group">
             <div className="w-12 h-12 mb-4 rounded-full bg-accent/10 flex items-center justify-center">
@@ -160,8 +155,50 @@ export default function Topics() {
             </Button>
           </div>
         </motion.div>
-
       </motion.div>
+
+      {/* 3. PAST EXAMINATIONS LIBRARY */}
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewportConfig}
+        className="w-full mt-10"
+      >
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-2xl font-display font-bold text-text-main">Historical Archives</h2>
+            <p className="text-text-muted text-sm mt-1">Review official PhilNITS FE examination papers from 2010 to 2025.</p>
+          </div>
+        </div>
+        
+        <div className="flex flex-col gap-10">
+          {sortedYears.map((year) => (
+            <div key={year} className="flex flex-col gap-4">
+              <h3 className="font-orbitron text-xl font-bold text-text-main flex items-center gap-3">
+                {year}
+                <div className="h-px flex-1 bg-borderline/50" />
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {groupedExams[year].map((exam) => (
+                  <motion.div key={exam.id} variants={fadeUpVariant} className="h-full">
+                    <ExamMaterialCard 
+                      title={exam.title} 
+                      onClick={() => setSelectedExam(exam)} 
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      <PdfViewerModal 
+        isOpen={!!selectedExam} 
+        onClose={() => setSelectedExam(null)} 
+        exam={selectedExam} 
+      />
     </div>
   );
 }
