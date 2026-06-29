@@ -2,6 +2,7 @@
 import { motion, type Variants } from 'framer-motion';
 import { Binary, Cpu, Layers, Code2, Database, Globe, ShieldCheck, TerminalSquare, Briefcase, LineChart } from 'lucide-react';
 import { TopicCard } from '../components/topics/TopicCard';
+import { ExamMaterialCard } from '../components/learning/ExamMaterialCard';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 
@@ -30,6 +31,13 @@ const PHILNITS_CATEGORIES = [
   { id: 'se', title: 'Software Engineering & Development', mastery: 82, count: 95, icon: TerminalSquare, color: 'text-fuchsia-500 border-fuchsia-500/30' },
   { id: 'strat', title: 'Strategy', mastery: 40, count: 261, icon: LineChart, color: 'text-teal-500 border-teal-500/30' },
   { id: 'mgmt', title: 'Management', mastery: 58, count: 582, icon: Briefcase, color: 'text-orange-500 border-orange-500/30' },
+];
+
+const PAST_EXAMS = [
+  { id: 'oct_2025', title: 'October 2025', qUrl: '/materials/october_2025_questions.pdf', aUrl: '/materials/october_2025_answers.pdf' },
+  { id: 'apr_2025', title: 'April 2025', qUrl: '/materials/april_2025_questions.pdf', aUrl: '/materials/april_2025_answers.pdf' },
+  { id: 'oct_2024', title: 'October 2024', qUrl: '/materials/october_2024_questions.pdf', aUrl: '/materials/october_2024_answers.pdf' },
+  { id: 'apr_2024', title: 'April 2024', qUrl: '/materials/april_2024_questions.pdf', aUrl: '/materials/april_2024_answers.pdf' },
 ];
 
 export default function Topics() {
@@ -73,7 +81,31 @@ export default function Topics() {
         </div>
       </motion.div>
 
-      {/* 2. THE MASTER GRID */}
+      {/* 2. PAST EXAMINATIONS LIBRARY */}
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewportConfig}
+        className="w-full"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-display font-bold text-text-main">Past Examinations</h2>
+        </div>
+        <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
+          {PAST_EXAMS.map((exam) => (
+            <motion.div key={exam.id} variants={fadeUpVariant} className="snap-start shrink-0">
+              <ExamMaterialCard 
+                title={exam.title} 
+                questionsUrl={exam.qUrl} 
+                answersUrl={exam.aUrl} 
+              />
+            </motion.div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* 3. THE MASTER GRID */}
       <motion.div 
         variants={staggerContainer}
         initial="hidden"
