@@ -1,11 +1,11 @@
-// src/pages/TopicDetail.tsx
 import { motion, type Variants } from 'framer-motion';
-import { Globe, ChevronLeft, Target, Cpu, Clock, History } from 'lucide-react';
+import { Globe, ChevronLeft, Target, Cpu, Clock, History, Binary, Layers, Code2, Database, ShieldCheck, TerminalSquare, Briefcase, LineChart, CheckCircle2 } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { StatCard } from '../components/dashboard/StatCard';
 import { ConceptCard } from '../components/topics/ConceptCard';
+import { useTopicsData } from '../hooks/useTopicsData';
 
 // Motion Orchestration
 const staggerContainer: Variants = {
@@ -20,49 +20,32 @@ const fadeUpVariant: Variants = {
 
 const viewportConfig = { once: true, margin: "-50px" };
 
-// Mock Data for "Networking & Communication"
-const TOPIC_DATA = {
-  id: 'net',
-  title: 'Networking & Communication',
-  mastery: 45,
-  questionsAnswered: 89,
-  timeSpent: '04h 12m',
-  concepts: [
-    {
-      title: "OSI Reference Model",
-      summary: "The 7-layer theoretical framework used to understand and standardize network communication functions.",
-      isMastered: true,
-      keyPoints: [
-        "Layer 1-3 (Physical, Data Link, Network) handle media and routing.",
-        "Layer 4 (Transport) handles reliability (TCP/UDP).",
-        "Layer 5-7 (Session, Presentation, Application) handle host-level data formatting and user interfaces."
-      ]
-    },
-    {
-      title: "IPv4 & Subnetting",
-      summary: "The division of an IP network into multiple logical network segments for security and efficiency.",
-      isMastered: false,
-      keyPoints: [
-        "A /24 CIDR mask equals 255.255.255.0 and provides 254 usable host addresses.",
-        "The Network Address is the first IP in the range; the Broadcast Address is the last.",
-        "Subnetting borrows bits from the host portion to create network subnets."
-      ]
-    },
-    {
-      title: "Routing Protocols",
-      summary: "Algorithms used by routers to dynamically determine the most efficient path for data packets.",
-      isMastered: false,
-      keyPoints: [
-        "Distance Vector (e.g., RIP) determines paths by hop count.",
-        "Link-State (e.g., OSPF) maps the entire network topology for faster convergence.",
-        "BGP is an exterior gateway protocol used to route traffic across the global internet."
-      ]
-    }
-  ]
-};
+// The 10 PhilNITS FE Syllabus Categories (Duplicated for standalone lookup)
+const PHILNITS_CATEGORIES = [
+  { id: 'math', title: 'Basic Theory of Information', icon: Binary, color: 'text-blue-500 border-blue-500/30', bgClass: 'bg-blue-500/10' },
+  { id: 'arch', title: 'Computer Architecture', icon: Cpu, color: 'text-emerald-500 border-emerald-500/30', bgClass: 'bg-emerald-500/10' },
+  { id: 'os', title: 'Operating Systems', icon: Layers, color: 'text-indigo-500 border-indigo-500/30', bgClass: 'bg-indigo-500/10' },
+  { id: 'ds', title: 'Data Structures & Algorithms', icon: Code2, color: 'text-amber-500 border-amber-500/30', bgClass: 'bg-amber-500/10' },
+  { id: 'db', title: 'Databases', icon: Database, color: 'text-cyan-500 border-cyan-500/30', bgClass: 'bg-cyan-500/10' },
+  { id: 'net', title: 'Networking & Communication', icon: Globe, color: 'text-rose-500 border-rose-500/30', bgClass: 'bg-rose-500/10' },
+  { id: 'sec', title: 'Information Security', icon: ShieldCheck, color: 'text-purple-500 border-purple-500/30', bgClass: 'bg-purple-500/10' },
+  { id: 'se', title: 'Software Engineering & Development', icon: TerminalSquare, color: 'text-fuchsia-500 border-fuchsia-500/30', bgClass: 'bg-fuchsia-500/10' },
+  { id: 'strat', title: 'Strategy', icon: LineChart, color: 'text-teal-500 border-teal-500/30', bgClass: 'bg-teal-500/10' },
+  { id: 'mgmt', title: 'Management', icon: Briefcase, color: 'text-orange-500 border-orange-500/30', bgClass: 'bg-orange-500/10' },
+];
 
 export default function TopicDetail() {
-  const {  } = useParams(); // In production, use this to fetch actual topic data
+  const { category: categoryId } = useParams<{ category: string }>(); 
+  const { topicsData } = useTopicsData();
+
+  const categoryMeta = PHILNITS_CATEGORIES.find(c => c.id === categoryId);
+  const data = topicsData[categoryId || ''] || { total_db_count: 0, attempted_count: 0, correct_count: 0 };
+
+  const completionPct = data.total_db_count > 0 ? Math.round((data.attempted_count / data.total_db_count) * 100) : 0;
+  const accuracyPct = data.attempted_count > 0 ? Math.round((data.correct_count / data.attempted_count) * 100) : 0;
+
+  if (!categoryMeta) return <div className="p-8 text-center text-text-muted">Topic not found</div>;
+  const Icon = categoryMeta.icon;
 
   return (
     <div className="flex flex-col gap-8 sm:gap-10 w-full max-w-5xl mx-auto pb-24 px-1 sm:px-0 pt-4">
@@ -74,22 +57,21 @@ export default function TopicDetail() {
         variants={fadeUpVariant}
         className="flex flex-col items-start justify-center"
       >
-        <Link to="/learning" className="flex items-center gap-2 text-text-muted hover:text-primary transition-colors font-orbitron text-xs font-bold uppercase tracking-widest mb-6">
+        <Link to="/topics" className="flex items-center gap-2 text-text-muted hover:text-primary transition-colors font-orbitron text-xs font-bold uppercase tracking-widest mb-6">
           <ChevronLeft className="w-4 h-4" /> Back to Hub
         </Link>
         
         <div className="flex flex-col sm:flex-row sm:items-end justify-between w-full gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center shrink-0">
-              <Globe className="w-8 h-8 text-rose-500" />
+            <div className={`w-16 h-16 rounded-2xl ${categoryMeta.bgClass} border ${categoryMeta.color} flex items-center justify-center shrink-0`}>
+              <Icon className={`w-8 h-8 ${categoryMeta.color.split(' ')[0]}`} />
             </div>
             <div>
               <Badge className="mb-2 bg-surface-2/60 backdrop-blur-sm text-text-muted border-borderline font-orbitron tracking-widest uppercase text-[10px] leading-none pt-1 pb-0.5">
                 Category Detail
               </Badge>
-              {/* FIX: leading-none pt-1 for typography alignment */}
               <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-main font-display tracking-tight leading-none pt-1">
-                {TOPIC_DATA.title}
+                {categoryMeta.title}
               </h1>
             </div>
           </div>
@@ -99,9 +81,11 @@ export default function TopicDetail() {
             <Button variant="outline" className="flex-1 sm:flex-initial font-orbitron text-[10px] tracking-widest border-accent/40 text-accent hover:bg-accent/10 leading-none pt-2.5 pb-2">
               <Cpu className="w-3.5 h-3.5 mr-2 -mt-0.5" /> AI Sandbox
             </Button>
-            <Button variant="primary" className="flex-1 sm:flex-initial font-orbitron text-[10px] tracking-widest leading-none pt-2.5 pb-2 bg-rose-600 hover:bg-rose-700 text-white border-none shadow-[0_0_20px_rgba(225,29,72,0.3)]">
-              <Target className="w-3.5 h-3.5 mr-2 -mt-0.5" /> Start Drill
-            </Button>
+            <Link to={`/quiz/setup?mode=drill&topic=${categoryId}`}>
+              <Button variant="primary" className={`w-full font-orbitron text-[10px] tracking-widest leading-none pt-2.5 pb-2 ${categoryMeta.bgClass.replace('/10', '/80')} hover:opacity-80 text-white border-none`}>
+                <Target className="w-3.5 h-3.5 mr-2 -mt-0.5" /> Start Drill
+              </Button>
+            </Link>
           </div>
         </div>
       </motion.div>
@@ -115,28 +99,28 @@ export default function TopicDetail() {
       >
         <motion.div variants={fadeUpVariant} className="h-full">
           <StatCard 
-            title="Category Mastery" 
-            value={`${TOPIC_DATA.mastery}%`}
-            subtitle="Needs Improvement"
+            title="Category Accuracy" 
+            value={`${accuracyPct}%`}
+            subtitle={accuracyPct >= 85 ? "Mastered" : accuracyPct >= 50 ? "Proficient" : "Needs Improvement"}
             icon={Target} 
-            colorClass="text-rose-500 border-rose-500/30" 
+            colorClass={accuracyPct >= 85 ? "text-green-500 border-green-500/30" : accuracyPct >= 50 ? "text-amber-500 border-amber-500/30" : "text-rose-500 border-rose-500/30"} 
           />
         </motion.div>
         <motion.div variants={fadeUpVariant} className="h-full">
           <StatCard 
-            title="Items Cleared" 
-            value={TOPIC_DATA.questionsAnswered} 
-            subtitle="Across all sessions"
+            title="Questions Attempted" 
+            value={data.attempted_count} 
+            subtitle={`Out of ${data.total_db_count} available`}
             icon={History} 
             colorClass="text-blue-500 border-blue-500/30" 
           />
         </motion.div>
         <motion.div variants={fadeUpVariant} className="h-full">
           <StatCard 
-            title="Time Dedicated" 
-            value={TOPIC_DATA.timeSpent} 
-            subtitle="Active drilling time"
-            icon={Clock} 
+            title="Total Completion" 
+            value={`${completionPct}%`} 
+            subtitle="Of category syllabus"
+            icon={CheckCircle2} 
             colorClass="text-emerald-500 border-emerald-500/30" 
           />
         </motion.div>
