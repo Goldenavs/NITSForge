@@ -17,6 +17,7 @@ import QuizSession from './pages/QuizSession';
 import QuizResults from './pages/QuizResults';
 import Topics from './pages/Topics';
 import TopicDetail from './pages/TopicDetail';
+import Archives from './pages/Archives';
 import History from './pages/History';
 import Bookmarks from './pages/Bookmarks';
 import BookmarkCollection from './pages/BookmarkCollection';
@@ -52,9 +53,11 @@ function App() {
               <Route path="/quiz" element={<QuizHub />} />
               <Route path="/quiz/session" element={<QuizSession />} />
               <Route path="/quiz/results/:sessionId" element={<QuizResults />} />
-              {/* Learning Hub */}
-              <Route path="/learning" element={<Topics />} />
-              <Route path="/learning/:category" element={<TopicDetail />} />
+              
+              {/* Learning Hub & Archives */}
+              <Route path="/topics" element={<Topics />} />
+              <Route path="/topics/:category" element={<TopicDetail />} />
+              <Route path="/archives" element={<Archives />} />
               
               {/* User Data */}
               <Route path="/history" element={<History />} />
